@@ -118,8 +118,8 @@ nav ul li a:hover {
 /* === Hero Section === */
 .hero {
   min-height: 86.7vh;
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-              url("../image/image.png") center/cover no-repeat;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url("../image/image.png") center/cover no-repeat;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -170,7 +170,7 @@ nav ul li a:hover {
   margin: -35px auto;
   background-color: #fff;
   border-radius: 999px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   padding: 8px 16px;
 }
 
@@ -205,7 +205,7 @@ nav ul li a:hover {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-left: 2px solid rgba(0,0,0,0.1);
+  border-left: 2px solid rgba(0, 0, 0, 0.1);
   padding-left: 10px;
 }
 
@@ -287,7 +287,7 @@ nav ul li a:hover {
   width: 264px;
   background: white;
   border-radius: 18px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -297,7 +297,7 @@ nav ul li a:hover {
 
 .food-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .card-image {
@@ -322,7 +322,7 @@ nav ul li a:hover {
 }
 
 .image-tags span {
-  background: rgba(0,0,0,0.55);
+  background: rgba(0, 0, 0, 0.55);
   color: white;
   font-size: 12.8px;
   border-radius: 999px;
@@ -337,8 +337,8 @@ nav ul li a:hover {
   height: 40px;
   border: none;
   border-radius: 50%;
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
   cursor: pointer;
 }
 
@@ -419,7 +419,7 @@ nav ul li a:hover {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
   transition: background 0.3s;
 }
 
@@ -447,3 +447,201 @@ nav ul li a:hover {
   flex-grow: 1;
   font-size: 28px;
 }
+
+/* === Login Page === */
+/* === CSS SEDERHANA === */
+.hero-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+  font-family: Poppins, sans-serif;
+}
+
+/* Bagian kiri */
+.hero-left {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(
+      to bottom right,
+      rgba(224, 107, 76, 0.6),
+      rgba(62, 107, 72, 0.6)
+    ),
+    url("../image/login-bg.png") center/cover no-repeat;
+}
+
+.hero-bg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: linear-gradient(
+    159deg,
+    rgba(224, 107, 76, 0.6),
+    rgba(62, 107, 72, 0.6)
+  );
+}
+
+.hero-text {
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hero-text h1 {
+  font-family: Montserrat, sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.hero-text p {
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+
+/* Bagian kanan */
+.hero-right {
+  position: relative;
+  background: #f9f5f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Dekorasi blur */
+.decor {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(35px);
+  opacity: 0.3;
+}
+
+.decor.red {
+  width: 220px;
+  height: 220px;
+  background: #e06b4c;
+  top: 30px;
+  left: -120px;
+  z-index: 0;
+}
+
+.decor.green {
+  width: 200px;
+  height: 200px;
+  background: #90c790;
+  bottom: 40px;
+  right: 20px;
+  z-index: 0;
+}
+
+.decor.yellow {
+  width: 140px;
+  height: 140px;
+  background: #f2c94c;
+  top: 45%;
+  left: 55%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+}
+
+/* Link kembali */
+.back-link {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 600;
+  color: #111827;
+  text-decoration: none;
+  border-bottom: 2px solid #e06b4c;
+  font-size: 1rem;
+}
+
+/* Kartu login */
+.login-card {
+  background: white;
+  border-radius: 28px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  width: 480px;
+  padding: 40px;
+  text-align: center;
+  position: relative;
+  z-index: 2; /* agar di atas blob */
+}
+
+.login-icon img {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 10px;
+}
+
+.login-header h2 {
+  color: #e06b4c;
+  font-family: Montserrat, sans-serif;
+  font-weight: 700;
+}
+
+.login-header p {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.login-form {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.login-form input {
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  font-size: 0.95rem;
+}
+
+.btn-primary,
+.btn-google {
+  width: 100%;              /* sama lebar */
+  padding: 14px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: linear-gradient(270deg, #e06b4c 0%, #ff7b7b 50%, #90c790 100%);
+  color: white;
+  border: none;
+}
+
+.btn-google {
+  border: 1px solid #ddd;
+  background: white;
+  color: #333;
+}
+
+.login-footer {
+  margin-top: 20px;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.login-footer .forgot {
+  color: #e06b4c;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+
+.login-footer .register {
+  color: #e06b4c;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+/* === END Login Page === */
