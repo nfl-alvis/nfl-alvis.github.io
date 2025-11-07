@@ -603,7 +603,7 @@ nav ul li a:hover {
   font-size: 0.95rem;
 }
 
-.btn-primary,
+.btn-primary-login,
 .btn-google {
   width: 100%;              /* sama lebar */
   padding: 14px;
@@ -612,7 +612,7 @@ nav ul li a:hover {
   cursor: pointer;
 }
 
-.btn-primary {
+.btn-primary-login {
   background: linear-gradient(270deg, #e06b4c 0%, #ff7b7b 50%, #90c790 100%);
   color: white;
   border: none;
