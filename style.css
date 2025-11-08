@@ -115,7 +115,7 @@ nav ul li a:hover {
   justify-self: end;
 }
 
-/* === Hero Section === */
+/* === Hero Section START === */
 .hero {
   min-height: 86.7vh;
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
@@ -159,11 +159,12 @@ nav ul li a:hover {
 }
 
 .hero button:hover {
-  background: #c85f42;           /* warna lebih gelap saat hover */
-  transform: translateY(-2px);   /* efek hover lembut */
+  background: #c85f42;
+  transform: translateY(-2px);
 }
+/* === Hero Section END === */
 
-/* === Search Bar === */
+/* === Search Bar START === */
 .search-bar-container {
   width: clamp(600px, 70%, 1000px);
   display: flex;
@@ -211,8 +212,10 @@ nav ul li a:hover {
   border-left: 2px solid rgba(0, 0, 0, 0.1);
   padding-left: 10px;
 }
+/* === Search Bar END === */
 
-/* === Footer === */
+
+/* === Footer START === */
 .footer {
   background-color: #1f2a21;
   color: #f2f2f2;
@@ -275,8 +278,9 @@ nav ul li a:hover {
   display: flex;
   gap: 8px;
 }
+/* === Footer END === */
 
-/* === Food Card Section === */
+/* === Food Card Section START === */
 :root {
   --azure: #1f2937;
   --grey: #6b7280;
@@ -450,9 +454,9 @@ nav ul li a:hover {
   flex-grow: 1;
   font-size: 28px;
 }
+/* === Food Card Section END === */
 
-/* === Login Page === */
-/* === CSS SEDERHANA === */
+/* === Login Page  START === */
 .hero-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -514,7 +518,7 @@ nav ul li a:hover {
   align-items: center;
 }
 
-/* Dekorasi blur */
+/* Dekorasi blur START */
 .decor {
   position: absolute;
   border-radius: 50%;
@@ -549,6 +553,7 @@ nav ul li a:hover {
   transform: translate(-50%, -50%);
   z-index: 0;
 }
+/* Dekorasi blur END */
 
 /* Link kembali */
 .back-link {
@@ -647,4 +652,4 @@ nav ul li a:hover {
   text-decoration: none;
 }
 
-/* === END Login Page === */
+/* === Login Page END === */
