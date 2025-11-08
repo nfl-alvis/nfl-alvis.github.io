@@ -145,19 +145,22 @@ nav ul li a:hover {
 }
 
 .hero button {
-  padding: 12px 28px;
-  background: #38bdf8;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+  display: inline-block;          /* tombol menyesuaikan isi, bukan memanjang */
+  background: #e06b4c;           /* warna khas tema */
   color: #fff;
   font-size: 16px;
-  transition: 0.3s;
-  max-width: 100px;
+  padding: 12px 24px;            /* proporsional */
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+  height: auto;                  /* pastikan tidak mengikuti tinggi parent */
+  max-width: fit-content;        /* batasi lebar sesuai teks */
 }
 
 .hero button:hover {
-  background: #0284c7;
+  background: #c85f42;           /* warna lebih gelap saat hover */
+  transform: translateY(-2px);   /* efek hover lembut */
 }
 
 /* === Search Bar === */
