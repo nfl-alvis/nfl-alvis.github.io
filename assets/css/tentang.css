@@ -53,56 +53,9 @@ nav ul li a:hover {
   transition: all 0.35s ease;
 }
 
-/* === Buttons === */
-.btn {
-  font-family: "Poppins", sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn:hover {
-  filter: brightness(0.9);
-}
-
-.btn-primary {
-  background-color: #e06b4c;
-  color: #fff;
-  margin-left: 10px;
-}
-
-.btn-secondary {
-  background-color: #fdfcfb;
-  color: #111827;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.btn-tertiary {
-  background-color: #fdfcfb;
-  color: #111827;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  font-weight: 400;
-}
-
-.btn-tertiary:focus {
-  background-color: #90c790;
-  color: #fff;
-  outline: none;
-}
-
-.auth-buttons {
-  display: flex;
-  gap: 15px;
-  justify-self: end;
-}
-
 /* === Hero Section START === */
 .hero {
-  min-height: 86.7vh;
+  min-height: 75.9vh;
   background: linear-gradient(
     135deg,
     #e06b4c 0%,
@@ -118,14 +71,16 @@ nav ul li a:hover {
   text-align: center;
   padding: 120px 80px 60px;
   font-family: "Montserrat", sans-serif;
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
+  border-bottom-left-radius: 66px;
+  border-bottom-right-radius: 66px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
 .hero h2 {
   font-size: clamp(32px, 5vw, 56px);
   margin-bottom: 20px;
   line-height: 1.15;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .hero p {
