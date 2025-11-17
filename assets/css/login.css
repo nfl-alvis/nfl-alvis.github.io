@@ -122,8 +122,9 @@
 .login-card {
   background: white;
   border-radius: 28px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15), inset 0 0 0 2px transparent;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
   width: 440px;
+  max-width: 100%;
   padding: 30px;
   text-align: center;
   position: relative;
@@ -133,7 +134,6 @@
   background-image: linear-gradient(white, white), linear-gradient(270deg, #e06b4c 0%, #ff7b7b 50%, #90c790 100%);
   background-origin: border-box;
   background-clip: padding-box, border-box;
-  
 }
 
 .login-icon {
@@ -142,10 +142,6 @@
   margin: 0 auto 10px;
   background: url("/assets/image/PusakaRasa.webp") center/cover no-repeat;
   border-radius: 14px;
-  -webkit-border-radius: 14px;
-  -moz-border-radius: 14px;
-  -ms-border-radius: 14px;
-  -o-border-radius: 14px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
@@ -158,7 +154,7 @@
 .login-header p {
   color: #666;
   font-size: 0.95rem;
-  font-family: poppins;
+  font-family: Poppins, sans-serif;
 }
 
 .login-form {
@@ -177,7 +173,7 @@
 
 .btn-primary-login,
 .btn-google {
-  width: 100%; /* sama lebar */
+  width: 100%;
   padding: 14px;
   border-radius: 14px;
   font-weight: 700;
@@ -218,8 +214,159 @@
   text-decoration: none;
 }
 
-.login-footer .register, .login-footer .sign-in {
+.login-footer .register, 
+.login-footer .sign-in {
   color: #e06b4c;
   font-weight: 500;
   text-decoration: none;
+}
+
+/* ========================================
+   MEDIA QUERIES - RESPONSIVE
+   ======================================== */
+
+/* TABLET (iPad & sejenisnya) - 768px sampai 1024px */
+@media (max-width: 1024px) {
+  .hero-text h1 {
+    font-size: 2rem;
+  }
+
+  .hero-text p {
+    font-size: 1rem;
+  }
+
+  .login-card {
+    width: 380px;
+    padding: 25px;
+  }
+
+  .decor.red {
+    width: 180px;
+    height: 180px;
+  }
+
+  .decor.green {
+    width: 160px;
+    height: 160px;
+  }
+
+  .decor.yellow {
+    width: 120px;
+    height: 120px;
+  }
+}
+
+/* MOBILE (Smartphone) - kurang dari 768px */
+@media (max-width: 768px) {
+  .hero-container {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+
+  /* SEMBUNYIKAN hero-left di mobile agar fokus pada login */
+  .hero-left {
+    display: none;
+  }
+
+  .hero-right {
+    height: auto;
+    min-height: 100vh;
+    padding: 20px;
+    border-radius: 0;
+  }
+
+  .back-link {
+    top: 16px;
+    font-size: 0.9rem;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px 20px;
+    margin-top: 60px;
+    border-radius: 20px;
+  }
+
+  .login-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .login-header p {
+    font-size: 0.85rem;
+  }
+
+  .login-form input,
+  .btn-primary-login,
+  .btn-google {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+
+  /* Perkecil dekorasi blur di mobile */
+  .decor.red {
+    width: 150px;
+    height: 150px;
+    left: -80px;
+  }
+
+  .decor.green {
+    width: 130px;
+    height: 130px;
+  }
+
+  .decor.yellow {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* MOBILE KECIL - kurang dari 480px */
+@media (max-width: 480px) {
+  .hero-right {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 20px 16px;
+    margin-top: 50px;
+    border-radius: 16px;
+  }
+
+  .login-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .login-header p {
+    font-size: 0.8rem;
+  }
+
+  .login-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .login-footer {
+    font-size: 0.85rem;
+  }
+
+  /* Dekorasi blur lebih kecil lagi */
+  .decor.red {
+    width: 120px;
+    height: 120px;
+    filter: blur(25px);
+  }
+
+  .decor.green {
+    width: 100px;
+    height: 100px;
+    filter: blur(25px);
+  }
+
+  .decor.yellow {
+    width: 80px;
+    height: 80px;
+    filter: blur(25px);
+  }
 }
