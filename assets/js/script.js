@@ -13,9 +13,9 @@ const activeLink = document.querySelector("nav ul li a.active");
 if (activeLink) moveIndicator(activeLink);
 
 // Saat link diklik → pindah aktif + geser garis
-links.forEach(link => {
-  link.addEventListener("click", function() {
-    links.forEach(l => l.classList.remove("active"));
+links.forEach((link) => {
+  link.addEventListener("click", function () {
+    links.forEach((l) => l.classList.remove("active"));
     this.classList.add("active");
     moveIndicator(this);
   });
@@ -25,4 +25,11 @@ links.forEach(link => {
 window.addEventListener("resize", () => {
   const current = document.querySelector("nav ul li a.active");
   if (current) moveIndicator(current);
+});
+
+const burger = document.getElementById("hamburgerBtn");
+const menu = document.getElementById("navMenu");
+
+burger.addEventListener("click", () => {
+  menu.classList.toggle("show");
 });
