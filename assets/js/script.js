@@ -21,11 +21,7 @@ links.forEach((link) => {
   });
 });
 
-// Saat resize, posisi indikator disesuaikan ulang
-window.addEventListener("resize", () => {
-  const current = document.querySelector("nav ul li a.active");
-  if (current) moveIndicator(current);
-});
+
 
 const burger = document.getElementById("hamburgerBtn");
 const menu = document.getElementById("navMenu");

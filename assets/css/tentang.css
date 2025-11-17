@@ -1,3 +1,14 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f9f9f9;
+}
+
 /* === Navbar === */
 header {
   background: rgba(255, 255, 255, 0.7);
@@ -55,7 +66,6 @@ nav ul li a:hover {
   transition: all 0.35s ease;
 }
 
-/* === Buttons === */
 .btn {
   font-family: "Poppins", sans-serif;
   font-size: 16px;
@@ -89,7 +99,6 @@ nav ul li a:hover {
   justify-self: end;
 }
 
-/* Tombol hamburger hidden di desktop */
 .hamburger {
   display: none;
   font-size: 28px;
@@ -98,12 +107,10 @@ nav ul li a:hover {
   cursor: pointer;
 }
 
-/* Item auth mobile hidden saat desktop */
 .mobile-auth {
   display: none;
 }
 
-/* === Hero Section === */
 .hero {
   min-height: 75.9vh;
   background: linear-gradient(135deg, #e06b4c 0%, #d4956c 30%, #b8b87c 60%, #90c790 100%);
@@ -136,26 +143,6 @@ nav ul li a:hover {
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.hero button {
-  display: inline-block;
-  background: #e06b4c;
-  color: #fff;
-  font-size: 16px;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-  height: auto;
-  max-width: fit-content;
-}
-
-.hero button:hover {
-  background: #c85f42;
-  transform: translateY(-2px);
-}
-
-/* ===== CONTAINER UTAMA ===== */
 .container {
   display: flex;
   flex-direction: row;
@@ -165,7 +152,6 @@ nav ul li a:hover {
   gap: 40px;
 }
 
-/* ===== CONTAINER GAMBAR ===== */
 .image-container {
   width: 100%;
   max-width: 500px;
@@ -186,7 +172,6 @@ nav ul li a:hover {
   display: block;
 }
 
-/* ===== CONTAINER LIST ===== */
 .list-container {
   width: 100%;
   max-width: 600px;
@@ -196,7 +181,6 @@ nav ul li a:hover {
   padding: 40px;
 }
 
-/* ===== JUDUL ===== */
 .list-content h3 {
   color: #e06b4c;
   font-size: 20px;
@@ -206,7 +190,6 @@ nav ul li a:hover {
   padding-bottom: 10px;
 }
 
-/* ===== LIST ===== */
 .list-content ul {
   list-style: none;
   padding: 0;
@@ -224,7 +207,6 @@ nav ul li a:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== BULLET CUSTOM ===== */
 .list-content ul li::before {
   content: "📌";
   font-size: 18px;
@@ -235,7 +217,6 @@ nav ul li a:hover {
   line-height: 1;
 }
 
-/* ===== CARDS ===== */
 .cards-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -280,7 +261,6 @@ nav ul li a:hover {
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* === Footer === */
 .footer {
   background-color: #1f2a21;
   color: #f2f2f2;
@@ -347,7 +327,6 @@ nav ul li a:hover {
   gap: 8px;
 }
 
-/* ===== RESPONSIVE: Tablet (<=1024px) ===== */
 @media (max-width: 1024px) {
   header {
     padding: 0 20px;
@@ -410,7 +389,6 @@ nav ul li a:hover {
   }
 }
 
-/* ===== RESPONSIVE: Mobile (<=600px) ===== */
 @media (max-width: 600px) {
   header {
     padding: 0 12px;
@@ -422,7 +400,6 @@ nav ul li a:hover {
     font-size: 18px;
   }
 
-  /* Tampilkan burger dan sembunyikan menu normal */
   .hamburger {
     display: block;
   }
@@ -445,12 +422,10 @@ nav ul li a:hover {
     display: flex;
   }
 
-  /* Sembunyikan tombol login/register versi desktop */
   .auth-buttons {
     display: none;
   }
 
-  /* Tampilkan versi mobile di dalam hamburger */
   .mobile-auth {
     display: block;
   }
@@ -487,10 +462,6 @@ nav ul li a:hover {
   .hero p {
     font-size: 16px;
     max-width: 100%;
-  }
-
-  .hero button {
-    padding: 10px 18px;
   }
 
   .container {
