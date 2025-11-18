@@ -19,14 +19,18 @@
     <title>PusakaRasa</title>
   </head>
   <body>
-    <header>
+       <header>
       <h1>PusakaRasa</h1>
       <nav>
-        <ul>
-          <li><a href="#beranda">Beranda</a></li>
+        <button class="hamburger" id="hamburgerBtn">☰</button>
+        <ul id="navMenu">
+          <li><a href="index.html">Beranda</a></li>
           <li><a href="katalog.html">Katalog</a></li>
           <li><a href="#favorit">Favorit</a></li>
-          <li><a href="#tentang">Tentang</a></li>
+          <li><a href="tentang.html">Tentang</a></li>
+          <!-- tombol login/register versi mobile -->
+          <li class="mobile-auth"><a href="login.html" class="login">Masuk</a></li>
+          <li class="mobile-auth"><a href="register.html" class="register">Daftar</a></li>
         </ul>
         <span class="nav-indicator"></span>
       </nav>
@@ -343,6 +347,6 @@
         <a href="#">Kebijakan Privasi</a> <a href="#">S&K</a>
       </div>
     </footer>
-    <script src="/assets/js/script.js"></script>
+    <script src="/assets/js/tentang.js"></script>
   </body>
 </html>
