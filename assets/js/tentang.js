@@ -1,55 +1,42 @@
 // Hamburger Menu Toggle dengan Animasi
-console.log('🚀 Script loaded!');
+console.log("🚀 Script loaded!");
 
-const hamburger = document.getElementById('hamburgerBtn');
-const navMenu = document.getElementById('navMenu');
+document.addEventListener("DOMContentLoaded", function () {
+  const btn = document.getElementById("hamburgerBtn");
+  const menu = document.getElementById("navMenu");
 
-console.log('Hamburger:', hamburger);
-console.log('NavMenu:', navMenu);
+  if (!btn || !menu) return;
 
-if (hamburger && navMenu) {
-  console.log('✅ Elements found!');
-  
-  // Toggle menu saat klik hamburger
-  hamburger.addEventListener('click', function(e) {
-    console.log('🍔 Hamburger clicked!');
-    e.preventDefault();
+  function closeMenu() {
+    menu.classList.remove("show");
+    btn.classList.remove("active");
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  function openMenu() {
+    menu.classList.add("show");
+    btn.classList.add("active");
+    btn.setAttribute("aria-expanded", "true");
+  }
+
+  btn.addEventListener("click", function (e) {
     e.stopPropagation();
-    
-    // Toggle class 'show' pada menu
-    navMenu.classList.toggle('show');
-    
-    // Toggle class 'active' pada hamburger untuk animasi
-    hamburger.classList.toggle('active');
-    
-    // Debug info
-    const isShown = navMenu.classList.contains('show');
-    console.log('Menu status:', isShown ? 'SHOWN ✓' : 'HIDDEN');
-    console.log('Menu classes:', navMenu.className);
+    if (menu.classList.contains("show")) closeMenu();
+    else openMenu();
   });
 
-  // Close menu saat klik di luar
-  document.addEventListener('click', function(e) {
-    if (!navMenu.contains(e.target) && !hamburger.contains(e.target)) {
-      if (navMenu.classList.contains('show')) {
-        navMenu.classList.remove('show');
-        hamburger.classList.remove('active');
-      }
-    }
+  // click outside to close
+  document.addEventListener("click", function (e) {
+    if (!menu.contains(e.target) && !btn.contains(e.target)) closeMenu();
   });
 
-  // Close menu saat klik link
-  const navLinks = navMenu.querySelectorAll('a');
-  navLinks.forEach(link => {
-    link.addEventListener('click', function() {
-      navMenu.classList.remove('show');
-      hamburger.classList.remove('active');
-    });
+  // esc key to close
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeMenu();
   });
 
-  console.log('✅ All event listeners attached!');
-} else {
-  console.error('❌ Elements not found!');
-  console.log('hamburger:', hamburger);
-  console.log('navMenu:', navMenu);
-}
+  // on resize ensure mobile menu closed when switching to desktop
+  window.addEventListener("resize", function () {
+    if (window.innerWidth > 600) closeMenu();
+  });
+});

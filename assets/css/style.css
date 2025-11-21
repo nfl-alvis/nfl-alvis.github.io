@@ -1,86 +1,17 @@
-/* === Navbar === */
-header {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 0 40px;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  height: 55px;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-header h1 {
-  font-family: "Montserrat", sans-serif;
-  font-size: 24px;
-  color: #3e6b48;
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #f9f9f9;
+  overflow-x: hidden; /* Mencegah scroll horizontal */
 }
 
-header nav {
-  justify-self: center;
-  position: relative;
-}
-
-nav ul {
-  display: flex;
-  list-style: none;
-  gap: 20px;
-}
-
-nav ul li a {
-  text-decoration: none;
-  color: #333;
-  font-weight: 600;
-  padding: 6px 0 8px;
-  transition: color 0.3s;
-}
-
-nav ul li a:hover {
-  color: #e06b4c;
-}
-
-.nav-indicator {
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  height: 3px;
-  width: 0;
-  background-color: #e06b4c;
-  border-radius: 999px;
-  transition: all 0.35s ease;
-}
 
 /* === Buttons === */
-.btn {
-  font-family: "Poppins", sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  padding: 8px 15px;
-  border: none;
-  border-radius: 999px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.btn:hover {
-  filter: brightness(0.9);
-}
-
-.btn-primary {
-  background-color: #e06b4c;
-  color: #fff;
-  margin-left: 10px;
-}
-
-.btn-secondary {
-  background-color: #fdfcfb;
-  color: #111827;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
 .btn-tertiary {
   background-color: #fdfcfb;
   color: #111827;
@@ -94,13 +25,8 @@ nav ul li a:hover {
   outline: none;
 }
 
-.auth-buttons {
-  display: flex;
-  gap: 15px;
-  justify-self: end;
-}
 
-/* === Hero Section START === */
+/* === Hero Section === */
 .hero {
   min-height: 86.7vh;
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
@@ -124,32 +50,31 @@ nav ul li a:hover {
 }
 
 .hero p {
-  font-size: 20px;
+  font-size: clamp(16px, 3vw, 20px);
   max-width: 600px;
   margin-bottom: 30px;
 }
 
 .hero button {
-  display: inline-block; /* tombol menyesuaikan isi, bukan memanjang */
-  background: #e06b4c; /* warna khas tema */
+  display: inline-block;
+  background: #e06b4c;
   color: #fff;
   font-size: 16px;
-  padding: 12px 24px; /* proporsional */
+  padding: 12px 24px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
-  height: auto; /* pastikan tidak mengikuti tinggi parent */
-  max-width: fit-content; /* batasi lebar sesuai teks */
+  height: auto;
+  max-width: fit-content;
 }
 
 .hero button:hover {
   background: #c85f42;
   transform: translateY(-2px);
 }
-/* === Hero Section END === */
 
-/* === Search Bar START === */
+/* === Search Bar === */
 .search-bar-container {
   width: clamp(600px, 70%, 1000px);
   display: flex;
@@ -161,6 +86,7 @@ nav ul li a:hover {
   border-radius: 999px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   padding: 8px 16px;
+  position: relative;
 }
 
 .search-bar {
@@ -184,6 +110,7 @@ nav ul li a:hover {
   justify-content: center;
   cursor: pointer;
   transition: 0.3s;
+  flex-shrink: 0;
 }
 
 .search-button:hover {
@@ -197,74 +124,8 @@ nav ul li a:hover {
   border-left: 2px solid rgba(0, 0, 0, 0.1);
   padding-left: 10px;
 }
-/* === Search Bar END === */
 
-/* === Footer START === */
-.footer {
-  background-color: #1f2a21;
-  color: #f2f2f2;
-  padding: clamp(28px, 5vw, 56px) 0;
-  font-family: "Montserrat", sans-serif;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 2rem;
-  padding: 0 5%;
-}
-
-.footer-section h3,
-.footer-section h4 {
-  margin-bottom: 12px;
-  color: #fff;
-}
-
-.footer-section p,
-.footer-section ul {
-  font-size: 0.9rem;
-  line-height: 3;
-  font-family: "Poppins", sans-serif;
-}
-
-.footer-section ul {
-  list-style: none;
-}
-
-.footer-section a {
-  color: #ccc;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.footer-section a:hover {
-  color: #fff;
-}
-
-.footer-bottom {
-  border-top: 1px solid #444;
-  width: 60%;
-  margin: 20px auto;
-  padding: 10px 0;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
-  color: #aaa;
-}
-
-.footer-bottom a {
-  color: #aaa;
-  text-decoration: none;
-  display: flex;
-  gap: 8px;
-}
-/* === Footer END === */
-
-/* === Food Card Section START === */
+/* === Food Card Section === */
 :root {
   --azure: #1f2937;
   --grey: #6b7280;
@@ -439,210 +300,337 @@ nav ul li a:hover {
   font-size: 28px;
 }
 
-.hamburger {
-  display: none;
-  font-size: 28px;
-  background: none;
-  border: none;
-  cursor: pointer;
+/* === Footer === */
+.footer {
+  background-color: #1f2a21;
+  color: #f2f2f2;
+  padding: clamp(28px, 5vw, 56px) 0;
+  font-family: "Montserrat", sans-serif;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
 }
 
-.mobile-auth {
-  display: none;
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: 0 5%;
 }
 
+.footer-section h3,
+.footer-section h4 {
+  margin-bottom: 12px;
+  color: #fff;
+}
 
+.footer-section p,
+.footer-section ul {
+  font-size: 0.9rem;
+  line-height: 3;
+  font-family: "Poppins", sans-serif;
+}
 
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section a {
+  color: #ccc;
+  text-decoration: none;
+  transition: 0.3s;
+}
+
+.footer-section a:hover {
+  color: #fff;
+}
+
+.footer-bottom {
+  border-top: 1px solid #444;
+  width: 60%;
+  margin: 20px auto;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: #aaa;
+}
+
+.footer-bottom a {
+  color: #aaa;
+  text-decoration: none;
+  margin-left: 12px;
+}
+
+.footer-bottom a:hover {
+  color: #fff;
+}
+
+/* ===== RESPONSIVE: Tablet/iPad ===== */
 @media (max-width: 1024px) {
-  header {
-    padding: 0 20px;
-    height: 60px;
-  }
-
-  header h1 {
-    font-size: 20px;
-  }
-
-  nav ul {
-    gap: 14px;
-  }
-
-  .auth-buttons {
-    gap: 10px;
-  }
-
+  
   .hero {
-    padding: 100px 40px 36px;
-    border-bottom-left-radius: 40px;
-    border-bottom-right-radius: 40px;
+    padding: 100px 40px 40px;
+    min-height: 70vh;
+    border-bottom-left-radius: 32px;
+    border-bottom-right-radius: 32px;
   }
 
   .hero h2 {
-    font-size: clamp(28px, 6vw, 48px);
+    font-size: clamp(36px, 5vw, 48px);
   }
 
-  .container {
-    flex-direction: column;
-    margin: 60px auto 0;
-    padding: 0 24px;
+  .hero p {
+    font-size: 18px;
   }
 
-  .image-container,
-  .list-container {
-    max-width: 100%;
-    width: 100%;
-    margin: 0 0 24px;
+  .search-bar-container {
+    width: 85%;
+    padding: 10px 16px;
+    margin: -30px auto;
+  }
+
+  .search-bar {
+    font-size: 15px;
+  }
+
+  .btn-tertiary {
+    font-size: 14px;
+    padding: 7px 12px;
   }
 
   .cards-container {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 900px;
-    padding: 0 24px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    padding: 40px 40px;
   }
 
-  .section-title {
-    margin-top: 80px;
-    font-size: 28px;
+  .food-card {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .section-container {
+    margin: 70px 40px 0;
+  }
+
+  .section-container h2 {
+    font-size: 26px;
   }
 
   .footer-content {
     padding: 0 4%;
-    gap: 1rem;
+    gap: 1.5rem;
   }
 
   .footer-bottom {
-    width: 100%;
+    width: 80%;
   }
 }
 
-@media (max-width: 600px) {
-  header {
-    padding: 0 12px;
-    grid-template-columns: 1fr auto;
-    height: 56px;
-  }
-
-  header h1 {
-    font-size: 18px;
-  }
-
-  .hamburger {
-    display: block;
-  }
-
-  nav ul {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    right: 16px;
-    top: 60px;
-    background: #fff;
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    width: 200px;
-    gap: 10px;
-  }
-
-  nav ul.show {
-    display: flex;
-  }
-
-  .auth-buttons {
-    display: none;
-  }
-
-  .mobile-auth {
-    display: block;
-  }
-
-  .mobile-auth .login,
-  .mobile-auth .register {
-    display: block;
-    padding: 10px;
-    text-align: center;
-    border-radius: 6px;
-    margin-top: 6px;
-  }
-
-  .mobile-auth .register {
-    background: #0099ff;
-    color: #fff;
-  }
-
-  .nav-indicator {
-    display: none;
-  }
-
+/* ===== RESPONSIVE: iPad Portrait (Tambahan Baru) ===== */
+@media (max-width: 768px) {
   .hero {
-    padding: 80px 18px 28px;
+    padding: 80px 30px 30px;
     min-height: 60vh;
-    border-bottom-left-radius: 24px;
-    border-bottom-right-radius: 24px;
   }
 
   .hero h2 {
-    font-size: clamp(22px, 8vw, 36px);
+    font-size: clamp(32px, 6vw, 44px);
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  .search-bar-container {
+    width: 90%;
+    margin: -25px auto;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 30px 30px;
+  }
+
+  .food-card {
+    max-width: 250px;
+  }
+
+  .section-container {
+    margin: 60px 30px 0;
+  }
+
+  .section-container h2 {
+    font-size: 24px;
+  }
+
+  .footer-content {
+    padding: 0 3%;
+  }
+}
+
+/* ===== RESPONSIVE: Mobile ===== */
+@media (max-width: 600px) {
+
+  /* SHOW MOBILE AUTH */
+
+  .hero {
+    padding: 70px 20px 32px;
+    min-height: 55vh;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+  }
+
+  .hero h2 {
+    font-size: clamp(28px, 8vw, 40px);
+    margin-bottom: 16px;
   }
 
   .hero p {
     font-size: 16px;
     max-width: 100%;
+    margin-bottom: 24px;
   }
 
-  .container {
-    margin: 32px 12px 0;
+  .hero button {
+    font-size: 15px;
+    padding: 10px 20px;
+  }
+
+  .search-bar-container {
+    width: calc(100% - 32px);
     flex-direction: column;
-    padding: 0 12px;
+    padding: 12px;
+    margin: -20px auto 0;
+    gap: 12px;
   }
 
-  .image-container {
-    max-width: 100%;
-    margin-bottom: 18px;
-    align-self: center;
+  .search-bar {
+    width: 100%;
+    padding: 10px 16px;
+    font-size: 14px;
   }
 
-  .list-container {
-    padding: 18px;
+  .search-button {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+  }
+
+  .btn-tertiary-container {
+    border-left: none;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    padding-left: 0;
+    padding-top: 12px;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-tertiary {
+    font-size: 13px;
+    padding: 6px 12px;
   }
 
   .cards-container {
     grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 32px 16px;
+    margin-top: 40px;
+  }
+
+  .food-card {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .section-container {
+    margin: 50px 16px 0;
+    flex-direction: column;
     gap: 16px;
-    max-width: 100%;
-    margin: 20px auto 0;
-    padding: 0 12px;
+    align-items: flex-start;
   }
 
-  .cards {
-    padding: 16px;
-  }
-
-  .list-content ul li {
-    padding: 10px 12px 10px 40px;
-  }
-
-  .list-content ul li::before {
-    left: 10px;
-    font-size: 16px;
-  }
-
-  .section-title {
-    margin-top: 48px;
+  .section-container h2 {
     font-size: 22px;
+  }
+
+  .katalog-section h2 {
+    margin-left: 16px !important;
+    margin-top: 60px !important;
+    font-size: 22px !important;
+  }
+
+  .footer {
+    margin-top: 60px;
   }
 
   .footer-content {
     flex-direction: column;
-    gap: 1rem;
     padding: 0 6%;
+    gap: 1.5rem;
+  }
+
+  .footer-section p,
+  .footer-section ul {
+    line-height: 2;
   }
 
   .footer-bottom {
     width: 100%;
-    margin-top: 12px;
-    justify-content: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .footer-bottom a {
+    margin: 0 8px;
   }
 }
-/* === Food Card Section END === */
+
+/* ===== RESPONSIVE: Small Mobile ===== */
+@media (max-width: 380px) {
+  header {
+    padding: 0 12px;
+  }
+
+  header h1 {
+    font-size: 16px;
+  }
+
+  .hero {
+    padding: 60px 16px 28px;
+  }
+
+  .hero h2 {
+    font-size: clamp(24px, 9vw, 32px);
+  }
+
+  .hero p {
+    font-size: 14px;
+  }
+
+  .search-bar-container {
+    width: calc(100% - 24px);
+  }
+
+  .cards-container {
+    padding: 24px 12px;
+  }
+
+  .section-container {
+    margin: 40px 12px 0;
+  }
+
+  .katalog-section h2 {
+    margin-left: 12px !important;
+    margin-top: 48px !important;
+    font-size: 20px !important;
+  }
+}

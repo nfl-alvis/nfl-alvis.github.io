@@ -14,19 +14,29 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
 
-    <link rel="stylesheet" href="/assets/css/style.css" />
-    <link rel="stylesheet" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/base.css" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/component.css" />
+
     <title>PusakaRasa | Katalog Makanan</title>
   </head>
   <body>
     <header>
       <h1>PusakaRasa</h1>
       <nav>
-        <ul>
+        <button class="hamburger" id="hamburgerBtn">☰</button>
+        <ul id="navMenu">
           <li><a href="index.html">Beranda</a></li>
           <li><a href="katalog.html">Katalog</a></li>
           <li><a href="#favorit">Favorit</a></li>
-          <li><a href="#tentang">Tentang</a></li>
+          <li><a href="tentang.html">Tentang</a></li>
+          <!-- tombol login/register versi mobile -->
+          <li class="mobile-auth">
+            <a href="login.html" class="login">Masuk</a>
+          </li>
+          <li class="mobile-auth">
+            <a href="register.html" class="register">Daftar</a>
+          </li>
         </ul>
         <span class="nav-indicator"></span>
       </nav>
@@ -68,7 +78,7 @@
     <section id="katalog">
       <div class="cards-container">
         <!-- === Card 1: Rendang === -->
-        <div class="food-card">
+        <div class="food-card" style="margin-top: 40px">
           <div class="card-image">
             <img src="/assets/image/Rendang.jpeg" alt="Rendang" />
             <div class="image-tags">
@@ -95,9 +105,9 @@
         </div>
 
         <!-- === Card 2: Sate Ayam === -->
-        <div class="food-card">
+        <div class="food-card" style="margin-top: 40px">
           <div class="card-image">
-            <img src="/assets/image/Sate.jpg" alt="Sate Ayam" />
+            <img src="/assets/image/Sate.jpg" alt="Sate" />
             <div class="image-tags">
               <span>Jawa</span>
               <span>Makanan</span>
@@ -122,7 +132,7 @@
         </div>
 
         <!-- === Card 3: Gudeg === -->
-        <div class="food-card">
+        <div class="food-card" style="margin-top: 40px">
           <div class="card-image">
             <img src="/assets/image/Gudeg.jpg" alt="Gudeg" />
             <div class="image-tags">
@@ -148,74 +158,120 @@
           </div>
         </div>
 
-        <!-- === Card 4: Es Cendol === -->
-        <div class="food-card">
+        <!-- === Card 4: Pempek === -->
+        <div class="food-card" style="margin-top: 40px">
           <div class="card-image">
-            <img src="/assets/image/Cendol.jpeg" alt="Es Cendol" />
+            <img src="/assets/image/Pempek.png" alt="Pempek" />
             <div class="image-tags">
-              <span>Jawa Barat</span>
-              <span>Minuman</span>
+              <span>Sumatera Selatan</span>
+              <span>Makanan</span>
             </div>
             <button class="fav-btn" aria-label="Favorite"></button>
           </div>
           <div class="card-content">
-            <h3 class="food-title">Es Cendol</h3>
+            <h3 class="food-title">Pempek</h3>
             <p class="food-desc">
-              Minuman segar dari santan, gula merah, dan tepung beras hijau.
+              Ikan tenggiri, tekstur kenyal, kuah cuko khas.
             </p>
             <div class="food-rating">
               <span class="stars">★★★★★</span>
               <span class="review">5.0 • 1.5k ulasan</span>
             </div>
-            <p class="food-price">Rp 12.000</p>
+            <p class="food-price">Rp 22.000</p>
           </div>
           <div class="card-footer">
-            <span class="food-tag">#segar</span>
+            <span class="food-tag">#ikan</span>
             <button class="detail-btn">Detail</button>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- === Section Katalog === -->
-    <section id="katalog">
-      <div class="section-container">
-        <h2>Katalog Lengkap</h2>
-        <button class="btn btn-secondary">Lihat Semua</button>
-      </div>
-
-      <div class="cards-container">
-        <!-- === Card 1: Rendang === -->
+        <!-- === Card 5: Bakso Malang === -->
         <div class="food-card">
           <div class="card-image">
-            <img src="assets/image/Rendang.jpeg" alt="Rendang" />
+            <img src="assets/image/Bakso.png" alt="Bakso Malang" />
             <div class="image-tags">
-              <span>Sumatera Barat</span>
+              <span>SJawa Timur</span>
               <span>Makanan</span>
             </div>
             <button class="fav-btn" aria-label="Favorite"></button>
           </div>
           <div class="card-content">
-            <h3 class="food-title">Rendang</h3>
+            <h3 class="food-title">Bakso Malang</h3>
             <p class="food-desc">
-              Daging sapi dimasak lama dengan rempah khas Minang.
+              Bola daging sapi kuah gurih.Bola daging sapi kuah gurih.
             </p>
             <div class="food-rating">
               <span class="stars">★★★★★</span>
               <span class="review">4.9 • 1.2k ulasan</span>
             </div>
-            <p class="food-price">Rp 45.000</p>
+            <p class="food-price">Rp 15.000</p>
           </div>
           <div class="card-footer">
-            <span class="food-tag">#pedas</span>
+            <span class="food-tag">#kuah</span>
             <button class="detail-btn">Detail</button>
           </div>
         </div>
 
-        <!-- === Card 2: Sate Ayam === -->
+        <!-- === Card 6: Soto === -->
         <div class="food-card">
           <div class="card-image">
-            <img src="/assets/image/Sate.jpg" alt="Sate Ayam" />
+            <img src="/assets/image/Soto.png" alt="Soto Lamongan" />
+            <div class="image-tags">
+              <span>Jawa Timur</span>
+              <span>Makanan</span>
+            </div>
+            <button class="fav-btn" aria-label="Favorite"></button>
+          </div>
+          <div class="card-content">
+            <h3 class="food-title">Soto Lamongan</h3>
+            <p class="food-desc">
+              Sup daging khas Jawa Timur berkuah hitam dari kluwek dengan cita
+              rasa gurih dan autentik.
+            </p>
+            <div class="food-rating">
+              <span class="stars">★★★★☆</span>
+              <span class="review">4.4 • 980 ulasan</span>
+            </div>
+            <p class="food-price">Rp 17.000</p>
+          </div>
+          <div class="card-footer">
+            <span class="food-tag">#kuah</span>
+            <button class="detail-btn">Detail</button>
+          </div>
+        </div>
+
+        <!-- === Card 7: Rawon === -->
+        <div class="food-card">
+          <div class="card-image">
+            <img src="/assets/image/Rawon.png" alt="Rawon" />
+            <div class="image-tags">
+              <span>Jawa Timur</span>
+              <span>Makanan</span>
+            </div>
+            <button class="fav-btn" aria-label="Favorite"></button>
+          </div>
+          <div class="card-content">
+            <h3 class="food-title">Rawon</h3>
+            <p class="food-desc">
+              Sup daging khas Jawa Timur berkuah hitam dari kluwek dengan cita
+              rasa gurih dan autentik.
+            </p>
+            <div class="food-rating">
+              <span class="stars">★★★★☆</span>
+              <span class="review">4.7 • 860 ulasan</span>
+            </div>
+            <p class="food-price">Rp 25.000</p>
+          </div>
+          <div class="card-footer">
+            <span class="food-tag">#rempah</span>
+            <button class="detail-btn">Detail</button>
+          </div>
+        </div>
+
+        <!-- === Card 8: Nasi Goreng === -->
+        <div class="food-card">
+          <div class="card-image">
+            <img src="/assets/image/nasiGoreng.png" alt="Nasi Goreng" />
             <div class="image-tags">
               <span>Jawa</span>
               <span>Makanan</span>
@@ -223,61 +279,7 @@
             <button class="fav-btn" aria-label="Favorite"></button>
           </div>
           <div class="card-content">
-            <h3 class="food-title">Sate Ayam</h3>
-            <p class="food-desc">
-              Potongan ayam bakar disajikan dengan bumbu kacang gurih.
-            </p>
-            <div class="food-rating">
-              <span class="stars">★★★★☆</span>
-              <span class="review">4.8 • 980 ulasan</span>
-            </div>
-            <p class="food-price">Rp 25.000</p>
-          </div>
-          <div class="card-footer">
-            <span class="food-tag">#gurih</span>
-            <button class="detail-btn">Detail</button>
-          </div>
-        </div>
-
-        <!-- === Card 3: Gudeg === -->
-        <div class="food-card">
-          <div class="card-image">
-            <img src="/assets/image/Gudeg.jpg" alt="Gudeg" />
-            <div class="image-tags">
-              <span>Yogyakarta</span>
-              <span>Makanan</span>
-            </div>
-            <button class="fav-btn" aria-label="Favorite"></button>
-          </div>
-          <div class="card-content">
-            <h3 class="food-title">Gudeg</h3>
-            <p class="food-desc">
-              Nangka muda dimasak manis dengan santan dan telur pindang.
-            </p>
-            <div class="food-rating">
-              <span class="stars">★★★★☆</span>
-              <span class="review">4.7 • 860 ulasan</span>
-            </div>
-            <p class="food-price">Rp 30.000</p>
-          </div>
-          <div class="card-footer">
-            <span class="food-tag">#manis</span>
-            <button class="detail-btn">Detail</button>
-          </div>
-        </div>
-
-        <!-- === Card 4: Es Cendol === -->
-        <div class="food-card">
-          <div class="card-image">
-            <img src="/assets/image/Cendol.jpeg" alt="Es Cendol" />
-            <div class="image-tags">
-              <span>Jawa Barat</span>
-              <span>Minuman</span>
-            </div>
-            <button class="fav-btn" aria-label="Favorite"></button>
-          </div>
-          <div class="card-content">
-            <h3 class="food-title">Es Cendol</h3>
+            <h3 class="food-title">Nasi Goreng Jawa</h3>
             <p class="food-desc">
               Minuman segar dari santan, gula merah, dan tepung beras hijau.
             </p>
