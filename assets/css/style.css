@@ -10,7 +10,6 @@ body {
   overflow-x: hidden; /* Mencegah scroll horizontal */
 }
 
-
 /* === Buttons === */
 .btn-tertiary {
   background-color: #fdfcfb;
@@ -24,7 +23,6 @@ body {
   color: #fff;
   outline: none;
 }
-
 
 /* === Hero Section === */
 .hero {
@@ -300,78 +298,10 @@ body {
   font-size: 28px;
 }
 
-/* === Footer === */
-.footer {
-  background-color: #1f2a21;
-  color: #f2f2f2;
-  padding: clamp(28px, 5vw, 56px) 0;
-  font-family: "Montserrat", sans-serif;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 2rem;
-  padding: 0 5%;
-}
-
-.footer-section h3,
-.footer-section h4 {
-  margin-bottom: 12px;
-  color: #fff;
-}
-
-.footer-section p,
-.footer-section ul {
-  font-size: 0.9rem;
-  line-height: 3;
-  font-family: "Poppins", sans-serif;
-}
-
-.footer-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-section a {
-  color: #ccc;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.footer-section a:hover {
-  color: #fff;
-}
-
-.footer-bottom {
-  border-top: 1px solid #444;
-  width: 60%;
-  margin: 20px auto;
-  padding: 10px 0;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
-  color: #aaa;
-}
-
-.footer-bottom a {
-  color: #aaa;
-  text-decoration: none;
-  margin-left: 12px;
-}
-
-.footer-bottom a:hover {
-  color: #fff;
-}
+/* FOOTER: moved to assets/css/footer.css to avoid duplication */
 
 /* ===== RESPONSIVE: Tablet/iPad ===== */
 @media (max-width: 1024px) {
-  
   .hero {
     padding: 100px 40px 40px;
     min-height: 70vh;
@@ -476,7 +406,6 @@ body {
 
 /* ===== RESPONSIVE: Mobile ===== */
 @media (max-width: 600px) {
-
   /* SHOW MOBILE AUTH */
 
   .hero {
@@ -587,6 +516,7 @@ body {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+    align-items: center; /* added: center items on mobile */
   }
 
   .footer-bottom a {

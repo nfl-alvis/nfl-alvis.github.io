@@ -1,0 +1,52 @@
+.hero {
+  min-height: 75.9vh;
+  background: linear-gradient(
+    135deg,
+    #e06b4c 0%,
+    #d4956c 30%,
+    #b8b87c 60%,
+    #90c790 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  text-align: center;
+  padding: 120px 80px 60px;
+  font-family: "Montserrat", sans-serif;
+  border-bottom-left-radius: 66px;
+  border-bottom-right-radius: 66px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.hero h2 {
+  font-size: clamp(32px, 5vw, 56px);
+  margin-bottom: 20px;
+  line-height: 1.15;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.hero p {
+  font-size: 19.2px;
+  max-width: 600px;
+  margin-bottom: 30px;
+  font-family: "Poppins", sans-serif;
+  font-weight: 300;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.header {
+  margin: 96px auto 56px;
+  color: #2f3e34;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: clamp(20px, 5vw, 41.6px);
+  display: flex;
+  justify-content: center;
+}
+
+.content {
+    display: flex;
+    
+}
