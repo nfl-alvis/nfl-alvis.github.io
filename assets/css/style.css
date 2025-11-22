@@ -405,6 +405,7 @@ body {
 }
 
 /* ===== RESPONSIVE: Mobile ===== */
+/* ===== RESPONSIVE: Mobile ===== */
 @media (max-width: 600px) {
   /* SHOW MOBILE AUTH */
 
@@ -466,21 +467,89 @@ body {
     padding: 6px 12px;
   }
 
+  /* === CARDS: 2 KOLOM DI MOBILE === */
   .cards-container {
-    grid-template-columns: 1fr;
-    gap: 20px;
-    padding: 32px 16px;
+    grid-template-columns: repeat(2, 1fr); /* 2 kolom */
+    gap: 12px; /* Jarak antar card lebih kecil */
+    padding: 32px 12px; /* Padding kiri-kanan lebih kecil */
     margin-top: 40px;
   }
 
   .food-card {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
+    width: 100%; /* Memenuhi grid */
+    max-width: none; /* Hilangkan max-width */
+    margin: 0; /* Reset margin */
+  }
+
+  /* Perkecil ukuran elemen dalam card */
+  .card-image {
+    height: 140px; /* Lebih kecil dari 183px */
+  }
+
+  .image-tags span {
+    font-size: 10px; /* Lebih kecil */
+    padding: 4px 8px;
+  }
+
+  .fav-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .fav-btn::before {
+    font-size: 14px;
+    line-height: 32px;
+  }
+
+  .card-content {
+    padding: 12px 14px;
+  }
+
+  .food-title {
+    font-size: 15px; /* Lebih kecil dari 18.4px */
+  }
+
+  .food-desc {
+    font-size: 12px; /* Lebih kecil dari 15.2px */
+    line-height: 1.4;
+    margin-top: 4px;
+  }
+
+  .food-rating {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .stars {
+    font-size: 13px;
+  }
+
+  .review {
+    font-size: 11px;
+  }
+
+  .food-price {
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .card-footer {
+    padding: 10px 14px 14px;
+  }
+
+  .food-tag {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .detail-btn {
+    width: 70px;
+    height: 44px;
+    font-size: 13px;
   }
 
   .section-container {
-    margin: 50px 16px 0;
+    margin: 50px 12px 0; /* Sesuaikan dengan padding cards */
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
@@ -491,7 +560,7 @@ body {
   }
 
   .katalog-section h2 {
-    margin-left: 16px !important;
+    margin-left: 12px !important;
     margin-top: 60px !important;
     font-size: 22px !important;
   }
@@ -516,7 +585,7 @@ body {
     flex-direction: column;
     gap: 10px;
     text-align: center;
-    align-items: center; /* added: center items on mobile */
+    align-items: center;
   }
 
   .footer-bottom a {
@@ -550,16 +619,30 @@ body {
     width: calc(100% - 24px);
   }
 
+  /* Cards tetap 2 kolom tapi lebih kecil lagi */
   .cards-container {
-    padding: 24px 12px;
+    padding: 24px 8px;
+    gap: 10px;
+  }
+
+  .card-image {
+    height: 120px;
+  }
+
+  .food-title {
+    font-size: 14px;
+  }
+
+  .food-desc {
+    font-size: 11px;
   }
 
   .section-container {
-    margin: 40px 12px 0;
+    margin: 40px 8px 0;
   }
 
   .katalog-section h2 {
-    margin-left: 12px !important;
+    margin-left: 8px !important;
     margin-top: 48px !important;
     font-size: 20px !important;
   }

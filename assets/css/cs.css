@@ -50,3 +50,86 @@
     display: flex;
     
 }
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+.contact-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  padding: 40px;
+  justify-items: center;
+}
+
+.card {
+  width: 280px;
+  height: 340px;
+  border-radius: 25px;
+  padding: 24px;
+  color: white;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0px 14px 50px rgba(0,0,0,0.3);
+}
+
+.card h3 {
+  font-size: clamp(20px, 2.8vw, 26px);
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 48px;
+}
+
+/* Buttons */
+.card button {
+  background: white;
+  color: #333;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.card button:hover {
+  background: #eee;
+}
+
+/* Gradient per card */
+.wa {
+  background: linear-gradient(135deg, #00C853, #009B37);
+}
+
+.email {
+  background: linear-gradient(135deg, #FF8A00, #D35400);
+}
+
+.ig {
+  background: linear-gradient(135deg, #FF4F64, #C61490);
+}
+
+.icon-img {
+  width: 55px;
+  height: 55px;
+}
+
+.card img {
+  margin: 0 auto;
+  display: block;
+}
