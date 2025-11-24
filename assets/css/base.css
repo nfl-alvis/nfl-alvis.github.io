@@ -1,22 +1,41 @@
+/* ========================================
+   PUSAKARASA - BASE STYLES
+   Reset dan konfigurasi dasar
+   ======================================== */
+
+/* ========== RESET START ========== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
+/* ========== RESET END ========== */
+
+/* ========== HTML CONFIGURATION START ========== */
 html {
   scroll-behavior: smooth;
 }
+/* ========== HTML CONFIGURATION END ========== */
+
+/* ========== BODY STYLES START ========== */
 body {
   font-family: "Poppins", sans-serif;
-  background: #f9f5f0;
-  color: #333;
+  background: var(--color-bg-light);
+  color: var(--color-text-primary);
   line-height: 1.6;
 }
+/* ========== BODY STYLES END ========== */
+
+/* ========== IMAGE STYLES START ========== */
 img {
   max-width: 100%;
   display: block;
 }
+/* ========== IMAGE STYLES END ========== */
+
+/* ========== LINK STYLES START ========== */
 a {
   text-decoration: none;
   color: inherit;
 }
+/* ========== LINK STYLES END ========== */

@@ -1,0 +1,118 @@
+/* ========================================
+   PUSAKARASA - CSS VARIABLES
+   Sistem variabel warna terpusat
+   ======================================== */
+
+:root {
+  /* ========== PRIMARY COLORS ========== */
+  --color-primary: #e06b4c;
+  --color-primary-dark: #c85f42;
+  --color-primary-darker: #c9563e;
+  --color-secondary: #3e6b48;
+  --color-secondary-dark: #2f3e34;
+  
+  /* ========== ACCENT COLORS ========== */
+  --color-green: #90c790;
+  --color-green-dark: #7fbf7f;
+  --color-yellow: #f2c94c;
+  --color-orange: #d4956c;
+  --color-beige: #b8b87c;
+  
+  /* ========== NEUTRAL COLORS ========== */
+  --color-white: #ffffff;
+  --color-off-white: #fdfcfb;
+  --color-bg-light: #f9f5f0;
+  --color-bg-gray: #f9f9f9;
+  --color-bg-dark: #1f2a21;
+  
+  /* ========== TEXT COLORS ========== */
+  --color-text-primary: #333;
+  --color-text-secondary: #555;
+  --color-text-tertiary: #666;
+  --color-text-light: #6b7280;
+  --color-text-lighter: #9ca3af;
+  --color-text-dark: #1f2937;
+  --color-text-darker: #111827;
+  --color-text-muted: #aaa;
+  --color-text-white: #f2f2f2;
+  
+  /* ========== BORDER COLORS ========== */
+  --color-border-light: #f0f0f0;
+  --color-border-gray: #e5e7eb;
+  --color-border-medium: #ddd;
+  --color-border-dark: #444;
+  --color-border-rgba: rgba(0, 0, 0, 0.1);
+  --color-border-rgba-medium: rgba(101, 93, 93, 0.2);
+  
+  /* ========== STATUS COLORS ========== */
+  --color-star: #f59e0b;
+  --color-success: #00c853;
+  --color-success-dark: #009b37;
+  --color-info: #ff8a00;
+  --color-info-dark: #d35400;
+  --color-danger: #ff4f64;
+  --color-danger-dark: #c61490;
+  
+  /* ========== GRADIENT COLORS ========== */
+  --gradient-hero: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-orange) 30%,
+    var(--color-beige) 60%,
+    var(--color-green) 100%
+  );
+  
+  --gradient-border: linear-gradient(
+    270deg,
+    var(--color-primary) 0%,
+    #ff7b7b 50%,
+    var(--color-green) 100%
+  );
+  
+  --gradient-button: linear-gradient(
+    270deg,
+    var(--color-primary) 0%,
+    #ff7b7b 50%,
+    var(--color-green) 100%
+  );
+  
+  --gradient-button-hover: linear-gradient(
+    270deg,
+    var(--color-primary-darker) 0%,
+    #ff6a6a 50%,
+    var(--color-green-dark) 100%
+  );
+  
+  --gradient-whatsapp: linear-gradient(135deg, var(--color-success), var(--color-success-dark));
+  --gradient-email: linear-gradient(135deg, var(--color-info), var(--color-info-dark));
+  --gradient-instagram: linear-gradient(135deg, var(--color-danger), var(--color-danger-dark));
+  
+  --gradient-login-bg: linear-gradient(
+    159deg,
+    rgba(224, 107, 76, 0.6) 0%,
+    rgba(62, 107, 72, 0.6) 100%
+  );
+  
+  /* ========== SHADOW VALUES ========== */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-hero: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-text: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-text-strong: 0 4px 12px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 14px 50px rgba(0, 0, 0, 0.3);
+  --shadow-login: 0 16px 40px rgba(0, 0, 0, 0.15);
+  
+  /* ========== OPACITY VALUES ========== */
+  --opacity-overlay: 0.3;
+  --opacity-blur: 0.55;
+  --opacity-bg: 0.7;
+  --opacity-bg-high: 0.9;
+  
+  /* ========== BACKDROP FILTER ========== */
+  --backdrop-blur: blur(10px);
+  --backdrop-blur-strong: blur(35px);
+}
