@@ -3,33 +3,45 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya" />
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    
+    <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
 
-    <link rel="stylesheet" href="assets/css/style.css" />
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="assets/css/base.css" />
     <link rel="stylesheet" href="assets/css/component.css" />
-    <title>PusakaRasa</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    
+    <title>PusakaRasa - Warisan Rasa Nusantara</title>
   </head>
+  
   <body>
+    <!-- ========== HEADER START ========== -->
     <header>
       <h1>PusakaRasa</h1>
+      
+      <!-- Navigation -->
       <nav>
-        <button class="hamburger" id="hamburgerBtn">☰</button>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">☰</button>
         <ul id="navMenu">
           <li><a href="index.html">Beranda</a></li>
           <li><a href="katalog.html">Katalog</a></li>
           <li><a href="#favorit">Favorit</a></li>
           <li><a href="tentang.html">Tentang</a></li>
-          <!-- tombol login/register versi mobile -->
+          
+          <!-- Mobile Auth Buttons -->
           <li class="mobile-auth">
             <a href="login.html" class="login">Masuk</a>
           </li>
@@ -39,6 +51,8 @@
         </ul>
         <span class="nav-indicator"></span>
       </nav>
+      
+      <!-- Desktop Auth Buttons -->
       <div class="auth-buttons">
         <a href="login.html">
           <button class="btn btn-secondary">Masuk</button>
@@ -48,48 +62,44 @@
         </a>
       </div>
     </header>
+    <!-- ========== HEADER END ========== -->
 
+    <!-- ========== HERO START ========== -->
     <section class="hero" id="beranda">
       <h2>Warisan<br />Rasa<br />Nusantara.</h2>
       <p>Eksplorasi makanan & minuman dari berbagai daerah</p>
       <button>Jelajahi</button>
     </section>
+    <!-- ========== HERO END ========== -->
 
+    <!-- ========== SEARCH BAR START ========== -->
     <div class="search-bar-container">
       <input
         type="search"
         class="search-bar"
         placeholder="Cari kuliner favorit Anda..."
+        aria-label="Cari kuliner"
       />
 
       <button type="submit" class="search-button" aria-label="Cari">
         <i class="fa fa-search"></i>
       </button>
 
+      <!-- Filter Buttons -->
       <div class="btn-tertiary-container">
         <button class="btn btn-tertiary">Semua</button>
         <button class="btn btn-tertiary">Makanan</button>
         <button class="btn btn-tertiary">Minuman</button>
       </div>
     </div>
+    <!-- ========== SEARCH BAR END ========== -->
 
-    <!-- === Section Katalog === -->
-    <section id="katalog">
-      <h2
-        style="
-          text-align: left;
-          font-family: 'Montserrat', sans-serif;
-          color: #3e6b48;
-          margin-top: 80px;
-          margin-left: 80px;
-          font-size: 28px;
-        "
-      >
-        Terpopuler Minggu Ini
-      </h2>
-
+    <!-- ========== SECTION: TERPOPULER START ========== -->
+    <section id="katalog-popular">
+      <h2>Terpopuler Minggu Ini</h2>
+      
       <div class="cards-container">
-        <!-- === Card 1: Rendang === -->
+        <!-- Card 1: Rendang -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Rendang.jpeg" alt="Rendang" />
@@ -116,7 +126,7 @@
           </div>
         </div>
 
-        <!-- === Card 2: Sate Ayam === -->
+        <!-- Card 2: Sate Ayam -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Sate.jpg" alt="Sate Ayam" />
@@ -143,7 +153,7 @@
           </div>
         </div>
 
-        <!-- === Card 3: Gudeg === -->
+        <!-- Card 3: Gudeg -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Gudeg.jpg" alt="Gudeg" />
@@ -170,7 +180,7 @@
           </div>
         </div>
 
-        <!-- === Card 4: Es Cendol === -->
+        <!-- Card 4: Es Cendol -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Cendol.jpeg" alt="Es Cendol" />
@@ -198,16 +208,19 @@
         </div>
       </div>
     </section>
+    <!-- ========== SECTION: TERPOPULER END ========== -->
 
-    <!-- === Section Katalog === -->
+    <!-- ========== SECTION: KATALOG LENGKAP START ========== -->
     <section id="katalog">
+      <!-- Section Header -->
       <div class="section-container">
         <h2>Katalog Lengkap</h2>
         <button class="btn btn-secondary">Lihat Semua</button>
       </div>
 
+      <!-- Cards Container -->
       <div class="cards-container">
-        <!-- === Card 1: Rendang === -->
+        <!-- Card 1: Rendang -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Rendang.jpeg" alt="Rendang" />
@@ -234,7 +247,7 @@
           </div>
         </div>
 
-        <!-- === Card 2: Sate Ayam === -->
+        <!-- Card 2: Sate Ayam -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Sate.jpg" alt="Sate Ayam" />
@@ -261,7 +274,7 @@
           </div>
         </div>
 
-        <!-- === Card 3: Gudeg === -->
+        <!-- Card 3: Gudeg -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Gudeg.jpg" alt="Gudeg" />
@@ -288,7 +301,7 @@
           </div>
         </div>
 
-        <!-- === Card 4: Es Cendol === -->
+        <!-- Card 4: Es Cendol -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Cendol.jpeg" alt="Es Cendol" />
@@ -316,9 +329,12 @@
         </div>
       </div>
     </section>
+    <!-- ========== SECTION: KATALOG LENGKAP END ========== -->
 
+    <!-- ========== FOOTER START ========== -->
     <footer class="footer">
       <div class="footer-content">
+        <!-- About Section -->
         <div class="footer-section about">
           <h3>PusakaRasa</h3>
           <p>
@@ -327,30 +343,39 @@
           </p>
         </div>
 
+        <!-- Navigation Links -->
         <div class="footer-section navigation">
           <h4>Navigasi</h4>
           <ul>
-            <li><a href="/index.html">Beranda</a></li>
-            <li><a href="/katalog.html">Katalog</a></li>
-            <li><a href="/favorit.html">Favorit</a></li>
+            <li><a href="index.html">Beranda</a></li>
+            <li><a href="katalog.html">Katalog</a></li>
+            <li><a href="favorit.html">Favorit</a></li>
           </ul>
         </div>
 
+        <!-- Support Links -->
         <div class="footer-section support">
           <h4>Dukungan</h4>
           <ul>
-            <li><a href="/cs.html">Customer Service</a></li>
-            <li><a href="/cs.html">Kontak</a></li>
-            <li><a href="/cs.html">Sosial Media</a></li>
+            <li><a href="cs.html">Customer Service</a></li>
+            <li><a href="cs.html">Kontak</a></li>
+            <li><a href="cs.html">Sosial Media</a></li>
           </ul>
         </div>
       </div>
 
+      <!-- Footer Bottom -->
       <div class="footer-bottom">
         <p>© 2025 PusakaRasa — All rights reserved.</p>
-        <a href="#">Kebijakan Privasi</a> <a href="#">S&K</a>
+        <div>
+          <a href="#">Kebijakan Privasi</a>
+          <a href="#">S&K</a>
+        </div>
       </div>
     </footer>
-    <script src="assets/js/tentang.js"></script>
+    <!-- ========== FOOTER END ========== -->
+
+    <!-- JavaScript -->
+    <script src="assets/js/script.js"></script>
   </body>
 </html>

@@ -1,3 +1,9 @@
+/* ========================================
+   PUSAKARASA - MAIN STYLESHEET
+   Clean & Optimized Version
+   ======================================== */
+
+/* ========== RESET & BASE ========== */
 * {
   margin: 0;
   padding: 0;
@@ -7,28 +13,38 @@
 body {
   font-family: "Poppins", sans-serif;
   background-color: #f9f9f9;
-  overflow-x: hidden; /* Mencegah scroll horizontal */
+  overflow-x: hidden;
 }
 
-/* === Buttons === */
+/* ========== BUTTONS ========== */
 .btn-tertiary {
   background-color: #fdfcfb;
   color: #111827;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(101, 93, 93, 0.2) !important;
   font-weight: 400;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-tertiary:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
 }
 
 .btn-tertiary:focus {
   background-color: #90c790;
   color: #fff;
+  border-color: #90c790;
   outline: none;
 }
 
-/* === Hero Section === */
+/* ========== HERO SECTION ========== */
 .hero {
   min-height: 86.7vh;
   background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url("/assets/image/image.png") center/cover no-repeat;
+    url("../image/image.png") center/cover no-repeat;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -54,7 +70,6 @@ body {
 }
 
 .hero button {
-  display: inline-block;
   background: #e06b4c;
   color: #fff;
   font-size: 16px;
@@ -63,8 +78,6 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
-  height: auto;
-  max-width: fit-content;
 }
 
 .hero button:hover {
@@ -72,31 +85,38 @@ body {
   transform: translateY(-2px);
 }
 
-/* === Search Bar === */
+/* ========== SEARCH BAR ========== */
 .search-bar-container {
-  width: clamp(600px, 70%, 1000px);
+  width: min(100%, 1000px);
+  max-width: calc(100% - 32px);
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: center;
-  margin: -35px auto;
+  margin: -35px auto 0;
   background-color: #fff;
   border-radius: 999px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  padding: 8px 16px;
+  padding: 8px 12px;
   position: relative;
+  overflow: hidden;
 }
 
 .search-bar {
+  flex: 1 1 auto;
+  min-width: 0;
   padding: 12px 20px;
-  border-radius: 25px;
-  font-size: 16px;
-  flex-grow: 1;
   border: none;
   outline: none;
+  background: transparent;
+  font-size: 16px;
+}
+
+.search-bar::placeholder {
+  color: #9ca3af;
 }
 
 .search-button {
+  flex: 0 0 auto;
   background: #e06b4c;
   border: none;
   color: white;
@@ -108,31 +128,56 @@ body {
   justify-content: center;
   cursor: pointer;
   transition: 0.3s;
-  flex-shrink: 0;
-}
-
-.search-button:hover {
-  background: #c95638;
 }
 
 .btn-tertiary-container {
   display: flex;
   align-items: center;
-  gap: 10px;
-  border-left: 2px solid rgba(0, 0, 0, 0.1);
+  gap: 8px;
+  flex: 0 0 auto;
+  border-left: 2px solid rgba(0, 0, 0, 0.06);
   padding-left: 10px;
 }
 
-/* === Food Card Section === */
-:root {
-  --azure: #1f2937;
-  --grey: #6b7280;
-  --green: #3e6b48;
-  --orange: #e06b4c;
-  --orange-light: #f59e0b;
-  --border: #e5e7eb;
+/* ========== SECTION HEADERS ========== */
+#katalog-popular h2,
+.section-container h2 {
+  font-family: "Montserrat", sans-serif;
+  color: #3e6b48;
+  font-size: 28px;
+  font-weight: 700;
 }
 
+/* Terpopuler Minggu Ini */
+#katalog-popular {
+  margin-top: 80px;
+}
+
+#katalog-popular h2 {
+  margin: 0 80px 0;
+  text-align: left;
+}
+
+/* Katalog Lengkap */
+.section-container {
+  margin: 80px 80px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* ========== CARDS CONTAINER ========== */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 30px;
+  padding: 40px 80px 80px;
+  justify-items: center;
+}
+
+/* ========== FOOD CARD ========== */
 .food-card {
   width: 264px;
   background: white;
@@ -141,7 +186,6 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  font-family: "Poppins", sans-serif;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -150,6 +194,7 @@ body {
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
 }
 
+/* Card Image */
 .card-image {
   position: relative;
   height: 183px;
@@ -179,6 +224,7 @@ body {
   padding: 5px 10px;
 }
 
+/* Favorite Button */
 .fav-btn {
   position: absolute;
   top: 12px;
@@ -190,34 +236,46 @@ body {
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.06);
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .fav-btn::before {
-  content: "❤";
-  color: #ef4444;
+  content: "🤍";
   font-size: 18px;
   display: block;
   text-align: center;
   line-height: 40px;
 }
 
+.fav-btn.active::before {
+  content: "❤️";
+}
+
+.fav-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Card Content */
 .card-content {
   padding: 16px 18px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .food-title {
   font-family: "Montserrat", sans-serif;
   font-size: 18.4px;
   font-weight: 700;
-  color: var(--azure);
+  color: #1f2937;
 }
 
 .food-desc {
   font-size: 15.2px;
-  color: var(--grey);
+  color: #6b7280;
   line-height: 1.6;
   margin-top: 6px;
+  flex: 1;
 }
 
 .food-rating {
@@ -228,22 +286,24 @@ body {
 }
 
 .stars {
-  color: var(--orange-light);
+  color: #f59e0b;
   font-size: 16.8px;
 }
 
 .review {
   font-size: 15.2px;
-  color: var(--grey);
+  color: #6b7280;
 }
 
 .food-price {
-  color: var(--green);
+  color: #3e6b48;
   font-weight: 600;
   font-size: 16px;
-  margin-top: 6px;
+  margin-top: auto;
+  padding-top: 6px;
 }
 
+/* Card Footer */
 .card-footer {
   display: flex;
   justify-content: space-between;
@@ -252,15 +312,15 @@ body {
 }
 
 .food-tag {
-  border: 1px solid var(--border);
+  border: 1px solid #e5e7eb;
   border-radius: 999px;
   padding: 7px 14px;
   font-size: 14.4px;
-  color: var(--azure);
+  color: #1f2937;
 }
 
 .detail-btn {
-  background: var(--orange);
+  background: #e06b4c;
   color: white;
   border: none;
   border-radius: 100px;
@@ -277,228 +337,281 @@ body {
   background: #cc5a3e;
 }
 
-.cards-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 30px;
-  padding: 40px 80px;
-  justify-items: center;
-}
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
 
-.section-container {
-  margin: 80px 80px 0px 80px;
-  display: flex;
-}
-
-.section-container h2 {
-  text-align: left;
-  font-family: "Montserrat", sans-serif;
-  color: #3e6b48;
-  flex-grow: 1;
-  font-size: 28px;
-}
-
-/* FOOTER: moved to assets/css/footer.css to avoid duplication */
-
-/* ===== RESPONSIVE: Tablet/iPad ===== */
+/* ========== TABLET (1024px) ========== */
 @media (max-width: 1024px) {
+  /* Hero */
   .hero {
-    padding: 100px 40px 40px;
-    min-height: 70vh;
-    border-bottom-left-radius: 32px;
-    border-bottom-right-radius: 32px;
+    padding: 100px 60px 50px;
+    min-height: 75vh;
   }
 
   .hero h2 {
     font-size: clamp(36px, 5vw, 48px);
+    margin-bottom: 16px;
   }
 
   .hero p {
     font-size: 18px;
+    margin-bottom: 24px;
   }
 
+  /* Search Bar */
   .search-bar-container {
-    width: 85%;
-    padding: 10px 16px;
-    margin: -30px auto;
+    width: 90%;
+    margin: -30px auto 0;
+    padding: 10px 14px;
   }
 
   .search-bar {
     font-size: 15px;
+    padding: 11px 18px;
   }
 
   .btn-tertiary {
     font-size: 14px;
-    padding: 7px 12px;
+    padding: 7px 13px;
   }
 
-  .cards-container {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 24px;
-    padding: 40px 40px;
+  /* Sections */
+  #katalog-popular {
+    margin-top: 60px;
   }
 
-  .food-card {
-    width: 100%;
-    max-width: 280px;
+  #katalog-popular h2 {
+    margin: 0 60px;
+    font-size: 26px;
   }
 
   .section-container {
-    margin: 70px 40px 0;
+    margin: 60px 60px 0;
   }
 
   .section-container h2 {
     font-size: 26px;
   }
 
-  .footer-content {
-    padding: 0 4%;
-    gap: 1.5rem;
-  }
-
-  .footer-bottom {
-    width: 80%;
-  }
-}
-
-/* ===== RESPONSIVE: iPad Portrait (Tambahan Baru) ===== */
-@media (max-width: 768px) {
-  .hero {
-    padding: 80px 30px 30px;
-    min-height: 60vh;
-  }
-
-  .hero h2 {
-    font-size: clamp(32px, 6vw, 44px);
-  }
-
-  .hero p {
-    font-size: 16px;
-  }
-
-  .search-bar-container {
-    width: 90%;
-    margin: -25px auto;
-  }
-
+  /* Cards */
   .cards-container {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 30px 30px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    padding: 40px 60px 60px;
   }
 
   .food-card {
-    max-width: 250px;
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+/* ========== iPAD PORTRAIT (768px) ========== */
+@media (max-width: 768px) {
+  /* Hero */
+  .hero {
+    padding: 90px 40px 40px;
+    min-height: 65vh;
+  }
+
+  .hero h2 {
+    font-size: clamp(32px, 6vw, 42px);
+    margin-bottom: 14px;
+  }
+
+  .hero p {
+    font-size: 17px;
+    margin-bottom: 22px;
+  }
+
+  .hero button {
+    font-size: 15px;
+    padding: 11px 22px;
+  }
+
+  /* Search Bar */
+  .search-bar-container {
+    width: 92%;
+    margin: -28px auto 0;
+    padding: 9px 12px;
+  }
+
+  .search-bar {
+    font-size: 15px;
+    padding: 10px 16px;
+  }
+
+  .search-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .btn-tertiary-container {
+    gap: 7px;
+    padding-left: 9px;
+  }
+
+  /* Sections */
+  #katalog-popular {
+    margin-top: 50px;
+  }
+
+  #katalog-popular h2 {
+    margin: 0 40px;
+    font-size: 24px;
   }
 
   .section-container {
-    margin: 60px 30px 0;
+    margin: 50px 40px 0;
   }
 
   .section-container h2 {
     font-size: 24px;
   }
 
-  .footer-content {
-    padding: 0 3%;
+  /* Cards */
+  .cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 22px;
+    padding: 35px 40px 50px;
+  }
+
+  .food-card {
+    max-width: 260px;
+  }
+
+  .card-content {
+    padding: 14px 16px;
+  }
+
+  .food-title {
+    font-size: 17px;
+  }
+
+  .food-desc {
+    font-size: 14px;
+  }
+
+  .food-price {
+    font-size: 15px;
+  }
+
+  .card-footer {
+    padding: 12px 16px 16px;
+  }
+
+  .detail-btn {
+    width: 80px;
+    height: 50px;
+    font-size: 15px;
   }
 }
 
-/* ===== RESPONSIVE: Mobile ===== */
-/* ===== RESPONSIVE: Mobile ===== */
+/* ========== MOBILE (600px) ========== */
 @media (max-width: 600px) {
-  /* SHOW MOBILE AUTH */
-
+  /* Hero */
   .hero {
-    padding: 70px 20px 32px;
-    min-height: 55vh;
+    padding: 70px 24px 36px;
+    min-height: 58vh;
     border-bottom-left-radius: 20px;
     border-bottom-right-radius: 20px;
   }
 
   .hero h2 {
-    font-size: clamp(28px, 8vw, 40px);
-    margin-bottom: 16px;
+    font-size: clamp(28px, 8vw, 38px);
+    margin-bottom: 12px;
   }
 
   .hero p {
     font-size: 16px;
-    max-width: 100%;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
   }
 
   .hero button {
     font-size: 15px;
-    padding: 10px 20px;
+    padding: 11px 20px;
   }
 
+  /* Search Bar */
   .search-bar-container {
     width: calc(100% - 32px);
-    flex-direction: column;
-    padding: 12px;
-    margin: -20px auto 0;
-    gap: 12px;
+    margin: -24px auto 0;
+    padding: 8px 12px;
+    gap: 8px;
   }
 
   .search-bar {
-    width: 100%;
-    padding: 10px 16px;
-    font-size: 14px;
+    font-size: 15px;
+    padding: 12px 16px;
   }
 
   .search-button {
-    position: absolute;
-    right: 16px;
-    top: 16px;
+    width: 38px;
+    height: 38px;
   }
 
   .btn-tertiary-container {
-    border-left: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    padding-left: 0;
-    padding-top: 12px;
-    width: 100%;
-    justify-content: center;
-    flex-wrap: wrap;
+    display: none;
   }
 
-  .btn-tertiary {
-    font-size: 13px;
-    padding: 6px 12px;
-  }
-
-  /* === CARDS: 2 KOLOM DI MOBILE === */
-  .cards-container {
-    grid-template-columns: repeat(2, 1fr); /* 2 kolom */
-    gap: 12px; /* Jarak antar card lebih kecil */
-    padding: 32px 12px; /* Padding kiri-kanan lebih kecil */
+  /* Sections */
+  #katalog-popular {
     margin-top: 40px;
   }
 
-  .food-card {
-    width: 100%; /* Memenuhi grid */
-    max-width: none; /* Hilangkan max-width */
-    margin: 0; /* Reset margin */
+  #katalog-popular h2 {
+    margin: 0 16px;
+    font-size: 22px;
   }
 
-  /* Perkecil ukuran elemen dalam card */
+  .section-container {
+    margin: 40px 16px 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .section-container h2 {
+    font-size: 22px;
+  }
+
+  .section-container .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Cards - 2 Kolom */
+  .cards-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 30px 16px 40px;
+  }
+
+  .food-card {
+    width: 100%;
+    max-width: none;
+  }
+
   .card-image {
-    height: 140px; /* Lebih kecil dari 183px */
+    height: 140px;
   }
 
   .image-tags span {
-    font-size: 10px; /* Lebih kecil */
+    font-size: 10px;
     padding: 4px 8px;
   }
 
   .fav-btn {
-    width: 32px;
-    height: 32px;
+    width: 34px;
+    height: 34px;
+    top: 10px;
+    right: 10px;
   }
 
   .fav-btn::before {
-    font-size: 14px;
-    line-height: 32px;
+    font-size: 16px;
+    line-height: 34px;
   }
 
   .card-content {
@@ -506,13 +619,18 @@ body {
   }
 
   .food-title {
-    font-size: 15px; /* Lebih kecil dari 18.4px */
+    font-size: 14px;
+    margin-bottom: 4px;
   }
 
   .food-desc {
-    font-size: 12px; /* Lebih kecil dari 15.2px */
+    font-size: 12px;
     line-height: 1.4;
     margin-top: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .food-rating {
@@ -529,12 +647,13 @@ body {
   }
 
   .food-price {
-    font-size: 14px;
-    margin-top: 4px;
+    font-size: 13px;
+    padding-top: 4px;
   }
 
   .card-footer {
-    padding: 10px 14px 14px;
+    padding: 10px 14px 12px;
+    gap: 8px;
   }
 
   .food-tag {
@@ -544,106 +663,149 @@ body {
 
   .detail-btn {
     width: 70px;
-    height: 44px;
+    height: 42px;
     font-size: 13px;
-  }
-
-  .section-container {
-    margin: 50px 12px 0; /* Sesuaikan dengan padding cards */
-    flex-direction: column;
-    gap: 16px;
-    align-items: flex-start;
-  }
-
-  .section-container h2 {
-    font-size: 22px;
-  }
-
-  .katalog-section h2 {
-    margin-left: 12px !important;
-    margin-top: 60px !important;
-    font-size: 22px !important;
-  }
-
-  .footer {
-    margin-top: 60px;
-  }
-
-  .footer-content {
-    flex-direction: column;
-    padding: 0 6%;
-    gap: 1.5rem;
-  }
-
-  .footer-section p,
-  .footer-section ul {
-    line-height: 2;
-  }
-
-  .footer-bottom {
-    width: 100%;
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
-    align-items: center;
-  }
-
-  .footer-bottom a {
-    margin: 0 8px;
   }
 }
 
-/* ===== RESPONSIVE: Small Mobile ===== */
-@media (max-width: 380px) {
-  header {
-    padding: 0 12px;
-  }
-
-  header h1 {
-    font-size: 16px;
-  }
-
+/* ========== SMALL MOBILE (420px) ========== */
+@media (max-width: 420px) {
+  /* Hero */
   .hero {
-    padding: 60px 16px 28px;
+    padding: 65px 20px 32px;
+    min-height: 52vh;
   }
 
   .hero h2 {
-    font-size: clamp(24px, 9vw, 32px);
+    font-size: clamp(26px, 8vw, 34px);
+    margin-bottom: 10px;
   }
 
   .hero p {
-    font-size: 14px;
+    font-size: 15px;
+    margin-bottom: 18px;
   }
 
+  /* Search Bar */
   .search-bar-container {
-    width: calc(100% - 24px);
+    width: calc(100% - 28px);
+    margin: -22px auto 0;
+    padding: 7px 10px;
   }
 
-  /* Cards tetap 2 kolom tapi lebih kecil lagi */
+  .search-bar {
+    font-size: 14px;
+    padding: 11px 14px;
+  }
+
+  .search-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* Sections */
+  #katalog-popular h2 {
+    margin: 0 14px;
+    font-size: 20px;
+  }
+
+  .section-container {
+    margin: 36px 14px 0;
+  }
+
+  .section-container h2 {
+    font-size: 20px;
+  }
+
+  /* Cards */
   .cards-container {
-    padding: 24px 8px;
-    gap: 10px;
+    gap: 12px;
+    padding: 28px 14px 36px;
   }
 
   .card-image {
-    height: 120px;
+    height: 130px;
   }
 
   .food-title {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .food-desc {
     font-size: 11px;
   }
 
-  .section-container {
-    margin: 40px 8px 0;
+  .stars {
+    font-size: 12px;
   }
 
-  .katalog-section h2 {
-    margin-left: 8px !important;
-    margin-top: 48px !important;
-    font-size: 20px !important;
+  .review {
+    font-size: 10px;
+  }
+
+  .food-price {
+    font-size: 12px;
+  }
+
+  .food-tag {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .detail-btn {
+    width: 65px;
+    height: 40px;
+    font-size: 12px;
+  }
+}
+
+/* ========== EXTRA SMALL (360px) ========== */
+@media (max-width: 360px) {
+  /* Hero */
+  .hero {
+    padding: 60px 16px 28px;
+  }
+
+  .hero h2 {
+    font-size: clamp(24px, 9vw, 30px);
+  }
+
+  /* Search Bar */
+  .search-bar-container {
+    width: calc(100% - 24px);
+    margin: -20px auto 0;
+  }
+
+  /* Sections */
+  #katalog-popular h2 {
+    margin: 0 12px;
+  }
+
+  .section-container {
+    margin: 32px 12px 0;
+  }
+
+  /* Cards */
+  .cards-container {
+    gap: 10px;
+    padding: 26px 12px 32px;
+  }
+
+  .card-image {
+    height: 120px;
+  }
+
+  .card-content {
+    padding: 10px 12px;
+  }
+
+  .card-footer {
+    padding: 8px 12px 10px;
+  }
+
+  .detail-btn {
+    width: 60px;
+    height: 38px;
+    font-size: 11px;
   }
 }
