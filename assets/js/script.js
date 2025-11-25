@@ -386,7 +386,7 @@ function initCardAnimation() {
 }
 
 // ========================================
-// UTILITY FUNCTIONS
+//           UTILITY FUNCTIONS
 // ========================================
 
 // Debounce: Delay eksekusi fungsi sampai user berhenti mengetik
@@ -397,7 +397,7 @@ function debounce(func, wait) {
     timeout = setTimeout(() => func.apply(this, args), wait); // Set timeout baru
   };
 }
-
+1
 // Toast notification - Notifikasi popup
 function showToast(message, duration = 2000) {
   const existingToast = document.querySelector('.toast'); // Cari toast yang ada
@@ -440,6 +440,3 @@ window.PusakaRasa = {
   showToast, // Fungsi toast
   toggleFavorite // Fungsi toggle favorit
 };
-
-// Log bahwa script berhasil dimuat
-console.log('✅ PusakaRasa script loaded successfully');
