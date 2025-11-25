@@ -61,29 +61,47 @@
     </section>
     <!-- === Hero END === -->
 
-    <div class="contact-container">
-      <div class="card wa">
-        <img
-          src="assets/image/icons/Whatsapp.svg"
-          class="icon-img"
-          alt="WhatsApp"
-        />
-        <h3>WhatsApp</h3>
-        <button>Chat Sekarang</button>
+    <!-- === 3D Carousel START === -->
+    <div class="carousel-wrapper">
+
+      <!-- Container Cards dengan 3D Effect -->
+      <div class="contact-container">
+        <!-- Card 1: WhatsApp -->
+        <div class="card wa">
+          <i class="fa-brands fa-whatsapp"></i>
+          <h3>WhatsApp</h3>
+          <button onclick="window.open('https://wa.me/6281234567890', '_blank')">
+            Chat Sekarang
+          </button>
+        </div>
+
+        <!-- Card 2: Email -->
+        <div class="card email">
+          <i class="fa-regular fa-envelope"></i>
+          <h3>Email</h3>
+          <button onclick="window.location.href='mailto:support@pusakarasa.com'">
+            Kirim Email
+          </button>
+        </div>
+
+        <!-- Card 3: Instagram -->
+        <div class="card ig">
+          <i class="fa-brands fa-instagram"></i>
+          <h3>Instagram</h3>
+          <button onclick="window.open('https://instagram.com/pusakarasa', '_blank')">
+            Kunjungi IG
+          </button>
+        </div>
       </div>
 
-      <div class="card email">
-        <i class="icon">✉️</i>
-        <h3>Email</h3>
-        <button>Kirim Email</button>
-      </div>
+      <!-- Tombol Navigasi Kanan -->
+      <button class="nav-button next" aria-label="Next">
+        ›
+      </button>
 
-      <div class="card ig">
-        <i class="icon">📷</i>
-        <h3>Instagram</h3>
-        <button>Kunjungi IG</button>
-      </div>
+      <!-- Indicator Dots akan di-generate otomatis via JS -->
     </div>
+    <!-- === 3D Carousel END === -->
 
     <!-- === Footer START === -->
     <footer class="footer">
@@ -122,6 +140,8 @@
     </footer>
     <!-- === Footer END === -->
 
-    <script src="assets/js/script.js"></script>
+    <!-- JavaScript -->
+    <script src="/assets/js/main.js"></script>
+    <script src="/assets/js/carousel.js"></script>
   </body>
 </html>

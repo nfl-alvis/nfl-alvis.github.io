@@ -1,22 +1,29 @@
+/* ========================================
+   PUSAKARASA - CS.CSS (Customer Service)
+   Fixed Carousel - Swipe Only
+   ======================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+/* ========== HERO SECTION ========== */
 .hero {
-  min-height: 75.9vh;
-  background: linear-gradient(
-    135deg,
-    #e06b4c 0%,
-    #d4956c 30%,
-    #b8b87c 60%,
-    #90c790 100%
-  );
+  min-height: 60vh;
+  background: linear-gradient(135deg, #e06b4c 0%, #d4956c 30%, #b8b87c 60%, #90c790 100%);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   color: #fff;
   text-align: center;
-  padding: 120px 80px 60px;
+  padding: 120px 40px 60px;
   font-family: "Montserrat", sans-serif;
-  border-bottom-left-radius: 66px;
-  border-bottom-right-radius: 66px;
+  border-bottom-left-radius: 50px;
+  border-bottom-right-radius: 50px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
@@ -28,108 +35,330 @@
 }
 
 .hero p {
-  font-size: 19.2px;
+  font-size: clamp(16px, 2vw, 19.2px);
   max-width: 600px;
   margin-bottom: 30px;
-  font-family: "Poppins", sans-serif;
   font-weight: 300;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
-.header {
-  margin: 96px auto 56px;
-  color: #2f3e34;
-  font-family: "Montserrat", sans-serif;
-  font-weight: 600;
-  font-size: clamp(20px, 5vw, 41.6px);
-  display: flex;
-  justify-content: center;
+/* ========== CAROUSEL WRAPPER ========== */
+.carousel-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 80px auto;
+  padding: 40px 20px 100px;
 }
 
-.content {
-    display: flex;
-    
+/* ========== HIDE NAVIGATION BUTTONS ========== */
+.nav-button {
+  display: none !important;
+  visibility: hidden !important;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
-
+/* ========== CARDS CONTAINER ========== */
 .contact-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
-  padding: 40px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
   justify-items: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
+/* ========== CONTACT CARD ========== */
 .card {
-  width: 280px;
-  height: 340px;
-  border-radius: 25px;
-  padding: 24px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 400px;
+  border-radius: 24px;
+  padding: 40px 30px;
   color: white;
   text-align: center;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-  transition: transform .3s ease, box-shadow .3s ease;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0px 14px 50px rgba(0,0,0,0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card i {
+  font-size: 80px;
+  margin-bottom: 10px;
 }
 
 .card h3 {
-  font-size: clamp(20px, 2.8vw, 26px);
+  font-size: 28px;
   font-weight: 600;
+  margin: 0;
 }
 
-.icon {
-  font-size: 48px;
-}
-
-/* Buttons */
 .card button {
   background: white;
   color: #333;
   border: none;
-  padding: 12px 22px;
-  border-radius: 40px;
-  font-size: 14px;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: .3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: auto;
 }
 
 .card button:hover {
-  background: #eee;
+  background: #f3f4f6;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Gradient per card */
+/* ========== CARD COLORS ========== */
 .wa {
-  background: linear-gradient(135deg, #00C853, #009B37);
+  background: linear-gradient(135deg, #25D366, #128C7E);
 }
 
 .email {
-  background: linear-gradient(135deg, #FF8A00, #D35400);
+  background: linear-gradient(135deg, #EA4335, #D93025);
 }
 
 .ig {
-  background: linear-gradient(135deg, #FF4F64, #C61490);
+  background: linear-gradient(135deg, #E4405F, #C13584, #833AB4);
 }
 
-.icon-img {
-  width: 55px;
-  height: 55px;
+/* ========== INDICATORS ========== */
+.carousel-indicators {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 40px;
 }
 
-.card img {
-  margin: 0 auto;
-  display: block;
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #d1d5db;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.indicator.active {
+  background: #e06b4c;
+  width: 32px;
+  border-radius: 5px;
+}
+
+/* ========================================
+   MOBILE MODE - CAROUSEL
+   ======================================== */
+@media (max-width: 1024px) {
+  .carousel-wrapper {
+    padding: 30px 0 80px;
+    overflow: hidden;
+  }
+
+  .contact-container {
+    display: flex;
+    justify-content: flex-start;
+    gap: 0;
+    padding: 0;
+    position: relative;
+    width: 100%;
+    height: 450px;
+  }
+
+  .card {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 320px;
+    margin: 0;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Center Card */
+  .card.active {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    filter: blur(0);
+    z-index: 10;
+  }
+
+  /* Left Card */
+  .card.left {
+    transform: translate(calc(-50% - 340px), -50%) scale(0.85);
+    opacity: 0.5;
+    filter: blur(2px);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* Right Card */
+  .card.right {
+    transform: translate(calc(-50% + 340px), -50%) scale(0.85);
+    opacity: 0.5;
+    filter: blur(2px);
+    z-index: 5;
+    pointer-events: none;
+  }
+
+  /* Hidden Cards */
+  .card.hidden {
+    transform: translate(-50%, -50%) scale(0.7);
+    opacity: 0;
+    filter: blur(4px);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .carousel-indicators {
+    display: flex;
+  }
+
+  .hero {
+    min-height: 50vh;
+    padding: 100px 30px 50px;
+    border-bottom-left-radius: 40px;
+    border-bottom-right-radius: 40px;
+  }
+}
+
+/* ========== TABLET ========== */
+@media (max-width: 768px) {
+  .hero {
+    padding: 90px 25px 45px;
+  }
+
+  .contact-container {
+    height: 420px;
+  }
+
+  .card {
+    width: 300px;
+    min-height: 380px;
+    padding: 35px 25px;
+  }
+
+  .card i {
+    font-size: 72px;
+  }
+
+  .card h3 {
+    font-size: 26px;
+  }
+
+  .card.left {
+    transform: translate(calc(-50% - 320px), -50%) scale(0.85);
+  }
+
+  .card.right {
+    transform: translate(calc(-50% + 320px), -50%) scale(0.85);
+  }
+}
+
+/* ========== MOBILE ========== */
+@media (max-width: 600px) {
+  .hero {
+    padding: 80px 20px 40px;
+    min-height: 45vh;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
+  }
+
+  .carousel-wrapper {
+    margin: 50px auto;
+    padding: 20px 0 70px;
+  }
+
+  .contact-container {
+    height: 400px;
+  }
+
+  .card {
+    width: 280px;
+    min-height: 360px;
+    padding: 30px 20px;
+  }
+
+  .card i {
+    font-size: 68px;
+  }
+
+  .card h3 {
+    font-size: 24px;
+  }
+
+  .card button {
+    padding: 12px 28px;
+    font-size: 15px;
+  }
+
+  .card.left {
+    transform: translate(calc(-50% - 290px), -50%) scale(0.8);
+  }
+
+  .card.right {
+    transform: translate(calc(-50% + 290px), -50%) scale(0.8);
+  }
+}
+
+/* ========== SMALL MOBILE ========== */
+@media (max-width: 420px) {
+  .hero {
+    padding: 70px 15px 35px;
+    min-height: 40vh;
+  }
+
+  .carousel-wrapper {
+    margin: 40px auto;
+    padding: 15px 0 60px;
+  }
+
+  .contact-container {
+    height: 370px;
+  }
+
+  .card {
+    width: 260px;
+    min-height: 340px;
+    padding: 25px 18px;
+    border-radius: 20px;
+  }
+
+  .card i {
+    font-size: 64px;
+  }
+
+  .card h3 {
+    font-size: 22px;
+  }
+
+  .card button {
+    padding: 11px 24px;
+    font-size: 14px;
+  }
+
+  .card.left {
+    transform: translate(calc(-50% - 270px), -50%) scale(0.75);
+    opacity: 0.3;
+  }
+
+  .card.right {
+    transform: translate(calc(-50% + 270px), -50%) scale(0.75);
+    opacity: 0.3;
+  }
 }
