@@ -186,12 +186,16 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease !important; /* Ubah ini */
 }
 
 .food-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-10px) !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
+  -webkit-transform: translateY(-10px) !important;
+  -moz-transform: translateY(-10px) !important;
+  -ms-transform: translateY(-10px) !important;
+  -o-transform: translateY(-10px) !important;
 }
 
 /* Card Image */

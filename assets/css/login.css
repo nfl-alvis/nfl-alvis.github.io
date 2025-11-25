@@ -1,3 +1,142 @@
+/* ========================================
+   PUSAKARASA - LOGIN/REGISTER/FORGOT PASSWORD STYLES
+   ======================================== */
+
+/* ========================================
+   PUSAKARASA - CSS VARIABLES
+   Sistem variabel warna terpusat
+   ======================================== */
+
+:root {
+  /* ========== PRIMARY COLORS ========== */
+  --color-primary: #e06b4c;
+  --color-primary-dark: #c85f42;
+  --color-primary-darker: #c9563e;
+  --color-secondary: #3e6b48;
+  --color-secondary-dark: #2f3e34;
+
+  /* ========== ACCENT COLORS ========== */
+  --color-green: #90c790;
+  --color-green-dark: #7fbf7f;
+  --color-yellow: #f2c94c;
+  --color-orange: #d4956c;
+  --color-beige: #b8b87c;
+
+  /* ========== NEUTRAL COLORS ========== */
+  --color-white: #ffffff;
+  --color-off-white: #fdfcfb;
+  --color-bg-light: #f9f5f0;
+  --color-bg-gray: #f9f9f9;
+  --color-bg-dark: #1f2a21;
+
+  /* ========== TEXT COLORS ========== */
+  --color-text-primary: #333;
+  --color-text-secondary: #555;
+  --color-text-tertiary: #666;
+  --color-text-light: #6b7280;
+  --color-text-lighter: #9ca3af;
+  --color-text-dark: #1f2937;
+  --color-text-darker: #111827;
+  --color-text-muted: #aaa;
+  --color-text-white: #f2f2f2;
+
+  /* ========== BORDER COLORS ========== */
+  --color-border-light: #f0f0f0;
+  --color-border-gray: #e5e7eb;
+  --color-border-medium: #ddd;
+  --color-border-dark: #444;
+  --color-border-rgba: rgba(0, 0, 0, 0.1);
+  --color-border-rgba-medium: rgba(101, 93, 93, 0.2);
+
+  /* ========== STATUS COLORS ========== */
+  --color-star: #f59e0b;
+  --color-success: #00c853;
+  --color-success-dark: #009b37;
+  --color-info: #ff8a00;
+  --color-info-dark: #d35400;
+  --color-danger: #ff4f64;
+  --color-danger-dark: #c61490;
+
+  /* ========== GRADIENT COLORS ========== */
+  --gradient-hero: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-orange) 30%,
+    var(--color-beige) 60%,
+    var(--color-green) 100%
+  );
+
+  --gradient-border: linear-gradient(
+    270deg,
+    var(--color-primary) 0%,
+    #ff7b7b 50%,
+    var(--color-green) 100%
+  );
+
+  --gradient-button: linear-gradient(
+    270deg,
+    var(--color-primary) 0%,
+    #ff7b7b 50%,
+    var(--color-green) 100%
+  );
+
+  --gradient-button-hover: linear-gradient(
+    270deg,
+    var(--color-primary-darker) 0%,
+    #ff6a6a 50%,
+    var(--color-green-dark) 100%
+  );
+
+  --gradient-whatsapp: linear-gradient(
+    135deg,
+    var(--color-success),
+    var(--color-success-dark)
+  );
+  --gradient-email: linear-gradient(
+    135deg,
+    var(--color-info),
+    var(--color-info-dark)
+  );
+  --gradient-instagram: linear-gradient(
+    135deg,
+    var(--color-danger),
+    var(--color-danger-dark)
+  );
+
+  --gradient-login-bg: linear-gradient(
+    159deg,
+    rgba(224, 107, 76, 0.6) 0%,
+    rgba(62, 107, 72, 0.6) 100%
+  );
+
+  /* ========== SHADOW VALUES ========== */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-hero: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-text: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-text-strong: 0 4px 12px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 14px 50px rgba(0, 0, 0, 0.3);
+  --shadow-login: 0 16px 40px rgba(0, 0, 0, 0.15);
+
+  /* ========== OPACITY VALUES ========== */
+  --opacity-overlay: 0.3;
+  --opacity-blur: 0.55;
+  --opacity-bg: 0.7;
+  --opacity-bg-high: 0.9;
+
+  /* ========== BACKDROP FILTER ========== */
+  --backdrop-blur: blur(10px);
+  --backdrop-blur-strong: blur(35px);
+}
+
+/* ========================================
+   HERO CONTAINER START
+   ======================================== */
+
 .hero-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -5,19 +144,20 @@
   overflow: visible;
   font-family: Poppins, sans-serif;
 }
+/* ======================================== 
+   HERO CONTAINER END 
+   ======================================== */
 
-/* Bagian kiri */
+/* ========================================
+   HERO LEFT SECTION START
+   ======================================== */
 .hero-left {
   position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(
-      159deg,
-      rgba(224, 107, 76, 0.6) 0%,
-      rgba(62, 107, 72, 0.6) 100%
-    ),
-    url("/assets/image/login-bg.png") center/cover no-repeat;
+  background: var(--gradient-hero),
+    url("assets/image/login-bg.png") center/cover no-repeat;
   border-bottom-right-radius: 30px;
   border-top-right-radius: 30px;
 }
@@ -27,18 +167,14 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: linear-gradient(
-    159deg,
-    rgba(224, 107, 76, 0.6),
-    rgba(62, 107, 72, 0.6)
-  );
+  background: var(--gradient-login-bg);
 }
 
 .hero-text {
-  color: #fff;
+  color: var(--color-white);
   text-align: center;
   line-height: 1.2;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
+  text-shadow: var(--shadow-text-strong);
 }
 
 .hero-text h1 {
@@ -54,30 +190,40 @@
   font-weight: 300;
   line-height: 1.6;
 }
+/* ======================================== 
+   HERO LEFT SECTION END 
+   ======================================== */
 
-/* Bagian kanan */
+/* ========================================
+   HERO RIGHT SECTION START
+   ======================================== */
 .hero-right {
   position: relative;
-  background: #f9f5f0;
+  background: var(--color-bg-light);
   display: flex;
   justify-content: center;
   align-items: center;
   padding: clamp(20px, 5vw, 80px);
   height: 100vh;
 }
+/* ======================================== 
+   HERO RIGHT SECTION END 
+   ======================================== */
 
-/* Dekorasi blur START */
+/* ========================================
+   DECORATIVE BLUR ELEMENTS START
+   ======================================== */
 .decor {
   position: absolute;
   border-radius: 50%;
-  filter: blur(35px);
-  opacity: 0.3;
+  filter: var(--backdrop-blur-strong);
+  opacity: var(--opacity-overlay);
 }
 
 .decor.red {
   width: 220px;
   height: 220px;
-  background: #e06b4c;
+  background: var(--color-primary);
   top: 30px;
   left: -120px;
   z-index: 0;
@@ -86,7 +232,7 @@
 .decor.green {
   width: 200px;
   height: 200px;
-  background: #90c790;
+  background: var(--color-green);
   bottom: 40px;
   right: 20px;
   z-index: 0;
@@ -95,34 +241,43 @@
 .decor.yellow {
   width: 140px;
   height: 140px;
-  background: #f2c94c;
+  background: var(--color-yellow);
   top: 45%;
   left: 55%;
   transform: translate(-50%, -50%);
   z-index: 0;
 }
-/* Dekorasi blur END */
+/* ======================================== 
+   DECORATIVE BLUR ELEMENTS END 
+   ======================================== */
 
-/* Link kembali */
+/* ========================================
+   BACK TO HOME LINK START
+   ======================================== */
 .back-link {
   position: absolute;
   top: 24px;
   left: 50%;
   transform: translateX(-50%);
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text-darker);
   text-decoration: none;
-  border-bottom: 2px solid #e06b4c;
+  border-bottom: 2px solid var(--color-primary);
   font-size: 1rem;
   z-index: 10;
   margin-bottom: 20px;
 }
+/* ======================================== 
+   BACK TO HOME LINK END 
+   ======================================== */
 
-/* Kartu login */
+/* ========================================
+   LOGIN CARD START
+   ======================================== */
 .login-card {
-  background: white;
+  background: var(--color-white);
   border-radius: 28px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-login);
   width: 440px;
   max-width: 100%;
   padding: 30px;
@@ -131,7 +286,8 @@
   z-index: 2;
   margin-top: 40px;
   border: 2px solid transparent;
-  background-image: linear-gradient(white, white), linear-gradient(270deg, #e06b4c 0%, #ff7b7b 50%, #90c790 100%);
+  background-image: linear-gradient(var(--color-white), var(--color-white)),
+    var(--gradient-border);
   background-origin: border-box;
   background-clip: padding-box, border-box;
 }
@@ -142,21 +298,27 @@
   margin: 0 auto 10px;
   background: url("/assets/image/PusakaRasa.webp") center/cover no-repeat;
   border-radius: 14px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md), var(--shadow-2xl);
 }
 
 .login-header h2 {
-  color: #e06b4c;
+  color: var(--color-primary);
   font-family: Montserrat, sans-serif;
   font-weight: 700;
 }
 
 .login-header p {
-  color: #666;
+  color: var(--color-text-tertiary);
   font-size: 0.95rem;
   font-family: Poppins, sans-serif;
 }
+/* ======================================== 
+   LOGIN CARD END 
+   ======================================== */
 
+/* ========================================
+   LOGIN FORM START
+   ======================================== */
 .login-form {
   margin-top: 30px;
   display: flex;
@@ -166,7 +328,7 @@
 
 .login-form input {
   padding: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border-medium);
   border-radius: 14px;
   font-size: 0.95rem;
 }
@@ -181,51 +343,58 @@
 }
 
 .btn-primary-login {
-  background: linear-gradient(270deg, #e06b4c 0%, #ff7b7b 50%, #90c790 100%);
-  color: white;
+  background: var(--gradient-button);
+  color: var(--color-white);
   border: none;
 }
 
 .btn-primary-login:hover {
-  background: linear-gradient(270deg, #c9563e 0%, #ff6a6a 50%, #7fbf7f 100%);
+  background: var(--gradient-button-hover);
 }
 
 .btn-google {
-  border: 1px solid #ddd;
-  background: white;
-  color: #333;
+  border: 1px solid var(--color-border-medium);
+  background: var(--color-white);
+  color: var(--color-text-primary);
 }
 
 .btn-google:hover {
-  background: #f5f5f5;
+  background: var(--color-bg-light);
 }
+/* ======================================== 
+   LOGIN FORM END 
+   ======================================== */
 
+/* ========================================
+   LOGIN FOOTER START
+   ======================================== */
 .login-footer {
   margin-top: 20px;
-  color: #555;
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
 }
 
 .login-footer .forgot {
-  color: #e06b4c;
+  color: var(--color-primary);
   font-weight: 500;
   display: block;
   margin-bottom: 8px;
   text-decoration: none;
 }
 
-.login-footer .register, 
+.login-footer .register,
 .login-footer .sign-in {
-  color: #e06b4c;
+  color: var(--color-primary);
   font-weight: 500;
   text-decoration: none;
 }
-
-/* ========================================
-   MEDIA QUERIES - RESPONSIVE
+/* ======================================== 
+   LOGIN FOOTER END 
    ======================================== */
 
-/* TABLET (iPad & sejenisnya) - 768px sampai 1024px */
+/* ========================================
+   RESPONSIVE: TABLET START (768px - 1024px)
+   ======================================== */
 @media (max-width: 1024px) {
   .hero-text h1 {
     font-size: 2rem;
@@ -255,8 +424,13 @@
     height: 120px;
   }
 }
+/* ======================================== 
+   RESPONSIVE: TABLET END 
+   ======================================== */
 
-/* MOBILE (Smartphone) - kurang dari 768px */
+/* ========================================
+   RESPONSIVE: MOBILE START (< 768px)
+   ======================================== */
 @media (max-width: 768px) {
   .hero-container {
     grid-template-columns: 1fr;
@@ -264,7 +438,7 @@
     min-height: 100vh;
   }
 
-  /* SEMBUNYIKAN hero-left di mobile agar fokus pada login */
+  /* Hide hero-left di mobile untuk fokus pada form */
   .hero-left {
     display: none;
   }
@@ -304,7 +478,7 @@
     font-size: 0.9rem;
   }
 
-  /* Perkecil dekorasi blur di mobile */
+  /* Perkecil decorative blur di mobile */
   .decor.red {
     width: 150px;
     height: 150px;
@@ -321,8 +495,13 @@
     height: 100px;
   }
 }
+/* ======================================== 
+   RESPONSIVE: MOBILE END 
+   ======================================== */
 
-/* MOBILE KECIL - kurang dari 480px */
+/* ========================================
+   RESPONSIVE: SMALL MOBILE START (< 480px)
+   ======================================== */
 @media (max-width: 480px) {
   .hero-right {
     padding: 16px;
@@ -351,7 +530,7 @@
     font-size: 0.85rem;
   }
 
-  /* Dekorasi blur lebih kecil lagi */
+  /* Decorative blur lebih kecil dengan blur lebih halus */
   .decor.red {
     width: 120px;
     height: 120px;
@@ -370,3 +549,6 @@
     filter: blur(25px);
   }
 }
+/* ======================================== 
+   RESPONSIVE: SMALL MOBILE END 
+   ======================================== */

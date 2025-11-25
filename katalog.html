@@ -1,37 +1,56 @@
 <!DOCTYPE html>
 <html lang="id">
   <head>
+    <!-- Meta Tags -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/assets/image/PusakaRasa.webp" />
+    
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
       rel="stylesheet"
     />
+    
+    <!-- Font Awesome Icons -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
 
+    <!-- CSS Files -->
     <link rel="stylesheet" href="assets/css/base.css" />
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="assets/css/component.css" />
 
     <title>PusakaRasa | Katalog Makanan</title>
   </head>
+  
   <body>
+    <!-- ========================================
+         NAVBAR START
+         ======================================== -->
     <header>
+      <!-- Logo/Brand -->
       <h1>PusakaRasa</h1>
+      
+      <!-- Navigation Menu -->
       <nav>
-        <button class="hamburger" id="hamburgerBtn">☰</button>
+        <!-- Hamburger Button (Mobile Only) -->
+        <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">☰</button>
+        
+        <!-- Navigation Links -->
         <ul id="navMenu">
           <li><a href="index.html">Beranda</a></li>
           <li><a href="katalog.html">Katalog</a></li>
           <li><a href="#favorit">Favorit</a></li>
           <li><a href="tentang.html">Tentang</a></li>
-          <!-- tombol login/register versi mobile -->
+          
+          <!-- Mobile Auth Buttons (Hidden on Desktop) -->
           <li class="mobile-auth">
             <a href="login.html" class="login">Masuk</a>
           </li>
@@ -39,8 +58,12 @@
             <a href="register.html" class="register">Daftar</a>
           </li>
         </ul>
+        
+        <!-- Navigation Indicator (Underline) -->
         <span class="nav-indicator"></span>
       </nav>
+      
+      <!-- Desktop Auth Buttons (Hidden on Mobile) -->
       <div class="auth-buttons">
         <a href="login.html">
           <button class="btn btn-secondary">Masuk</button>
@@ -50,62 +73,94 @@
         </a>
       </div>
     </header>
+    <!-- ========================================
+         NAVBAR END
+         ======================================== -->
 
+    <!-- ========================================
+         HERO SECTION START
+         ======================================== -->
     <section class="hero" id="beranda">
       <h2>Warisan<br />Rasa<br />Nusantara.</h2>
       <p>Eksplorasi makanan & minuman dari berbagai daerah</p>
       <button>Jelajahi</button>
     </section>
+    <!-- ========================================
+         HERO SECTION END
+         ======================================== -->
 
+    <!-- ========================================
+         SEARCH BAR START
+         ======================================== -->
     <div class="search-bar-container">
+      <!-- Search Input -->
       <input
         type="search"
         class="search-bar"
         placeholder="Cari kuliner favorit Anda..."
+        aria-label="Cari kuliner"
       />
 
+      <!-- Search Button -->
       <button type="submit" class="search-button" aria-label="Cari">
         <i class="fa fa-search"></i>
       </button>
 
+      <!-- Filter Buttons (Desktop Only) -->
       <div class="btn-tertiary-container">
         <button class="btn btn-tertiary">Semua</button>
         <button class="btn btn-tertiary">Makanan</button>
         <button class="btn btn-tertiary">Minuman</button>
       </div>
     </div>
+    <!-- ========================================
+         SEARCH BAR END
+         ======================================== -->
 
-    <!-- === Section Katalog === -->
+    <!-- ========================================
+         KATALOG SECTION START
+         ======================================== -->
     <section id="katalog">
+      <!-- Cards Container -->
       <div class="cards-container">
-        <!-- === Card 1: Rendang === -->
+        
+        <!-- ========== Card 1: Rendang ========== -->
         <div class="food-card">
+          <!-- Card Image -->
           <div class="card-image">
             <img src="assets/image/Rendang.jpeg" alt="Rendang" />
+            <!-- Image Tags (Region & Category) -->
             <div class="image-tags">
               <span>Sumatera Barat</span>
               <span>Makanan</span>
             </div>
+            <!-- Favorite Button -->
             <button class="fav-btn" aria-label="Favorite"></button>
           </div>
+          
+          <!-- Card Content -->
           <div class="card-content">
             <h3 class="food-title">Rendang</h3>
             <p class="food-desc">
               Daging sapi dimasak lama dengan rempah khas Minang.
             </p>
+            <!-- Rating -->
             <div class="food-rating">
               <span class="stars">★★★★★</span>
               <span class="review">4.9 • 1.2k ulasan</span>
             </div>
+            <!-- Price -->
             <p class="food-price">Rp 45.000</p>
           </div>
+          
+          <!-- Card Footer -->
           <div class="card-footer">
             <span class="food-tag">#pedas</span>
             <button class="detail-btn">Detail</button>
           </div>
         </div>
 
-        <!-- === Card 2: Sate Ayam === -->
+        <!-- ========== Card 2: Sate Ayam ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Sate.jpg" alt="Sate" />
@@ -132,7 +187,7 @@
           </div>
         </div>
 
-        <!-- === Card 3: Gudeg === -->
+        <!-- ========== Card 3: Gudeg ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Gudeg.jpg" alt="Gudeg" />
@@ -159,7 +214,7 @@
           </div>
         </div>
 
-        <!-- === Card 4: Pempek === -->
+        <!-- ========== Card 4: Pempek ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Pempek.png" alt="Pempek" />
@@ -186,7 +241,7 @@
           </div>
         </div>
 
-        <!-- === Card 5: Bakso Malang === -->
+        <!-- ========== Card 5: Bakso Malang ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Bakso.png" alt="Bakso Malang" />
@@ -213,7 +268,7 @@
           </div>
         </div>
 
-        <!-- === Card 6: Soto === -->
+        <!-- ========== Card 6: Soto Lamongan ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Soto.png" alt="Soto Lamongan" />
@@ -238,7 +293,7 @@
           </div>
         </div>
 
-        <!-- === Card 7: Rawon === -->
+        <!-- ========== Card 7: Rawon ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Rawon.png" alt="Rawon" />
@@ -263,7 +318,7 @@
           </div>
         </div>
 
-        <!-- === Card 8: Nasi Goreng === -->
+        <!-- ========== Card 8: Nasi Goreng Jawa ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/nasiGoreng.png" alt="Nasi Goreng" />
@@ -290,7 +345,7 @@
           </div>
         </div>
 
-        <!-- === Card 9: Es Cendol === -->
+        <!-- ========== Card 9: Es Cendol ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/Cendol.jpeg" alt="Es Cendol" />
@@ -317,7 +372,7 @@
           </div>
         </div>
 
-        <!-- === Card 10: Es Teh Kampul === -->
+        <!-- ========== Card 10: Es Teh Kampul ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/tehManis.png" alt="Es Teh Kampul" />
@@ -342,7 +397,7 @@
           </div>
         </div>
 
-        <!-- === Card 11: Kopi Selem === -->
+        <!-- ========== Card 11: Kopi Selem ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/kopiTubruk.png" alt="Kopi Selem" />
@@ -367,7 +422,7 @@
           </div>
         </div>
 
-        <!-- === Card 12: Wedang Jahe === -->
+        <!-- ========== Card 12: Wedang Jahe ========== -->
         <div class="food-card">
           <div class="card-image">
             <img src="assets/image/wedangJahe.png" alt="Wedang Jahe" />
@@ -391,11 +446,20 @@
             <button class="detail-btn">Detail</button>
           </div>
         </div>
+        
       </div>
     </section>
+    <!-- ========================================
+         KATALOG SECTION END
+         ======================================== -->
 
+    <!-- ========================================
+         FOOTER START
+         ======================================== -->
     <footer class="footer">
+      <!-- Footer Content -->
       <div class="footer-content">
+        <!-- About Section -->
         <div class="footer-section about">
           <h3>PusakaRasa</h3>
           <p>
@@ -404,6 +468,7 @@
           </p>
         </div>
 
+        <!-- Navigation Links -->
         <div class="footer-section navigation">
           <h4>Navigasi</h4>
           <ul>
@@ -413,6 +478,7 @@
           </ul>
         </div>
 
+        <!-- Support Links -->
         <div class="footer-section support">
           <h4>Dukungan</h4>
           <ul>
@@ -423,11 +489,20 @@
         </div>
       </div>
 
+      <!-- Footer Bottom -->
       <div class="footer-bottom">
         <p>© 2025 PusakaRasa — All rights reserved.</p>
-        <a href="#">Kebijakan Privasi</a> <a href="#">S&K</a>
+        <div>
+          <a href="#">Kebijakan Privasi</a>
+          <a href="#">S&K</a>
+        </div>
       </div>
     </footer>
+    <!-- ========================================
+         FOOTER END
+         ======================================== -->
+
+    <!-- JavaScript - SATU FILE UNIVERSAL UNTUK SEMUA HALAMAN -->
     <script src="assets/js/script.js"></script>
   </body>
 </html>

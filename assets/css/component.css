@@ -1,5 +1,132 @@
-/* NAVBAR / COMPONENTS */
-/* === Navbar === */
+/* ========================================
+   PUSAKARASA - CSS VARIABLES
+   Sistem variabel warna terpusat
+   ======================================== */
+
+:root {
+  /* ========== PRIMARY COLORS ========== */
+  --color-primary: #e06b4c;
+  --color-primary-dark: #c85f42;
+  --color-primary-darker: #c9563e;
+  --color-secondary: #3e6b48;
+  --color-secondary-dark: #2f3e34;
+  
+  /* ========== ACCENT COLORS ========== */
+  --color-green: #90c790;
+  --color-green-dark: #7fbf7f;
+  --color-yellow: #f2c94c;
+  --color-orange: #d4956c;
+  --color-beige: #b8b87c;
+  
+  /* ========== NEUTRAL COLORS ========== */
+  --color-white: #ffffff;
+  --color-off-white: #fdfcfb;
+  --color-bg-light: #f9f5f0;
+  --color-bg-gray: #f9f9f9;
+  --color-bg-dark: #1f2a21;
+  
+  /* ========== TEXT COLORS ========== */
+  --color-text-primary: #333;
+  --color-text-secondary: #555;
+  --color-text-tertiary: #666;
+  --color-text-light: #6b7280;
+  --color-text-lighter: #9ca3af;
+  --color-text-dark: #1f2937;
+  --color-text-darker: #111827;
+  --color-text-muted: #aaa;
+  --color-text-white: #f2f2f2;
+  
+  /* ========== BORDER COLORS ========== */
+  --color-border-light: #f0f0f0;
+  --color-border-gray: #e5e7eb;
+  --color-border-medium: #ddd;
+  --color-border-dark: #444;
+  --color-border-rgba: rgba(0, 0, 0, 0.1);
+  --color-border-rgba-medium: rgba(101, 93, 93, 0.2);
+  
+  /* ========== STATUS COLORS ========== */
+  --color-star: #f59e0b;
+  --color-success: #00c853;
+  --color-success-dark: #009b37;
+  --color-info: #ff8a00;
+  --color-info-dark: #d35400;
+  --color-danger: #ff4f64;
+  --color-danger-dark: #c61490;
+  
+  /* ========== GRADIENT COLORS ========== */
+  --gradient-hero: linear-gradient(
+    135deg,
+    var(--color-primary) 0%,
+    var(--color-orange) 30%,
+    var(--color-beige) 60%,
+    var(--color-green) 100%
+  );
+  
+  --gradient-border: linear-gradient(
+    270deg,
+    var(--color-primary) 0%,
+    #ff7b7b 50%,
+    var(--color-green) 100%
+  );
+  
+  --gradient-button: linear-gradient(
+    270deg,
+    var(--color-primary) 0%,
+    #ff7b7b 50%,
+    var(--color-green) 100%
+  );
+  
+  --gradient-button-hover: linear-gradient(
+    270deg,
+    var(--color-primary-darker) 0%,
+    #ff6a6a 50%,
+    var(--color-green-dark) 100%
+  );
+  
+  --gradient-whatsapp: linear-gradient(135deg, var(--color-success), var(--color-success-dark));
+  --gradient-email: linear-gradient(135deg, var(--color-info), var(--color-info-dark));
+  --gradient-instagram: linear-gradient(135deg, var(--color-danger), var(--color-danger-dark));
+  
+  --gradient-login-bg: linear-gradient(
+    159deg,
+    rgba(224, 107, 76, 0.6) 0%,
+    rgba(62, 107, 72, 0.6) 100%
+  );
+  
+  /* ========== SHADOW VALUES ========== */
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 6px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.12);
+  --shadow-2xl: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-hero: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-text: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-text-strong: 0 4px 12px rgba(0, 0, 0, 0.8);
+  --shadow-card: 0 10px 40px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 14px 50px rgba(0, 0, 0, 0.3);
+  --shadow-login: 0 16px 40px rgba(0, 0, 0, 0.15);
+  
+  /* ========== OPACITY VALUES ========== */
+  --opacity-overlay: 0.3;
+  --opacity-blur: 0.55;
+  --opacity-bg: 0.7;
+  --opacity-bg-high: 0.9;
+  
+  /* ========== BACKDROP FILTER ========== */
+  --backdrop-blur: blur(10px);
+  --backdrop-blur-strong: blur(35px);
+}
+
+
+
+/* ========================================
+   PUSAKARASA - COMPONENT STYLES
+   Navbar, Footer, Buttons & Reusable Components
+   ======================================== */
+
+
+
+/* ========== NAVBAR START ========== */
 header {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
@@ -17,7 +144,7 @@ header {
 header h1 {
   font-family: "Montserrat", sans-serif;
   font-size: 24px;
-  color: #3e6b48;
+  color: var(--color-secondary);
 }
 
 header nav {
@@ -35,14 +162,14 @@ nav ul {
 
 nav ul li a {
   text-decoration: none;
-  color: #333;
+  color: var(--color-text-primary);
   font-weight: 600;
   padding: 6px 0 8px;
-  transition: color 0.3s;
+  transition: color 0.3s ease;
 }
 
 nav ul li a:hover {
-  color: #e06b4c;
+  color: var(--color-primary);
 }
 
 .nav-indicator {
@@ -51,11 +178,13 @@ nav ul li a:hover {
   left: 0;
   height: 3px;
   width: 0;
-  background-color: #e06b4c;
+  background-color: var(--color-primary);
   border-radius: 999px;
   transition: all 0.35s ease;
 }
+/* ========== NAVBAR END ========== */
 
+/* ========== BUTTONS START ========== */
 .btn {
   font-family: "Poppins", sans-serif;
   font-size: 16px;
@@ -64,60 +193,167 @@ nav ul li a:hover {
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
 }
 
 .btn:hover {
   filter: brightness(0.9);
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .btn-primary {
-  background-color: #e06b4c;
-  color: #fff;
+  background-color: var(--color-primary);
+  color: var(--color-white);
   margin-left: 10px;
 }
 
 .btn-secondary {
-  background-color: #fdfcfb;
-  color: #111827;
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: var(--color-off-white);
+  color: var(--color-text-darker);
+  border: 1px solid var(--color-border-rgba);
 }
 
+.btn-tertiary {
+  background-color: var(--color-off-white);
+  color: var(--color-text-darker);
+  border: 1px solid var(--color-border-rgba-medium);
+  font-weight: 400;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.btn-tertiary:hover {
+  background-color: #f3f4f6;
+  border-color: var(--color-text-lighter);
+}
+
+.btn-tertiary:focus,
+.btn-tertiary.active {
+  background-color: var(--color-green);
+  color: var(--color-white);
+  border-color: var(--color-green);
+  outline: none;
+}
+/* ========== BUTTONS END ========== */
+
+/* ========== AUTH BUTTONS START ========== */
 .auth-buttons {
   display: flex;
   gap: 15px;
   justify-self: end;
 }
+/* ========== AUTH BUTTONS END ========== */
 
+/* ========== HAMBURGER MENU START ========== */
 .hamburger {
   display: none;
   font-size: 28px;
   background: none;
   border: none;
   cursor: pointer;
-  color: #333;
+  color: var(--color-text-primary);
   padding: 8px;
   transition: all 0.3s ease;
   line-height: 1;
 }
 
 .hamburger:hover {
-  color: #e06b4c;
+  color: var(--color-primary);
   transform: scale(1.1);
 }
 
-/* Hamburger active state */
 .hamburger.active {
-  color: #e06b4c;
+  color: var(--color-primary);
   transform: rotate(90deg);
 }
 
 .mobile-auth {
   display: none;
 }
+/* ========== HAMBURGER MENU END ========== */
 
-/* ===== NAV-RELATED: Tablet ===== */
+/* ========== FOOTER START ========== */
+.footer {
+  background-color: var(--color-bg-dark);
+  color: var(--color-text-white);
+  padding: clamp(28px, 5vw, 56px) 0;
+  font-family: "Montserrat", sans-serif;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  margin-top: 104px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: 0 5%;
+}
+
+.footer-section h3,
+.footer-section h4 {
+  margin-bottom: 12px;
+  color: var(--color-white);
+}
+
+.footer-section p,
+.footer-section ul {
+  font-size: 0.9rem;
+  line-height: 3;
+  font-family: "Poppins", sans-serif;
+}
+
+.footer-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-section a {
+  color: #ccc;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-section a:hover {
+  color: var(--color-white);
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--color-border-dark);
+  width: 60%;
+  margin: 20px auto;
+  padding: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  align-items: center;
+}
+
+.footer-bottom a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  margin-left: 12px;
+  transition: color 0.3s ease;
+}
+
+.footer-bottom a:hover {
+  color: var(--color-white);
+}
+/* ========== FOOTER END ========== */
+
+/* ========================================
+   RESPONSIVE DESIGN - TABLET
+   ======================================== */
 @media (max-width: 1024px) {
+  /* ========== NAVBAR TABLET START ========== */
   header {
     padding: 0 20px;
     height: 60px;
@@ -143,10 +379,33 @@ nav ul li a:hover {
     font-size: 14px;
     padding: 7px 12px;
   }
+  /* ========== NAVBAR TABLET END ========== */
+
+  /* ========== FOOTER TABLET START ========== */
+  .footer-content {
+    padding: 0 4%;
+    gap: 1.5rem;
+  }
+
+  .footer-bottom {
+    width: 80%;
+  }
+  /* ========== FOOTER TABLET END ========== */
 }
 
-/* ===== NAV-RELATED: Mobile ===== */
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE
+   ======================================== */
+@media (max-width: 768px) {
+  /* ========== FOOTER MOBILE START ========== */
+  .footer-content {
+    padding: 0 3%;
+  }
+  /* ========== FOOTER MOBILE END ========== */
+}
+
 @media (max-width: 600px) {
+  /* ========== NAVBAR MOBILE START ========== */
   header {
     padding: 0 16px;
     grid-template-columns: 1fr auto;
@@ -158,7 +417,7 @@ nav ul li a:hover {
   }
 
   .hamburger {
-    display: block !important;
+    display: block;
     justify-self: end;
   }
 
@@ -173,10 +432,10 @@ nav ul li a:hover {
     position: fixed;
     right: 16px;
     top: 65px;
-    background: white;
+    background: var(--color-white);
     padding: 20px;
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-2xl);
     width: 240px;
     gap: 0;
     z-index: 99999;
@@ -195,12 +454,12 @@ nav ul li a:hover {
   }
 
   nav ul.show {
-    display: flex !important;
+    display: flex;
   }
 
   nav ul li {
     width: 100%;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border-light);
   }
 
   nav ul li:last-child {
@@ -214,13 +473,13 @@ nav ul li a:hover {
   }
 
   .auth-buttons {
-    display: none !important;
+    display: none;
   }
 
   .mobile-auth {
-    display: block !important;
+    display: block;
     padding-top: 12px;
-    border-top: 2px solid #f0f0f0;
+    border-top: 2px solid var(--color-border-light);
     margin-top: 8px;
   }
 
@@ -232,7 +491,7 @@ nav ul li a:hover {
     margin-top: 8px;
     font-weight: 600;
     text-decoration: none;
-    transition: transform 0.2s;
+    transition: transform 0.2s ease;
   }
 
   .mobile-auth a:active {
@@ -241,120 +500,20 @@ nav ul li a:hover {
 
   .mobile-auth .login {
     background: #f5f5f5;
-    color: #333;
+    color: var(--color-text-primary);
   }
 
   .mobile-auth .register {
-    background: #e06b4c;
-    color: #fff;
+    background: var(--color-primary);
+    color: var(--color-white);
   }
 
   .nav-indicator {
     display: none;
   }
-}
+  /* ========== NAVBAR MOBILE END ========== */
 
-/* ===== NAV-RELATED: Small Mobile ===== */
-@media (max-width: 380px) {
-  header {
-    padding: 0 12px;
-  }
-
-  header h1 {
-    font-size: 16px;
-  }
-}
-
-/* Consolidated footer styles (moved from footer.css) */
-.footer {
-  background-color: #1f2a21;
-  color: #f2f2f2;
-  padding: clamp(28px, 5vw, 56px) 0;
-  font-family: "Montserrat", sans-serif;
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
-  margin-top: 104px;
-}
-
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 2rem;
-  padding: 0 5%;
-}
-
-.footer-section h3,
-.footer-section h4 {
-  margin-bottom: 12px;
-  color: #fff;
-}
-
-.footer-section p,
-.footer-section ul {
-  font-size: 0.9rem;
-  line-height: 3;
-  font-family: "Poppins", sans-serif;
-}
-
-.footer-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-section a {
-  color: #ccc;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.footer-section a:hover {
-  color: #fff;
-}
-
-.footer-bottom {
-  border-top: 1px solid #444;
-  width: 60%;
-  margin: 20px auto;
-  padding: 10px 0;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
-  color: #aaa;
-  align-items: center;
-}
-
-.footer-bottom a {
-  color: #aaa;
-  text-decoration: none;
-  margin-left: 12px;
-}
-
-.footer-bottom a:hover {
-  color: #fff;
-}
-
-/* Responsive adjustments for footer */
-@media (max-width: 1024px) {
-  .footer-content {
-    padding: 0 4%;
-    gap: 1.5rem;
-  }
-
-  .footer-bottom {
-    width: 80%;
-  }
-}
-
-@media (max-width: 768px) {
-  .footer-content {
-    padding: 0 3%;
-  }
-}
-
-@media (max-width: 600px) {
+  /* ========== FOOTER MOBILE START ========== */
   .footer {
     margin-top: 60px;
   }
@@ -381,11 +540,27 @@ nav ul li a:hover {
   .footer-bottom a {
     margin: 0 8px;
   }
+  /* ========== FOOTER MOBILE END ========== */
 }
 
+/* ========================================
+   RESPONSIVE DESIGN - SMALL MOBILE
+   ======================================== */
 @media (max-width: 380px) {
+  /* ========== NAVBAR SMALL MOBILE START ========== */
+  header {
+    padding: 0 12px;
+  }
+
+  header h1 {
+    font-size: 16px;
+  }
+  /* ========== NAVBAR SMALL MOBILE END ========== */
+
+  /* ========== FOOTER SMALL MOBILE START ========== */
   .footer-bottom {
     gap: 8px;
     font-size: 0.78rem;
   }
+  /* ========== FOOTER SMALL MOBILE END ========== */
 }
