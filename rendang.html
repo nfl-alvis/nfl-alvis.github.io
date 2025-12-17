@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rendang | PusakaRasa</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="assets/image/PusakaRasa.webp">
+  
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="assets/css/base.css">
+  <link rel="stylesheet" href="assets/css/component.css">
+  <link rel="stylesheet" href="assets/css/detail.css">
+</head>
+<body>
+  <!-- ========== NAVBAR ========== -->
+  <header>
+    <h1>PusakaRasa</h1>
+    <nav>
+      <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">☰</button>
+      <ul id="navMenu">
+        <li><a href="index.html">Beranda</a></li>
+        <li><a href="katalog.html">Katalog</a></li>
+        <li><a href="#favorit">Favorit</a></li>
+        <li><a href="tentang.html">Tentang</a></li>
+        
+        <!-- Mobile Auth -->
+        <li class="mobile-auth">
+          <a href="login.html" class="login">Masuk</a>
+        </li>
+        <li class="mobile-auth">
+          <a href="register.html" class="register">Daftar</a>
+        </li>
+      </ul>
+      <span class="nav-indicator"></span>
+    </nav>
+    
+    <!-- Desktop Auth -->
+    <div class="auth-buttons">
+      <a href="login.html">
+        <button class="btn btn-secondary">Masuk</button>
+      </a>
+      <a href="register.html">
+        <button class="btn btn-primary">Daftar</button>
+      </a>
+    </div>
+  </header>
+
+  <!-- ========== HERO SECTION ========== -->
+  <section class="hero">
+    <div class="hero-image">
+      <img src="assets/image/Rendang.jpeg" alt="Rendang">
+    </div>
+    <h2>Rendang</h2>
+    <p>Sumatera Barat • Makanan</p>
+  </section>
+
+  <!-- ========== DETAIL CONTAINER ========== -->
+  <div class="detail-container">
+    <div class="detail-card">
+      <!-- LEFT SECTION: INFO PEMESANAN -->
+      <div class="info-section">
+        <h3>Informasi Pemesanan</h3>
+        
+        <div class="price-info">
+          <span class="price-current">Rp 45.000</span>
+          <span class="price-original">Rp 65.000</span>
+        </div>
+
+        <div class="rating-section">
+          <span class="stars">★★★★★</span>
+          <span class="rating-text">(4.9 • 1200 ulasan)</span>
+        </div>
+
+        <p class="stock-info">Stok tersedia</p>
+
+        <button class="btn-favorite btn-action">
+          <i class="fa-regular fa-heart"></i>
+          Tambah ke Favorit
+        </button>
+
+        <div class="action-buttons">
+          <button class="btn-whatsapp btn-action">
+            <i class="fa-brands fa-whatsapp"></i>
+            Whatsapp
+          </button>
+          <button class="btn-instagram btn-action">
+            <i class="fa-brands fa-instagram"></i>
+            Instagram
+          </button>
+        </div>
+
+        <button class="btn-location btn-action">
+          <i class="fa-solid fa-location-dot"></i>
+          Lihat Lokasi
+        </button>
+      </div>
+
+      <!-- RIGHT SECTION: DESKRIPSI -->
+      <div class="description-section">
+        <h3>Deskripsi Singkat</h3>
+        <p class="description-text">
+          Rendang adalah masakan daging khas Minangkabau dengan bumbu rempah lengkap, dimasak dalam waktu lama hingga kering dan kaya rasa. Rendang awalnya dibuat untuk tahan lama dalam perjalanan jauh, kini menjadi ikon kuliner Indonesia yang diakui dunia.
+        </p>
+
+        <h4>Sejarah Singkat</h4>
+        <p class="history-text">
+          Rendang awalnya dibuat untuk tahan lama dalam perjalanan jauh kini menjadi ikon kuliner Indonesia yang diakui dunia.
+        </p>
+
+        <h4>Ulasan</h4>
+        <div class="rating-section">
+          <span class="stars">★★★★★</span>
+          <span class="rating-text">Rasanya autentik sekali, rempahnya kuat!</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== REVIEWS SECTION ========== -->
+  <section class="reviews-section">
+    <h3>Ulasan</h3>
+    
+    <!-- Form Input Ulasan -->
+    <div class="review-form-container">
+      <h4>Tulis Ulasan Anda</h4>
+      <form class="review-form" id="reviewForm">
+        <div class="form-group">
+          <label for="reviewName">Nama</label>
+          <input type="text" id="reviewName" placeholder="Masukkan nama Anda" required>
+        </div>
+        
+        <div class="form-group">
+          <label>Rating</label>
+          <div class="star-rating" id="starRating">
+            <i class="fa-regular fa-star" data-rating="1"></i>
+            <i class="fa-regular fa-star" data-rating="2"></i>
+            <i class="fa-regular fa-star" data-rating="3"></i>
+            <i class="fa-regular fa-star" data-rating="4"></i>
+            <i class="fa-regular fa-star" data-rating="5"></i>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="reviewText">Ulasan</label>
+          <textarea id="reviewText" rows="4" placeholder="Bagikan pengalaman Anda..." required></textarea>
+        </div>
+        
+        <button type="submit" class="btn-submit-review">
+          <i class="fa-solid fa-paper-plane"></i>
+          Kirim Ulasan
+        </button>
+      </form>
+    </div>
+    
+    <div class="reviews-container">
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">A</div>
+          <div class="review-info">
+            <h5>Ayu</h5>
+            <div class="review-stars">★★★★★</div>
+          </div>
+        </div>
+        <p class="review-text">Rasanya autentik sekali, rempahnya kuat!</p>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">B</div>
+          <div class="review-info">
+            <h5>Budi</h5>
+            <div class="review-stars">★★★★☆</div>
+          </div>
+        </div>
+        <p class="review-text">Sangat enak, hanya saja sedikit pedas untuk saya.</p>
+      </div>
+
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-avatar">L</div>
+          <div class="review-info">
+            <h5>Lina</h5>
+            <div class="review-stars">★★★★★</div>
+          </div>
+        </div>
+        <p class="review-text">Salah satu kuliner terbaik Nusantara!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section about">
+        <h3>PusakaRasa</h3>
+        <p>Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya</p>
+      </div>
+
+      <div class="footer-section navigation">
+        <h4>Navigasi</h4>
+        <ul>
+          <li><a href="index.html">Beranda</a></li>
+          <li><a href="katalog.html">Katalog</a></li>
+          <li><a href="favorit.html">Favorit</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section support">
+        <h4>Dukungan</h4>
+        <ul>
+          <li><a href="cs.html">Customer Service</a></li>
+          <li><a href="cs.html">Kontak</a></li>
+          <li><a href="cs.html">Sosial Media</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 PusakaRasa — All rights reserved.</p>
+      <div>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">S&K</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/detail.js"></script>
+</body>
+</html>
