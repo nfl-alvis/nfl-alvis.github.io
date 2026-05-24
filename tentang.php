@@ -1,69 +1,11 @@
-<!DOCTYPE html>
-<html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<?php
 
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+declare(strict_types=1);
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="assets/image/PusakaRasa.webp" />
-    
-    <!-- Font Awesome -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
+require_once __DIR__ . '/includes/bootstrap.php';
 
-    <title>Tentang Kami | PusakaRasa</title>
-    <link rel="stylesheet" href="assets/css/component.css" />
-    <link rel="stylesheet" href="assets/css/tentang.css" />
-  </head>
-  <body>
-    <!-- ========================================
-         NAVBAR START
-         ======================================== -->
-    <header>
-      <h1>PusakaRasa</h1>
-      <nav>
-        <button class="hamburger" id="hamburgerBtn">☰</button>
-        <ul id="navMenu">
-          <li><a href="index.php">Beranda</a></li>
-          <li><a href="katalog.php">Katalog</a></li>
-          <li><a href="#favorit">Favorit</a></li>
-          <li><a href="tentang.php">Tentang</a></li>
-          <!-- Mobile Auth Buttons -->
-          <li class="mobile-auth">
-            <a href="login.php" class="login">Masuk</a>
-          </li>
-          <li class="mobile-auth">
-            <a href="register.php" class="register">Daftar</a>
-          </li>
-        </ul>
-        <span class="nav-indicator"></span>
-      </nav>
-      <div class="auth-buttons">
-        <a href="login.php">
-          <button class="btn btn-secondary">Masuk</button>
-        </a>
-        <a href="register.php">
-          <button class="btn btn-primary">Daftar</button>
-        </a>
-      </div>
-    </header>
-    <!-- ======================================== 
-         NAVBAR END 
-         ======================================== -->
-
-    <!-- ========================================
-         HERO SECTION START
-         ======================================== -->
+render_layout('Tentang Kami', function (?array $user = null): void {
+    ?>
     <section class="hero" id="beranda">
       <h2>Warisan Rasa Nusantara.</h2>
       <p>
@@ -72,16 +14,10 @@
         kuliner Indonesia tetap hidup dan berkembang.
       </p>
     </section>
-    <!-- ======================================== 
-         HERO SECTION END 
-         ======================================== -->
 
-    <!-- ========================================
-         CONTENT CONTAINER START
-         ======================================== -->
     <div class="container">
       <div class="image-container">
-        <img src="assets/image/login-bg.png" alt="Food collage" />
+        <img src="<?= e(base_path('assets/image/login-bg.png')) ?>" alt="Food collage" />
       </div>
       <div class="list-container">
         <div class="list-content">
@@ -94,13 +30,7 @@
         </div>
       </div>
     </div>
-    <!-- ======================================== 
-         CONTENT CONTAINER END 
-         ======================================== -->
 
-    <!-- ========================================
-         CARDS SECTION START
-         ======================================== -->
     <div class="section-title">Nilai Yang Kami Junjung</div>
 
     <div class="cards-container">
@@ -126,55 +56,5 @@
         </p>
       </div>
     </div>
-    <!-- ======================================== 
-         CARDS SECTION END 
-         ======================================== -->
-
-    <!-- ========================================
-         FOOTER START
-         ======================================== -->
-    <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-section about">
-          <h3>PusakaRasa</h3>
-          <p>
-            Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM,
-            dan pelestarian budaya
-          </p>
-        </div>
-
-        <div class="footer-section navigation">
-          <h4>Navigasi</h4>
-          <ul>
-            <li><a href="/index.php">Beranda</a></li>
-            <li><a href="/katalog.php">Katalog</a></li>
-            <li><a href="/favorites.php">Favorit</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-section support">
-          <h4>Dukungan</h4>
-          <ul>
-            <li><a href="/cs.php">Customer Service</a></li>
-            <li><a href="/cs.php">Kontak</a></li>
-            <li><a href="/cs.php">Sosial Media</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <p>© 2025 PusakaRasa — All rights reserved.</p>
-        <div>
-          <a href="#">Kebijakan Privasi</a>
-          <a href="#">S&K</a>
-        </div>
-      </div>
-    </footer>
-    <!-- ======================================== 
-         FOOTER END 
-         ======================================== -->
-
-    <script src="assets/js/main.js"></script>
-    
-  </body>
-</html>
+    <?php
+}, ['body_class' => 'about-page', 'tentang_css' => true]);

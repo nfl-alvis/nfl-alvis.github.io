@@ -103,15 +103,12 @@
     </div>
     <!-- === 3D Carousel END === -->
 
-    <!-- === Footer START === -->
+    <!-- Footer -->
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-section about">
           <h3>PusakaRasa</h3>
-          <p>
-            Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM,
-            dan pelestarian budaya
-          </p>
+          <p>Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya</p>
         </div>
 
         <div class="footer-section navigation">
@@ -138,7 +135,6 @@
         <a href="#">Kebijakan Privasi</a> <a href="#">S&K</a>
       </div>
     </footer>
-    <!-- === Footer END === -->
 
     <!-- JavaScript -->
     <script src="/assets/js/main.js"></script>

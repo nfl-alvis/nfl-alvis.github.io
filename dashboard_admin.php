@@ -1,4 +1,3 @@
-<<<<<<< HEAD:dashboard_admin.php
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -700,7 +699,6 @@
 
 </body>
 </html>
-=======
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -1400,6 +1398,40 @@
     });
   </script>
 
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section about">
+        <h3>PusakaRasa</h3>
+        <p>Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya</p>
+      </div>
+
+      <div class="footer-section navigation">
+        <h4>Navigasi</h4>
+        <ul>
+          <li><a href="index.php">Beranda</a></li>
+          <li><a href="katalog.php">Katalog</a></li>
+          <li><a href="favorites.php">Favorit</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-section support">
+        <h4>Dukungan</h4>
+        <ul>
+          <li><a href="cs.php">Customer Service</a></li>
+          <li><a href="cs.php">Kontak</a></li>
+          <li><a href="cs.php">Sosial Media</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 PusakaRasa — All rights reserved.</p>
+      <div>
+        <a href="#">Kebijakan Privasi</a>
+        <a href="#">S&K</a>
+      </div>
+    </div>
+  </footer>
+
 </body>
 </html>
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2:dashboard_admin.html

@@ -18,10 +18,7 @@ CREATE TABLE IF NOT EXISTS users (
   name VARCHAR(120) NOT NULL,
   email VARCHAR(190) NOT NULL UNIQUE,
   password_hash CHAR(64) NOT NULL,
-<<<<<<< HEAD
   profile_image VARCHAR(255) NULL,
-=======
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
   role ENUM('user', 'store_admin', 'super_admin') NOT NULL DEFAULT 'user',
   store_id INT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -90,10 +87,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 
 ALTER TABLE products ADD COLUMN IF NOT EXISTS base_rating_total DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER image_path;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS base_review_count INT NOT NULL DEFAULT 0 AFTER base_rating_total;
-<<<<<<< HEAD
 ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image VARCHAR(255) NULL AFTER password_hash;
-=======
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
 
 INSERT INTO stores (name, slug, region, address, whatsapp, instagram, description, cover_image, is_active, created_at, updated_at)
 SELECT 'RM Minang Pusako', 'rm-minang-pusako', 'Sumatera Barat', 'Jl. Veteran No. 18, Padang', '628123456789', '@rmminangpusako', 'Rumah makan Minang dengan rendang dan sate Padang sebagai menu unggulan.', 'assets/image/Rendang.jpeg', 1, NOW(), NOW()

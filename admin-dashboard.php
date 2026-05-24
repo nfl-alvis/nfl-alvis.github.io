@@ -9,6 +9,30 @@ require_role(ROLE_SUPER_ADMIN);
 if (is_post()) {
     $action = $_POST['action'] ?? '';
     try {
+        if ($action === 'delete_store') {
+            db()->prepare('UPDATE stores SET is_active = 0, updated_at = NOW() WHERE id = :id')->execute([
+                'id' => (int) ($_POST['id'] ?? 0),
+            ]);
+            set_flash('success', 'Toko berhasil dinonaktifkan.');
+            redirect_to('admin-dashboard.php');
+        }
+
+        if ($action === 'delete_user') {
+            db()->prepare('UPDATE users SET is_active = 0, updated_at = NOW() WHERE id = :id')->execute([
+                'id' => (int) ($_POST['id'] ?? 0),
+            ]);
+            set_flash('success', 'Pengguna berhasil dinonaktifkan.');
+            redirect_to('admin-dashboard.php');
+        }
+
+        if ($action === 'delete_product') {
+            db()->prepare('UPDATE products SET is_active = 0, updated_at = NOW() WHERE id = :id')->execute([
+                'id' => (int) ($_POST['id'] ?? 0),
+            ]);
+            set_flash('success', 'Produk berhasil dinonaktifkan.');
+            redirect_to('admin-dashboard.php');
+        }
+
         if ($action === 'create_store') {
             $name = trim($_POST['name'] ?? '');
             $stmt = db()->prepare(
@@ -42,33 +66,6 @@ if (is_post()) {
             set_flash('success', 'Store admin berhasil dibuat.');
             redirect_to('admin-dashboard.php');
         }
-
-        if ($action === 'create_product') {
-            $name = trim($_POST['name'] ?? '');
-            $stmt = db()->prepare(
-                'INSERT INTO products
-                 (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, is_featured, is_active, created_at, updated_at)
-                 VALUES
-                 (:store_id, :name, :slug, :type, :region, :short_description, :long_description, :price_display, :rating, :review_count, :tag_label, :image_path, :is_featured, 1, NOW(), NOW())'
-            );
-            $stmt->execute([
-                'store_id' => (int) ($_POST['store_id'] ?? 0),
-                'name' => $name,
-                'slug' => slugify($name . '-' . substr((string) time(), -4)),
-                'type' => trim($_POST['type'] ?? 'Makanan'),
-                'region' => trim($_POST['region'] ?? ''),
-                'short_description' => trim($_POST['short_description'] ?? ''),
-                'long_description' => trim($_POST['long_description'] ?? ''),
-                'price_display' => trim($_POST['price_display'] ?? ''),
-                'rating' => (float) ($_POST['rating'] ?? 4.5),
-                'review_count' => (int) ($_POST['review_count'] ?? 0),
-                'tag_label' => trim($_POST['tag_label'] ?? ''),
-                'image_path' => trim($_POST['image_path'] ?? 'assets/image/image.png'),
-                'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
-            ]);
-            set_flash('success', 'Produk platform berhasil ditambahkan.');
-            redirect_to('admin-dashboard.php');
-        }
     } catch (Throwable $exception) {
         set_flash('error', 'Data gagal disimpan. Cek kemungkinan email, slug, atau input duplikat.');
         redirect_to('admin-dashboard.php');
@@ -76,11 +73,94 @@ if (is_post()) {
 }
 
 $stats = super_admin_stats();
-$users = all_users();
-$stores = all_stores_with_admins();
-$products = all_products_for_admin();
 
-render_layout('Dashboard Super Admin', function (?array $user = null) use ($stats, $users, $stores, $products): void {
+$userSearch = trim($_GET['user_search'] ?? '');
+$userRole = trim($_GET['user_role'] ?? '');
+$userSort = trim($_GET['user_sort'] ?? 'created_desc');
+$userPage = max(1, (int) ($_GET['user_page'] ?? 1));
+
+$storeSearch = trim($_GET['store_search'] ?? '');
+$storeSort = trim($_GET['store_sort'] ?? 'created_desc');
+$storePage = max(1, (int) ($_GET['store_page'] ?? 1));
+
+$productSearch = trim($_GET['product_search'] ?? '');
+$productSort = trim($_GET['product_sort'] ?? 'created_desc');
+$productPage = max(1, (int) ($_GET['product_page'] ?? 1));
+
+$users = array_values(array_filter(all_users(), static function (array $item) use ($userSearch, $userRole): bool {
+    if ($userSearch !== '') {
+        $haystack = strtolower(($item['name'] ?? '') . ' ' . ($item['email'] ?? '') . ' ' . ($item['store_name'] ?? ''));
+        if (strpos($haystack, strtolower($userSearch)) === false) {
+            return false;
+        }
+    }
+
+    if ($userRole !== '' && ($item['role'] ?? '') !== $userRole) {
+        return false;
+    }
+
+    return true;
+}));
+
+usort($users, static function (array $a, array $b) use ($userSort): int {
+    return match ($userSort) {
+        'name_asc' => strcmp((string) $a['name'], (string) $b['name']),
+        'name_desc' => strcmp((string) $b['name'], (string) $a['name']),
+        default => strcmp((string) $b['created_at'], (string) $a['created_at']),
+    };
+});
+
+$stores = array_values(array_filter(all_stores_with_admins(), static function (array $item) use ($storeSearch): bool {
+    if ($storeSearch === '') {
+        return true;
+    }
+
+    $haystack = strtolower(($item['name'] ?? '') . ' ' . ($item['region'] ?? '') . ' ' . ($item['admins'] ?? ''));
+    return strpos($haystack, strtolower($storeSearch)) !== false;
+}));
+
+usort($stores, static function (array $a, array $b) use ($storeSort): int {
+    return match ($storeSort) {
+        'name_asc' => strcmp((string) $a['name'], (string) $b['name']),
+        'name_desc' => strcmp((string) $b['name'], (string) $a['name']),
+        default => strcmp((string) $b['created_at'], (string) $a['created_at']),
+    };
+});
+
+$products = array_values(array_filter(all_products_for_admin(), static function (array $item) use ($productSearch): bool {
+    if ($productSearch === '') {
+        return true;
+    }
+
+    $haystack = strtolower(($item['name'] ?? '') . ' ' . ($item['store_name'] ?? '') . ' ' . ($item['type'] ?? ''));
+    return strpos($haystack, strtolower($productSearch)) !== false;
+}));
+
+usort($products, static function (array $a, array $b) use ($productSort): int {
+    return match ($productSort) {
+        'name_asc' => strcmp((string) $a['name'], (string) $b['name']),
+        'name_desc' => strcmp((string) $b['name'], (string) $a['name']),
+        default => strcmp((string) $b['created_at'], (string) $a['created_at']),
+    };
+});
+
+$usersPage = paginate_array($users, $userPage, 8);
+$storesPage = paginate_array($stores, $storePage, 8);
+$productsPage = paginate_array($products, $productPage, 8);
+
+render_layout('Dashboard Super Admin', function (?array $user = null) use (
+    $stats,
+    $userSearch,
+    $userRole,
+    $userSort,
+    $usersPage,
+    $storeSearch,
+    $storeSort,
+    $storesPage,
+    $productSearch,
+    $productSort,
+    $productsPage
+): void {
     ?>
     <div class="dashboard-shell">
       <aside class="dashboard-sidebar">
@@ -90,6 +170,8 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use ($stat
         </div>
         <nav class="dashboard-nav">
           <a href="<?= e(base_path('admin-dashboard.php')) ?>" class="active">Dashboard</a>
+          <a href="<?= e(base_path('admin-store-create.php')) ?>">Tambah Toko</a>
+          <a href="<?= e(base_path('admin-store-admin-create.php')) ?>">Buat Store Admin</a>
           <a href="<?= e(base_path('index.php')) ?>">Beranda</a>
           <a href="<?= e(base_path('katalog.php')) ?>">Katalog</a>
           <a href="<?= e(base_path('logout.php')) ?>">Keluar</a>
@@ -114,145 +196,177 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use ($stat
         <section class="dashboard-grid">
           <div class="stacked-card">
             <article class="table-card">
-              <h3>Buat Toko Baru</h3>
-              <form method="post" class="form-panel" style="margin-top: 18px;">
-                <input type="hidden" name="action" value="create_store" />
-                <label>Nama Toko <input type="text" name="name" required /></label>
-                <label>Wilayah <input type="text" name="region" required /></label>
-                <label>Alamat <textarea name="address" required></textarea></label>
-                <label>WhatsApp <input type="text" name="whatsapp" required /></label>
-                <label>Instagram <input type="text" name="instagram" required /></label>
-                <label>Cover Image Path <input type="text" name="cover_image" value="assets/image/image.png" required /></label>
-                <label>Deskripsi <textarea name="description" required></textarea></label>
-                <button type="submit">Tambah Toko</button>
-              </form>
-            </article>
-
-            <article class="table-card">
-              <h3>Buat Store Admin</h3>
-              <form method="post" class="form-panel" style="margin-top: 18px;">
-                <input type="hidden" name="action" value="create_store_admin" />
-                <label>Nama <input type="text" name="name" required /></label>
-                <label>Email <input type="email" name="email" required /></label>
-                <label>Password <input type="password" name="password" required /></label>
-                <label>Toko
-                  <select name="store_id" required>
-                    <?php foreach ($stores as $store): ?>
-                      <option value="<?= e((string) $store['id']) ?>"><?= e($store['name']) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </label>
-                <button type="submit">Buat Store Admin</button>
-              </form>
-            </article>
-
-            <article class="table-card">
-              <h3>Tambah Produk Global</h3>
-              <form method="post" class="form-panel" style="margin-top: 18px;">
-                <input type="hidden" name="action" value="create_product" />
-                <label>Nama Produk <input type="text" name="name" required /></label>
-                <label>Toko
-                  <select name="store_id" required>
-                    <?php foreach ($stores as $store): ?>
-                      <option value="<?= e((string) $store['id']) ?>"><?= e($store['name']) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                </label>
-                <label>Kategori
-                  <select name="type">
-                    <option value="Makanan">Makanan</option>
-                    <option value="Minuman">Minuman</option>
-                  </select>
-                </label>
-                <label>Wilayah <input type="text" name="region" required /></label>
-                <label>Harga Tampilan <input type="text" name="price_display" required /></label>
-                <label>Tag <input type="text" name="tag_label" required /></label>
-                <label>Path Gambar <input type="text" name="image_path" value="assets/image/image.png" required /></label>
-                <label>Deskripsi Singkat <textarea name="short_description" required></textarea></label>
-                <label>Deskripsi Panjang <textarea name="long_description" required></textarea></label>
-                <label>Rating <input type="number" name="rating" value="4.5" min="1" max="5" step="0.1" required /></label>
-                <label>Jumlah Ulasan <input type="number" name="review_count" value="0" min="0" required /></label>
-                <label><input type="checkbox" name="is_featured" value="1" /> Jadikan produk unggulan</label>
-                <button type="submit">Tambah Produk</button>
-              </form>
-            </article>
-          </div>
-
-          <div class="stacked-card">
-            <article class="table-card">
               <h3>Pengguna</h3>
+              <form class="form-panel" method="get" style="margin-top: 12px; display: grid; gap: 12px;">
+                <label>Cari <input type="search" name="user_search" value="<?= e($userSearch) ?>" placeholder="Nama, email, atau toko" /></label>
+                <label>Role
+                  <select name="user_role">
+                    <option value="">Semua</option>
+                    <option value="user" <?= $userRole === 'user' ? 'selected' : '' ?>>User</option>
+                    <option value="store_admin" <?= $userRole === 'store_admin' ? 'selected' : '' ?>>Store Admin</option>
+                    <option value="super_admin" <?= $userRole === 'super_admin' ? 'selected' : '' ?>>Super Admin</option>
+                  </select>
+                </label>
+                <label>Sorting
+                  <select name="user_sort">
+                    <option value="created_desc" <?= $userSort === 'created_desc' ? 'selected' : '' ?>>Terbaru</option>
+                    <option value="name_asc" <?= $userSort === 'name_asc' ? 'selected' : '' ?>>Nama A-Z</option>
+                    <option value="name_desc" <?= $userSort === 'name_desc' ? 'selected' : '' ?>>Nama Z-A</option>
+                  </select>
+                </label>
+                <button type="submit">Terapkan</button>
+              </form>
+              <div class="table-meta" style="margin-top: 12px;">Menampilkan <?= e((string) count($usersPage['items'])) ?> dari <?= e((string) $usersPage['total']) ?> data</div>
               <table class="data-table" style="margin-top: 12px;">
                 <thead>
                   <tr>
+                    <th>No</th>
                     <th>Nama</th>
                     <th>Email</th>
                     <th>Role</th>
                     <th>Toko</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach ($users as $item): ?>
+                  <?php foreach ($usersPage['items'] as $index => $item): ?>
                     <tr>
+                      <td><?= e((string) ($usersPage['offset'] + $index + 1)) ?></td>
                       <td><?= e($item['name']) ?></td>
                       <td><?= e($item['email']) ?></td>
                       <td><span class="pill-role"><?= e($item['role']) ?></span></td>
                       <td><?= e($item['store_name'] ?: '-') ?></td>
+                      <td>
+                        <div class="table-actions">
+                          <a class="inline-link" href="<?= e(base_path('admin-user-edit.php?id=' . $item['id'])) ?>">Edit</a>
+                          <form method="post" style="display:inline;" onsubmit="return confirm('Nonaktifkan pengguna ini?')">
+                            <input type="hidden" name="action" value="delete_user" />
+                            <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>" />
+                            <button type="submit" class="inline-link">Hapus</button>
+                          </form>
+                        </div>
+                      </td>
                     </tr>
                   <?php endforeach; ?>
                 </tbody>
               </table>
+              <div class="table-pagination">
+                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['user_page' => max(1, $usersPage['page'] - 1)])))) ?>">Prev</a>
+                <span><?= e((string) $usersPage['page']) ?> / <?= e((string) $usersPage['total_pages']) ?></span>
+                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['user_page' => min($usersPage['total_pages'], $usersPage['page'] + 1)])))) ?>">Next</a>
+              </div>
             </article>
 
             <article class="table-card">
               <h3>Daftar Toko</h3>
+              <form class="form-panel" method="get" style="margin-top: 12px; display: grid; gap: 12px;">
+                <label>Cari <input type="search" name="store_search" value="<?= e($storeSearch) ?>" placeholder="Nama toko, wilayah, admin" /></label>
+                <label>Sorting
+                  <select name="store_sort">
+                    <option value="created_desc" <?= $storeSort === 'created_desc' ? 'selected' : '' ?>>Terbaru</option>
+                    <option value="name_asc" <?= $storeSort === 'name_asc' ? 'selected' : '' ?>>Nama A-Z</option>
+                    <option value="name_desc" <?= $storeSort === 'name_desc' ? 'selected' : '' ?>>Nama Z-A</option>
+                  </select>
+                </label>
+                <button type="submit">Terapkan</button>
+              </form>
+              <div class="table-meta" style="margin-top: 12px;">Menampilkan <?= e((string) count($storesPage['items'])) ?> dari <?= e((string) $storesPage['total']) ?> data</div>
               <table class="data-table" style="margin-top: 12px;">
                 <thead>
                   <tr>
+                    <th>No</th>
                     <th>Toko</th>
                     <th>Wilayah</th>
                     <th>Admin</th>
                     <th>Produk</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach ($stores as $item): ?>
+                  <?php foreach ($storesPage['items'] as $index => $item): ?>
                     <tr>
+                      <td><?= e((string) ($storesPage['offset'] + $index + 1)) ?></td>
                       <td><?= e($item['name']) ?></td>
                       <td><?= e($item['region']) ?></td>
                       <td><?= e($item['admins'] ?: '-') ?></td>
                       <td><?= e((string) $item['product_count']) ?></td>
+                      <td>
+                        <div class="table-actions">
+                          <a class="inline-link" href="<?= e(base_path('admin-store-edit.php?id=' . $item['id'])) ?>">Edit</a>
+                          <form method="post" style="display:inline;" onsubmit="return confirm('Nonaktifkan toko ini?')">
+                            <input type="hidden" name="action" value="delete_store" />
+                            <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>" />
+                            <button type="submit" class="inline-link">Hapus</button>
+                          </form>
+                        </div>
+                      </td>
                     </tr>
                   <?php endforeach; ?>
                 </tbody>
               </table>
+              <div class="table-pagination">
+                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['store_page' => max(1, $storesPage['page'] - 1)])))) ?>">Prev</a>
+                <span><?= e((string) $storesPage['page']) ?> / <?= e((string) $storesPage['total_pages']) ?></span>
+                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['store_page' => min($storesPage['total_pages'], $storesPage['page'] + 1)])))) ?>">Next</a>
+              </div>
             </article>
 
             <article class="table-card">
               <h3>Produk Platform</h3>
+              <form class="form-panel" method="get" style="margin-top: 12px; display: grid; gap: 12px;">
+                <label>Cari <input type="search" name="product_search" value="<?= e($productSearch) ?>" placeholder="Nama produk, toko, kategori" /></label>
+                <label>Sorting
+                  <select name="product_sort">
+                    <option value="created_desc" <?= $productSort === 'created_desc' ? 'selected' : '' ?>>Terbaru</option>
+                    <option value="name_asc" <?= $productSort === 'name_asc' ? 'selected' : '' ?>>Nama A-Z</option>
+                    <option value="name_desc" <?= $productSort === 'name_desc' ? 'selected' : '' ?>>Nama Z-A</option>
+                  </select>
+                </label>
+                <button type="submit">Terapkan</button>
+              </form>
+              <div class="table-meta" style="margin-top: 12px;">Menampilkan <?= e((string) count($productsPage['items'])) ?> dari <?= e((string) $productsPage['total']) ?> data</div>
               <table class="data-table" style="margin-top: 12px;">
                 <thead>
                   <tr>
+                    <th>No</th>
                     <th>Produk</th>
                     <th>Toko</th>
                     <th>Kategori</th>
                     <th>Harga</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <?php foreach ($products as $item): ?>
+                  <?php foreach ($productsPage['items'] as $index => $item): ?>
                     <tr>
+                      <td><?= e((string) ($productsPage['offset'] + $index + 1)) ?></td>
                       <td><?= e($item['name']) ?></td>
                       <td><?= e($item['store_name']) ?></td>
                       <td><?= e($item['type']) ?></td>
                       <td><?= e(rupiah($item['price_display'])) ?></td>
+                      <td>
+                        <div class="table-actions">
+                          <a class="inline-link" href="<?= e(base_path('admin-product-edit.php?id=' . $item['id'])) ?>">Edit</a>
+                          <form method="post" style="display:inline;" onsubmit="return confirm('Nonaktifkan produk ini?')">
+                            <input type="hidden" name="action" value="delete_product" />
+                            <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>" />
+                            <button type="submit" class="inline-link">Hapus</button>
+                          </form>
+                        </div>
+                      </td>
                     </tr>
                   <?php endforeach; ?>
                 </tbody>
               </table>
+              <div class="table-pagination">
+                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['product_page' => max(1, $productsPage['page'] - 1)])))) ?>">Prev</a>
+                <span><?= e((string) $productsPage['page']) ?> / <?= e((string) $productsPage['total_pages']) ?></span>
+                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['product_page' => min($productsPage['total_pages'], $productsPage['page'] + 1)])))) ?>">Next</a>
+              </div>
             </article>
           </div>
         </section>
       </main>
     </div>
     <?php
-}, ['hide_header' => true, 'dashboard_css' => true, 'body_class' => 'dashboard-body']);
+}, ['hide_header' => true, 'hide_footer' => true, 'dashboard_css' => true, 'body_class' => 'dashboard-body']);

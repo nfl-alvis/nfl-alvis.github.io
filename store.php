@@ -7,6 +7,7 @@ require_once __DIR__ . '/includes/bootstrap.php';
 $slug = trim($_GET['slug'] ?? '');
 $store = $slug !== '' ? find_store_by_slug($slug) : null;
 $stores = $slug === '' ? find_stores(trim($_GET['search'] ?? '')) : [];
+$storePlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23f6d6c7'/%3E%3Cstop offset='100%25' stop-color='%23dce9da'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='520' rx='36' fill='url(%23g)'/%3E%3Crect x='72' y='88' width='656' height='344' rx='28' fill='rgba(255,255,255,0.68)'/%3E%3Cpath d='M140 344l108-118 82 86 126-144 170 176H140z' fill='%23b3c8b4'/%3E%3Ccircle cx='252' cy='196' r='34' fill='%23e06b4c' fill-opacity='0.78'/%3E%3Ctext x='50%25' y='84%25' text-anchor='middle' font-family='Arial,sans-serif' font-size='34' fill='%233e6b48'%3EPlaceholder Toko%3C/text%3E%3C/svg%3E";
 
 if ($slug !== '' && !$store) {
     set_flash('error', 'Toko tidak ditemukan.');
@@ -27,7 +28,9 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
 
       <section class="detail-layout">
         <article class="detail-panel">
-          <img src="<?= e(base_path($store['cover_image'])) ?>" alt="<?= e($store['name']) ?>" />
+          <div class="store-card-media">
+            <img src="<?= e($store['cover_image'] !== '' ? base_path($store['cover_image']) : $storePlaceholder) ?>" alt="<?= e($store['name']) ?>" />
+          </div>
           <h2><?= e($store['name']) ?></h2>
           <p><?= e($store['description']) ?></p>
           <div class="meta-row">
@@ -69,6 +72,9 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
       <div class="store-grid" style="margin-top: 50px;">
         <?php foreach ($stores as $item): ?>
           <article class="store-card">
+            <div class="store-card-media">
+              <img src="<?= e($item['cover_image'] !== '' ? base_path($item['cover_image']) : $storePlaceholder) ?>" alt="Placeholder toko <?= e($item['name']) ?>" />
+            </div>
             <h3><?= e($item['name']) ?></h3>
             <p><?= e($item['description']) ?></p>
             <div class="meta-row">

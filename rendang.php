@@ -1,4 +1,3 @@
-<<<<<<< HEAD:rendang.php
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -240,7 +239,6 @@
   <script src="assets/js/detail.js"></script>
 </body>
 </html>
-=======
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -461,9 +459,9 @@
       <div class="footer-section support">
         <h4>Dukungan</h4>
         <ul>
-          <li><a href="cs.html">Customer Service</a></li>
-          <li><a href="cs.html">Kontak</a></li>
-          <li><a href="cs.html">Sosial Media</a></li>
+          <li><a href="cs.php">Customer Service</a></li>
+          <li><a href="cs.php">Kontak</a></li>
+          <li><a href="cs.php">Sosial Media</a></li>
         </ul>
       </div>
     </div>
@@ -482,4 +480,3 @@
   <script src="assets/js/detail.js"></script>
 </body>
 </html>
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2:rendang.html

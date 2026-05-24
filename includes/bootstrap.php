@@ -86,7 +86,6 @@ function current_user(): ?array
     return $user ?: null;
 }
 
-<<<<<<< HEAD
 function user_profile_image_url(?array $user): string
 {
     $path = trim((string) ($user['profile_image'] ?? ''));
@@ -109,8 +108,6 @@ function user_profile_initial(?array $user): string
     return strtoupper(substr($name, 0, 1));
 }
 
-=======
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
 function login_user(array $user): void
 {
     $_SESSION['user_id'] = $user['id'];
@@ -267,14 +264,11 @@ function find_products(array $filters = []): array
         $params['type'] = $filters['type'];
     }
 
-<<<<<<< HEAD
     if (!empty($filters['region'])) {
         $conditions[] = 'p.region = :region';
         $params['region'] = $filters['region'];
     }
 
-=======
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
     $sql = sprintf(
         'SELECT p.*, s.name AS store_name, s.slug AS store_slug
          FROM products p
@@ -290,7 +284,6 @@ function find_products(array $filters = []): array
     return $stmt->fetchAll();
 }
 
-<<<<<<< HEAD
 function product_regions(): array
 {
     $stmt = db()->query(
@@ -305,9 +298,6 @@ function product_regions(): array
         $stmt->fetchAll()
     )));
 }
-
-=======
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
 function find_product_by_slug(string $slug): ?array
 {
     $stmt = db()->prepare(
@@ -399,13 +389,8 @@ function authenticate_user(string $email, string $password): ?array
 function create_user(string $name, string $email, string $password, string $role = ROLE_USER, ?int $storeId = null): void
 {
     $stmt = db()->prepare(
-<<<<<<< HEAD
         'INSERT INTO users (name, email, password_hash, profile_image, role, store_id, is_active, created_at, updated_at)
          VALUES (:name, :email, :password_hash, NULL, :role, :store_id, 1, NOW(), NOW())'
-=======
-        'INSERT INTO users (name, email, password_hash, role, store_id, is_active, created_at, updated_at)
-         VALUES (:name, :email, :password_hash, :role, :store_id, 1, NOW(), NOW())'
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
     );
     $stmt->execute([
         'name' => $name,
@@ -416,7 +401,6 @@ function create_user(string $name, string $email, string $password, string $role
     ]);
 }
 
-<<<<<<< HEAD
 function save_uploaded_profile_image(array $file, ?string $currentPath = null): string
 {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
@@ -480,11 +464,6 @@ function update_current_user_profile(
 ): void
 {
     ensure_user_profile_image_column();
-
-=======
-function update_current_user_profile(int $userId, string $name, string $email, ?string $password = null): void
-{
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
     $params = [
         'id' => $userId,
         'name' => $name,
@@ -496,14 +475,11 @@ function update_current_user_profile(int $userId, string $name, string $email, ?
                 email = :email,
                 updated_at = NOW()';
 
-<<<<<<< HEAD
     if ($profileImage !== null) {
         $sql .= ', profile_image = :profile_image';
         $params['profile_image'] = $profileImage;
     }
 
-=======
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
     if ($password !== null && $password !== '') {
         $sql .= ', password_hash = :password_hash';
         $params['password_hash'] = hash('sha256', $password);
@@ -511,7 +487,6 @@ function update_current_user_profile(int $userId, string $name, string $email, ?
 
     $sql .= ' WHERE id = :id';
 
-<<<<<<< HEAD
     try {
         $stmt = db()->prepare($sql);
         $stmt->execute($params);
@@ -522,10 +497,6 @@ function update_current_user_profile(int $userId, string $name, string $email, ?
 
         throw $exception;
     }
-=======
-    $stmt = db()->prepare($sql);
-    $stmt->execute($params);
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
 }
 
 function save_uploaded_product_image(array $file, ?string $currentPath = null): string
@@ -737,6 +708,23 @@ function all_products_for_admin(): array
     )->fetchAll();
 }
 
+function paginate_array(array $items, int $page, int $perPage): array
+{
+    $total = count($items);
+    $totalPages = max(1, (int) ceil($total / $perPage));
+    $page = max(1, min($page, $totalPages));
+    $offset = ($page - 1) * $perPage;
+
+    return [
+        'items' => array_slice($items, $offset, $perPage),
+        'page' => $page,
+        'per_page' => $perPage,
+        'total' => $total,
+        'total_pages' => $totalPages,
+        'offset' => $offset,
+    ];
+}
+
 function render_product_card(array $product): void
 {
     $favoriteId = favorite_product_id($product);
@@ -746,21 +734,14 @@ function render_product_card(array $product): void
         <img src="<?= e(base_path($product['image_path'])) ?>" alt="<?= e($product['name']) ?>" />
         <div class="image-tags">
           <span><?= e($product['region']) ?></span>
-<<<<<<< HEAD
-=======
-          <span><?= e($product['type']) ?></span>
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
         </div>
         <button class="fav-btn" type="button" aria-label="Simpan ke favorit"></button>
       </div>
       <div class="card-content">
         <div class="card-meta-line">
           <span class="food-store"><?= e($product['store_name']) ?></span>
-<<<<<<< HEAD
-=======
           <span class="food-dot"></span>
           <span class="food-region"><?= e($product['region']) ?></span>
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
         </div>
         <h3 class="food-title"><?= e($product['name']) ?></h3>
         <p class="food-desc"><?= e($product['short_description']) ?></p>
@@ -785,6 +766,7 @@ function render_layout(string $title, callable $content, array $options = []): v
     $pageClass = $options['body_class'] ?? '';
     $includeAppCss = $options['app_css'] ?? true;
     $includeDashboardCss = $options['dashboard_css'] ?? false;
+    $includeTentangCss = $options['tentang_css'] ?? false;
     $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
     ?>
 <!DOCTYPE html>
@@ -807,6 +789,9 @@ function render_layout(string $title, callable $content, array $options = []): v
     <?php if ($includeDashboardCss): ?>
     <link rel="stylesheet" href="<?= e(base_path('assets/css/dashboard.css')) ?>" />
     <?php endif; ?>
+    <?php if ($includeTentangCss): ?>
+    <link rel="stylesheet" href="<?= e(base_path('assets/css/tentang.css')) ?>" />
+    <?php endif; ?>
   </head>
   <body class="<?= e($pageClass) ?>">
     <?php if ($flash): ?>
@@ -821,18 +806,16 @@ function render_layout(string $title, callable $content, array $options = []): v
           <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">☰</button>
           <ul id="navMenu">
             <li><a href="<?= e(base_path('index.php')) ?>" <?= $currentPage === 'index.php' ? 'class="active"' : '' ?>>Beranda</a></li>
-            <li><a href="<?= e(base_path('katalog.php')) ?>" <?= $currentPage === 'katalog.php' ? 'class="active"' : '' ?>>Katalog</a></li>
-            <li><a href="<?= e(base_path('store.php')) ?>" <?= $currentPage === 'store.php' ? 'class="active"' : '' ?>>Toko</a></li>
-<<<<<<< HEAD
-            <li><a href="<?= e(base_path('tentang.php')) ?>" <?= $currentPage === 'tentang.php' ? 'class="active"' : '' ?>>Tentang</a></li>
-=======
-            <li><a href="<?= e(base_path('tentang.html')) ?>">Tentang</a></li>
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
+          <li><a href="<?= e(base_path('katalog.php')) ?>" <?= $currentPage === 'katalog.php' ? 'class="active"' : '' ?>>Katalog</a></li>
+          <li><a href="<?= e(base_path('store.php')) ?>" <?= $currentPage === 'store.php' ? 'class="active"' : '' ?>>Toko</a></li>
+          <li><a href="<?= e(base_path('favorites.php')) ?>" <?= $currentPage === 'favorites.php' ? 'class="active"' : '' ?>>Favorit</a></li>
+          <li><a href="<?= e(base_path('tentang.php')) ?>" <?= $currentPage === 'tentang.php' ? 'class="active"' : '' ?>>Tentang</a></li>
             <?php if (!$user): ?>
               <li class="mobile-auth"><a href="<?= e(base_path('login.php')) ?>" class="login">Masuk</a></li>
               <li class="mobile-auth"><a href="<?= e(base_path('register.php')) ?>" class="register">Daftar</a></li>
             <?php else: ?>
               <li class="mobile-auth"><a href="<?= e(base_path('edit-profile.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-user"></i>Edit Profil</a></li>
+              <li class="mobile-auth"><a href="<?= e(base_path('favorites.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-heart"></i>Favorit</a></li>
               <?php if ($user['role'] !== ROLE_USER): ?>
                 <li class="mobile-auth"><a href="<?= e(base_path(nav_target_for_user($user))) ?>" class="mobile-profile-link"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
               <?php endif; ?>
@@ -848,12 +831,12 @@ function render_layout(string $title, callable $content, array $options = []): v
           <?php else: ?>
             <div class="profile-menu" id="profileMenu">
               <button type="button" class="header-pill profile-trigger" id="profileMenuButton" aria-haspopup="true" aria-expanded="false">
-<<<<<<< HEAD
                 <?php if (user_profile_image_url($user) !== ''): ?>
                   <img class="profile-avatar profile-avatar-image" src="<?= e(user_profile_image_url($user)) ?>" alt="<?= e($user['name']) ?>" />
                 <?php else: ?>
                   <span class="profile-avatar"><?= e(user_profile_initial($user)) ?></span>
                 <?php endif; ?>
+                <span><?= e($user['name']) ?></span>
               </button>
               <div class="profile-dropdown" id="profileDropdown">
                 <div class="profile-header">
@@ -862,22 +845,13 @@ function render_layout(string $title, callable $content, array $options = []): v
                   <?php else: ?>
                     <div class="profile-avatar large"><?= e(user_profile_initial($user)) ?></div>
                   <?php endif; ?>
-=======
-                <span class="profile-avatar"><?= e(strtoupper(substr((string) $user['name'], 0, 1))) ?></span>
-                <span><?= e($user['name']) ?></span>
-                <i class="fa-solid fa-chevron-down profile-chevron"></i>
-              </button>
-              <div class="profile-dropdown" id="profileDropdown">
-                <div class="profile-header">
-                  <div class="profile-avatar large"><?= e(strtoupper(substr((string) $user['name'], 0, 1))) ?></div>
->>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
                   <div>
                     <strong><?= e($user['name']) ?></strong>
                     <span><?= e($user['email']) ?></span>
                   </div>
                 </div>
                 <a href="<?= e(base_path('edit-profile.php')) ?>"><i class="fa-regular fa-user"></i>Edit Profil</a>
-                <a href="<?= e(base_path('favorites.php')) ?>"><i class="fa-regular fa-heart"></i>Halaman Favorit</a>
+                <a href="<?= e(base_path('favorites.php')) ?>"><i class="fa-regular fa-heart"></i>Favorit</a>
                 <?php if ($user['role'] !== ROLE_USER): ?>
                   <a href="<?= e(base_path(nav_target_for_user($user))) ?>"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
                 <?php endif; ?>
@@ -889,9 +863,49 @@ function render_layout(string $title, callable $content, array $options = []): v
       </header>
     <?php endif; ?>
 
-    <?php $content($user); ?>
+    <main>
+      <?php $content($user); ?>
+    </main>
+
+    <?php if (!($options['hide_footer'] ?? false)): ?>
+      <footer class="footer">
+        <div class="footer-content">
+          <div class="footer-section about">
+            <h3><?= e(app_name()) ?></h3>
+            <p>Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya</p>
+          </div>
+
+          <div class="footer-section navigation">
+            <h4>Navigasi</h4>
+            <ul>
+              <li><a href="<?= e(base_path('index.php')) ?>">Beranda</a></li>
+              <li><a href="<?= e(base_path('katalog.php')) ?>">Katalog</a></li>
+              <li><a href="<?= e(base_path('favorites.php')) ?>">Favorit</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section support">
+            <h4>Dukungan</h4>
+            <ul>
+              <li><a href="<?= e(base_path('cs.php')) ?>">Customer Service</a></li>
+              <li><a href="<?= e(base_path('cs.php')) ?>">Kontak</a></li>
+              <li><a href="<?= e(base_path('cs.php')) ?>">Sosial Media</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>© <?= date('Y') ?> <?= e(app_name()) ?> — All rights reserved.</p>
+          <a href="#">Kebijakan Privasi</a>
+          <a href="#">S&K</a>
+        </div>
+      </footer>
+    <?php endif; ?>
 
     <script src="<?= e(base_path('assets/js/main.js')) ?>"></script>
+    <?php if (($options['include_detail_js'] ?? false)): ?>
+      <script src="<?= e(base_path('assets/js/detail.js')) ?>"></script>
+    <?php endif; ?>
   </body>
 </html>
 <?php
