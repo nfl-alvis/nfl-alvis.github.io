@@ -535,6 +535,42 @@ function save_uploaded_product_image(array $file, ?string $currentPath = null): 
     return 'uploads/products/' . $filename;
 }
 
+function save_uploaded_store_image(array $file, ?string $currentPath = null): string
+{
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+        return $currentPath ?: 'assets/image/image.png';
+    }
+
+    if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+        throw new RuntimeException('Upload gambar toko gagal diproses.');
+    }
+
+    $allowed = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp',
+    ];
+
+    $mime = mime_content_type($file['tmp_name']);
+    if (!isset($allowed[$mime])) {
+        throw new RuntimeException('Format gambar harus JPG, PNG, atau WEBP.');
+    }
+
+    $uploadDir = __DIR__ . '/../uploads/stores';
+    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0777, true) && !is_dir($uploadDir)) {
+        throw new RuntimeException('Folder upload gambar toko tidak dapat dibuat.');
+    }
+
+    $filename = uniqid('store_', true) . '.' . $allowed[$mime];
+    $target = $uploadDir . '/' . $filename;
+
+    if (!move_uploaded_file($file['tmp_name'], $target)) {
+        throw new RuntimeException('Gagal menyimpan file gambar toko.');
+    }
+
+    return 'uploads/stores/' . $filename;
+}
+
 function submit_product_review(int $productId, int $userId, int $stars, string $reviewText): void
 {
     $stmt = db()->prepare(

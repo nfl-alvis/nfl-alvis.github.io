@@ -9,6 +9,7 @@ require_role(ROLE_SUPER_ADMIN);
 if (is_post()) {
     try {
         $name = trim($_POST['name'] ?? '');
+        $coverImage = save_uploaded_store_image($_FILES['cover_image'] ?? []);
         $stmt = db()->prepare(
             'INSERT INTO stores
              (name, slug, region, address, whatsapp, instagram, description, cover_image, is_active, created_at, updated_at)
@@ -23,7 +24,7 @@ if (is_post()) {
             'whatsapp' => preg_replace('/\D+/', '', $_POST['whatsapp'] ?? ''),
             'instagram' => trim($_POST['instagram'] ?? ''),
             'description' => trim($_POST['description'] ?? ''),
-            'cover_image' => trim($_POST['cover_image'] ?? 'assets/image/image.png'),
+            'cover_image' => $coverImage,
         ]);
         set_flash('success', 'Toko baru berhasil dibuat.');
         redirect_to('admin-dashboard.php');
@@ -54,40 +55,41 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
         <div class="dashboard-header">
           <div>
             <h2>Tambah Toko Baru</h2>
-            <p class="muted-note">Halaman khusus untuk menambah toko baru dari area superadmin.</p>
+            <p class="muted-note">Tambahkan data toko baru dari area superadmin. Isi data inti, kontak, dan deskripsi sebelum toko dipublikasikan.</p>
           </div>
           <div class="pill-role">Super Admin</div>
         </div>
 
         <section class="dashboard-grid">
-          <article class="table-card">
-            <h3>Form Toko Baru</h3>
-            <form method="post" class="form-panel" style="margin-top: 18px;">
-              <label>Nama Toko <input type="text" name="name" required /></label>
-              <label>Wilayah <input type="text" name="region" required /></label>
-              <label>Alamat <textarea name="address" required></textarea></label>
-              <label>WhatsApp <input type="text" name="whatsapp" required /></label>
-              <label>Instagram <input type="text" name="instagram" required /></label>
-              <label>Cover Image Path <input type="text" name="cover_image" value="assets/image/image.png" required /></label>
-              <label>Deskripsi <textarea name="description" required></textarea></label>
-              <button type="submit">Tambah Toko</button>
-            </form>
-          </article>
-
-          <article class="table-card">
-            <h3>Menu Cepat</h3>
-            <div class="product-store-list" style="margin-top: 12px;">
-              <div class="product-mini-card">
-                <strong>Dashboard</strong>
-                <p>Kembali ke ringkasan super admin.</p>
-                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php')) ?>">Buka dashboard</a>
+          <article class="table-card admin-form-card">
+            <div class="table-card-head">
+              <div>
+                <h3>Form Toko Baru</h3>
+                <p class="table-meta">Pastikan nama, wilayah, dan kontak sudah benar sebelum disimpan.</p>
               </div>
-              <div class="product-mini-card">
-                <strong>Buat Store Admin</strong>
-                <p>Tambah akun admin toko dari halaman khusus.</p>
-                <a class="inline-link" href="<?= e(base_path('admin-store-admin-create.php')) ?>">Buka halaman</a>
-              </div>
+              <a class="inline-link" href="<?= e(base_path('admin-dashboard.php')) ?>">Kembali ke dashboard</a>
             </div>
+
+            <form method="post" enctype="multipart/form-data" class="form-panel admin-form-panel">
+              <div class="form-grid-2">
+                <label>Nama Toko <input type="text" name="name" required placeholder="Contoh: Rumah Makan Nusantara" /></label>
+                <label>Wilayah <input type="text" name="region" required placeholder="Contoh: Jawa Timur" /></label>
+              </div>
+              <label>Alamat <textarea name="address" required placeholder="Tuliskan alamat lengkap toko"></textarea></label>
+              <div class="form-grid-2">
+                <label>WhatsApp <input type="text" name="whatsapp" required placeholder="Contoh: 6281234567890" /></label>
+                <label>Instagram <input type="text" name="instagram" required placeholder="Contoh: @namatoko" /></label>
+              </div>
+              <label>Foto Toko
+                <input type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp" />
+              </label>
+              <div class="profile-upload-note">Upload gambar toko langsung. Format yang didukung: JPG, PNG, WEBP.</div>
+              <label>Deskripsi <textarea name="description" required placeholder="Deskripsi singkat tentang toko dan spesialisasinya"></textarea></label>
+              <div class="form-footer-actions">
+                <button type="submit">Tambah Toko</button>
+                <span class="form-footer-note">Data akan langsung masuk ke daftar toko aktif setelah disimpan.</span>
+              </div>
+            </form>
           </article>
         </section>
       </main>

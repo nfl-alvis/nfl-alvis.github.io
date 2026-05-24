@@ -78,14 +78,17 @@ $userSearch = trim($_GET['user_search'] ?? '');
 $userRole = trim($_GET['user_role'] ?? '');
 $userSort = trim($_GET['user_sort'] ?? 'created_desc');
 $userPage = max(1, (int) ($_GET['user_page'] ?? 1));
+$userPerPage = max(1, (int) ($_GET['user_per_page'] ?? 8));
 
 $storeSearch = trim($_GET['store_search'] ?? '');
 $storeSort = trim($_GET['store_sort'] ?? 'created_desc');
 $storePage = max(1, (int) ($_GET['store_page'] ?? 1));
+$storePerPage = max(1, (int) ($_GET['store_per_page'] ?? 8));
 
 $productSearch = trim($_GET['product_search'] ?? '');
 $productSort = trim($_GET['product_sort'] ?? 'created_desc');
 $productPage = max(1, (int) ($_GET['product_page'] ?? 1));
+$productPerPage = max(1, (int) ($_GET['product_per_page'] ?? 8));
 
 $users = array_values(array_filter(all_users(), static function (array $item) use ($userSearch, $userRole): bool {
     if ($userSearch !== '') {
@@ -144,22 +147,15 @@ usort($products, static function (array $a, array $b) use ($productSort): int {
     };
 });
 
-$usersPage = paginate_array($users, $userPage, 8);
-$storesPage = paginate_array($stores, $storePage, 8);
-$productsPage = paginate_array($products, $productPage, 8);
+$usersPage = paginate_array($users, $userPage, $userPerPage);
+$storesPage = paginate_array($stores, $storePage, $storePerPage);
+$productsPage = paginate_array($products, $productPage, $productPerPage);
 
 render_layout('Dashboard Super Admin', function (?array $user = null) use (
     $stats,
-    $userSearch,
-    $userRole,
-    $userSort,
-    $usersPage,
-    $storeSearch,
-    $storeSort,
-    $storesPage,
-    $productSearch,
-    $productSort,
-    $productsPage
+    $userSearch, $userRole, $userSort, $userPage, $userPerPage, $usersPage,
+    $storeSearch, $storeSort, $storePage, $storePerPage, $storesPage,
+    $productSearch, $productSort, $productPage, $productPerPage, $productsPage
 ): void {
     ?>
     <div class="dashboard-shell">
@@ -190,7 +186,6 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use (
           <article class="stat-box"><p>Total pengguna</p><h3><?= e(number_short($stats['users'])) ?></h3></article>
           <article class="stat-box"><p>Total toko</p><h3><?= e(number_short($stats['stores'])) ?></h3></article>
           <article class="stat-box"><p>Total produk</p><h3><?= e(number_short($stats['products'])) ?></h3></article>
-          <article class="stat-box"><p>Total views produk</p><h3><?= e(number_short($stats['views'])) ?></h3></article>
         </section>
 
         <section class="dashboard-grid">
@@ -212,6 +207,14 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use (
                     <option value="created_desc" <?= $userSort === 'created_desc' ? 'selected' : '' ?>>Terbaru</option>
                     <option value="name_asc" <?= $userSort === 'name_asc' ? 'selected' : '' ?>>Nama A-Z</option>
                     <option value="name_desc" <?= $userSort === 'name_desc' ? 'selected' : '' ?>>Nama Z-A</option>
+                  </select>
+                </label>
+                <label>Baris per halaman
+                  <select name="user_per_page">
+                    <option value="5" <?= $userPerPage === 5 ? 'selected' : '' ?>>5</option>
+                    <option value="10" <?= $userPerPage === 10 ? 'selected' : '' ?>>10</option>
+                    <option value="20" <?= $userPerPage === 20 ? 'selected' : '' ?>>20</option>
+                    <option value="50" <?= $userPerPage === 50 ? 'selected' : '' ?>>50</option>
                   </select>
                 </label>
                 <button type="submit">Terapkan</button>
@@ -251,9 +254,18 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use (
                 </tbody>
               </table>
               <div class="table-pagination">
-                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['user_page' => max(1, $usersPage['page'] - 1)])))) ?>">Prev</a>
-                <span><?= e((string) $usersPage['page']) ?> / <?= e((string) $usersPage['total_pages']) ?></span>
-                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['user_page' => min($usersPage['total_pages'], $usersPage['page'] + 1)])))) ?>">Next</a>
+                <div class="pagination-controls">
+                  <label>Halaman
+                    <span class="table-meta"><?= e((string) $usersPage['page']) ?> dari <?= e((string) $usersPage['total_pages']) ?></span>
+                  </label>
+                </div>
+                <div class="page-nav">
+                  <a class="page-btn" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['user_page' => max(1, $usersPage['page'] - 1)])))) ?>">←</a>
+                  <?php for ($p = max(1, $usersPage['page'] - 2); $p <= min($usersPage['total_pages'], $usersPage['page'] + 2); $p++): ?>
+                    <a class="page-btn <?= $p === $usersPage['page'] ? 'is-active' : '' ?>" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['user_page' => $p])))) ?>"><?= e((string) $p) ?></a>
+                  <?php endfor; ?>
+                  <a class="page-btn" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['user_page' => min($usersPage['total_pages'], $usersPage['page'] + 1)])))) ?>">→</a>
+                </div>
               </div>
             </article>
 
@@ -266,6 +278,14 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use (
                     <option value="created_desc" <?= $storeSort === 'created_desc' ? 'selected' : '' ?>>Terbaru</option>
                     <option value="name_asc" <?= $storeSort === 'name_asc' ? 'selected' : '' ?>>Nama A-Z</option>
                     <option value="name_desc" <?= $storeSort === 'name_desc' ? 'selected' : '' ?>>Nama Z-A</option>
+                  </select>
+                </label>
+                <label>Baris per halaman
+                  <select name="store_per_page">
+                    <option value="5" <?= $storePerPage === 5 ? 'selected' : '' ?>>5</option>
+                    <option value="10" <?= $storePerPage === 10 ? 'selected' : '' ?>>10</option>
+                    <option value="20" <?= $storePerPage === 20 ? 'selected' : '' ?>>20</option>
+                    <option value="50" <?= $storePerPage === 50 ? 'selected' : '' ?>>50</option>
                   </select>
                 </label>
                 <button type="submit">Terapkan</button>
@@ -305,9 +325,18 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use (
                 </tbody>
               </table>
               <div class="table-pagination">
-                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['store_page' => max(1, $storesPage['page'] - 1)])))) ?>">Prev</a>
-                <span><?= e((string) $storesPage['page']) ?> / <?= e((string) $storesPage['total_pages']) ?></span>
-                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['store_page' => min($storesPage['total_pages'], $storesPage['page'] + 1)])))) ?>">Next</a>
+                <div class="pagination-controls">
+                  <label>Halaman
+                    <span class="table-meta"><?= e((string) $storesPage['page']) ?> dari <?= e((string) $storesPage['total_pages']) ?></span>
+                  </label>
+                </div>
+                <div class="page-nav">
+                  <a class="page-btn" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['store_page' => max(1, $storesPage['page'] - 1)])))) ?>">←</a>
+                  <?php for ($p = max(1, $storesPage['page'] - 2); $p <= min($storesPage['total_pages'], $storesPage['page'] + 2); $p++): ?>
+                    <a class="page-btn <?= $p === $storesPage['page'] ? 'is-active' : '' ?>" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['store_page' => $p])))) ?>"><?= e((string) $p) ?></a>
+                  <?php endfor; ?>
+                  <a class="page-btn" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['store_page' => min($storesPage['total_pages'], $storesPage['page'] + 1)])))) ?>">→</a>
+                </div>
               </div>
             </article>
 
@@ -320,6 +349,14 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use (
                     <option value="created_desc" <?= $productSort === 'created_desc' ? 'selected' : '' ?>>Terbaru</option>
                     <option value="name_asc" <?= $productSort === 'name_asc' ? 'selected' : '' ?>>Nama A-Z</option>
                     <option value="name_desc" <?= $productSort === 'name_desc' ? 'selected' : '' ?>>Nama Z-A</option>
+                  </select>
+                </label>
+                <label>Baris per halaman
+                  <select name="product_per_page">
+                    <option value="5" <?= $productPerPage === 5 ? 'selected' : '' ?>>5</option>
+                    <option value="10" <?= $productPerPage === 10 ? 'selected' : '' ?>>10</option>
+                    <option value="20" <?= $productPerPage === 20 ? 'selected' : '' ?>>20</option>
+                    <option value="50" <?= $productPerPage === 50 ? 'selected' : '' ?>>50</option>
                   </select>
                 </label>
                 <button type="submit">Terapkan</button>
@@ -359,9 +396,18 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use (
                 </tbody>
               </table>
               <div class="table-pagination">
-                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['product_page' => max(1, $productsPage['page'] - 1)])))) ?>">Prev</a>
-                <span><?= e((string) $productsPage['page']) ?> / <?= e((string) $productsPage['total_pages']) ?></span>
-                <a class="inline-link" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['product_page' => min($productsPage['total_pages'], $productsPage['page'] + 1)])))) ?>">Next</a>
+                <div class="pagination-controls">
+                  <label>Halaman
+                    <span class="table-meta"><?= e((string) $productsPage['page']) ?> dari <?= e((string) $productsPage['total_pages']) ?></span>
+                  </label>
+                </div>
+                <div class="page-nav">
+                  <a class="page-btn" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['product_page' => max(1, $productsPage['page'] - 1)])))) ?>">←</a>
+                  <?php for ($p = max(1, $productsPage['page'] - 2); $p <= min($productsPage['total_pages'], $productsPage['page'] + 2); $p++): ?>
+                    <a class="page-btn <?= $p === $productsPage['page'] ? 'is-active' : '' ?>" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['product_page' => $p])))) ?>"><?= e((string) $p) ?></a>
+                  <?php endfor; ?>
+                  <a class="page-btn" href="<?= e(base_path('admin-dashboard.php?' . http_build_query(array_merge($_GET, ['product_page' => min($productsPage['total_pages'], $productsPage['page'] + 1)])))) ?>">→</a>
+                </div>
               </div>
             </article>
           </div>
