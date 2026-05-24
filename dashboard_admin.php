@@ -441,35 +441,35 @@
         <i class="fas fa-home"></i>
         <span>Dashboard</span>
       </a>
-      <a href="admin-produk.html" class="menu-item">
+      <a href="admin-produk.php" class="menu-item">
         <i class="fas fa-utensils"></i>
         <span>Produk Makanan</span>
       </a>
-      <a href="admin-kategori.html" class="menu-item">
+      <a href="admin-kategori.php" class="menu-item">
         <i class="fas fa-tags"></i>
         <span>Kategori</span>
       </a>
-      <a href="admin-inquiry.html" class="menu-item">
+      <a href="admin-inquiry.php" class="menu-item">
         <i class="fas fa-envelope"></i>
         <span>Inquiry Pelanggan</span>
       </a>
-      <a href="admin-statistik.html" class="menu-item">
+      <a href="admin-statistik.php" class="menu-item">
         <i class="fas fa-chart-line"></i>
         <span>Statistik</span>
       </a>
-      <a href="admin-promosi.html" class="menu-item">
+      <a href="admin-promosi.php" class="menu-item">
         <i class="fas fa-bullhorn"></i>
         <span>Promosi</span>
       </a>
-      <a href="admin-outlet.html" class="menu-item">
+      <a href="admin-outlet.php" class="menu-item">
         <i class="fas fa-store"></i>
         <span>Outlet/Restoran</span>
       </a>
-      <a href="admin-settings.html" class="menu-item">
+      <a href="admin-settings.php" class="menu-item">
         <i class="fas fa-cog"></i>
         <span>Pengaturan</span>
       </a>
-      <a href="index.html" class="menu-item">
+      <a href="index.php" class="menu-item">
         <i class="fas fa-sign-out-alt"></i>
         <span>Keluar</span>
       </a>
@@ -689,7 +689,7 @@
         // Remove active class from all items
         document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
         // Add active class to clicked item
-        if (!this.getAttribute('href').includes('index.html')) {
+        if (!this.getAttribute('href').includes('index.php')) {
           e.preventDefault();
           this.classList.add('active');
         }

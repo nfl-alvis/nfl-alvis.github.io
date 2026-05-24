@@ -358,8 +358,8 @@ nav ul li a:hover {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-primary);
-  color: var(--color-white);
+  background: transparent;
+  color: var(--color-primary);
   border: none;
   cursor: pointer;
   display: flex;
@@ -371,7 +371,7 @@ nav ul li a:hover {
 }
 
 .profile-btn:hover {
-  background: var(--color-primary-dark);
+  background: transparent;
   transform: scale(1.05);
   box-shadow: var(--shadow-md);
 }
@@ -380,9 +380,9 @@ nav ul li a:hover {
   position: absolute;
   top: 55px;
   right: 0;
-  background: var(--color-white);
+  background: transparent;
   border-radius: 12px;
-  box-shadow: var(--shadow-2xl);
+  box-shadow: none;
   min-width: 220px;
   opacity: 0;
   visibility: hidden;
@@ -402,8 +402,8 @@ nav ul li a:hover {
 
 .profile-header {
   padding: 20px 16px; /* Tambah padding atas-bawah */
-  background: var(--gradient-hero);
-  color: var(--color-white);
+  background: transparent;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   gap: 16px; /* Tambah gap dari 12px jadi 16px */
@@ -439,7 +439,7 @@ nav ul li a:hover {
 
 .profile-dropdown a:hover,
 .profile-dropdown button:hover {
-  background: var(--color-bg-light);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .profile-dropdown i {

@@ -28,17 +28,17 @@
     <nav>
       <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">☰</button>
       <ul id="navMenu">
-        <li><a href="index.html">Beranda</a></li>
-        <li><a href="katalog.html">Katalog</a></li>
+        <li><a href="index.php">Beranda</a></li>
+        <li><a href="katalog.php">Katalog</a></li>
         <li><a href="#favorit">Favorit</a></li>
-        <li><a href="tentang.html">Tentang</a></li>
+        <li><a href="tentang.php">Tentang</a></li>
         
         <!-- Mobile Auth -->
         <li class="mobile-auth">
-          <a href="login.html" class="login">Masuk</a>
+          <a href="login.php" class="login">Masuk</a>
         </li>
         <li class="mobile-auth">
-          <a href="register.html" class="register">Daftar</a>
+          <a href="register.php" class="register">Daftar</a>
         </li>
       </ul>
       <span class="nav-indicator"></span>
@@ -46,10 +46,10 @@
     
     <!-- Desktop Auth -->
     <div class="auth-buttons">
-      <a href="login.html">
+      <a href="login.php">
         <button class="btn btn-secondary">Masuk</button>
       </a>
-      <a href="register.html">
+      <a href="register.php">
         <button class="btn btn-primary">Daftar</button>
       </a>
     </div>
@@ -209,18 +209,18 @@
       <div class="footer-section navigation">
         <h4>Navigasi</h4>
         <ul>
-          <li><a href="index.html">Beranda</a></li>
-          <li><a href="katalog.html">Katalog</a></li>
-          <li><a href="favorit.html">Favorit</a></li>
+          <li><a href="index.php">Beranda</a></li>
+          <li><a href="katalog.php">Katalog</a></li>
+          <li><a href="favorites.php">Favorit</a></li>
         </ul>
       </div>
 
       <div class="footer-section support">
         <h4>Dukungan</h4>
         <ul>
-          <li><a href="cs.html">Customer Service</a></li>
-          <li><a href="cs.html">Kontak</a></li>
-          <li><a href="cs.html">Sosial Media</a></li>
+          <li><a href="cs.php">Customer Service</a></li>
+          <li><a href="cs.php">Kontak</a></li>
+          <li><a href="cs.php">Sosial Media</a></li>
         </ul>
       </div>
     </div>
