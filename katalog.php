@@ -8,11 +8,17 @@ require_login();
 
 $search = trim($_GET['search'] ?? '');
 $type = trim($_GET['type'] ?? '');
+<<<<<<< HEAD
 $region = trim($_GET['region'] ?? '');
 $products = find_products(['search' => $search, 'type' => $type, 'region' => $region]);
 $regions = product_regions();
 
 render_layout('Katalog', function (?array $user = null) use ($search, $type, $region, $products, $regions): void {
+=======
+$products = find_products(['search' => $search, 'type' => $type]);
+
+render_layout('Katalog', function (?array $user = null) use ($search, $type, $products): void {
+>>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
     ?>
     <section class="page-intro compact">
       <div class="page-intro-copy">
@@ -40,12 +46,15 @@ render_layout('Katalog', function (?array $user = null) use ($search, $type, $re
           <option value="Makanan" <?= $type === 'Makanan' ? 'selected' : '' ?>>Makanan</option>
           <option value="Minuman" <?= $type === 'Minuman' ? 'selected' : '' ?>>Minuman</option>
         </select>
+<<<<<<< HEAD
         <select name="region">
           <option value="">Semua daerah</option>
           <?php foreach ($regions as $availableRegion): ?>
             <option value="<?= e($availableRegion) ?>" <?= $region === $availableRegion ? 'selected' : '' ?>><?= e($availableRegion) ?></option>
           <?php endforeach; ?>
         </select>
+=======
+>>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
         <button type="submit">Cari Sekarang</button>
       </form>
     </div>

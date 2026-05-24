@@ -17,7 +17,10 @@ if (is_post()) {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
     $passwordConfirm = $_POST['password_confirm'] ?? '';
+<<<<<<< HEAD
     $currentImage = trim((string) ($user['profile_image'] ?? ''));
+=======
+>>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
 
     if ($name === '' || $email === '') {
         set_flash('error', 'Nama dan email wajib diisi.');
@@ -30,6 +33,7 @@ if (is_post()) {
     }
 
     try {
+<<<<<<< HEAD
         $profileImage = save_uploaded_profile_image($_FILES['profile_image'] ?? [], $currentImage);
         update_current_user_profile(
             (int) $user['id'],
@@ -45,12 +49,20 @@ if (is_post()) {
             ? 'Email sudah dipakai akun lain.'
             : 'Foto profil atau profil gagal diperbarui. Coba unggah ulang foto dengan format JPG, PNG, atau WEBP.';
         set_flash('error', $message);
+=======
+        update_current_user_profile((int) $user['id'], $name, $email, $password !== '' ? $password : null);
+        set_flash('success', 'Profil berhasil diperbarui.');
+        redirect_to('edit-profile.php');
+    } catch (Throwable $exception) {
+        set_flash('error', 'Profil gagal diperbarui. Pastikan email belum dipakai akun lain.');
+>>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
         redirect_to('edit-profile.php');
     }
 }
 
 render_layout('Edit Profil', function (?array $currentUser = null) use ($user): void {
     ?>
+<<<<<<< HEAD
     <section class="profile-edit-shell">
       <article class="detail-panel profile-summary-card">
         <div class="profile-summary-badge">Akun Saya</div>
@@ -60,11 +72,36 @@ render_layout('Edit Profil', function (?array $currentUser = null) use ($user): 
           <?php else: ?>
             <div class="profile-avatar xl"><?= e(user_profile_initial($user)) ?></div>
           <?php endif; ?>
+=======
+    <section class="page-intro compact">
+      <div class="page-intro-copy">
+        <span class="eyebrow">Akun Saya</span>
+        <h2>Kelola profil dengan tampilan yang lebih ringkas.</h2>
+        <p>Perbarui identitas akun, email, dan kata sandi dari satu panel yang lebih fokus dan nyaman dipakai.</p>
+      </div>
+      <div class="page-intro-stats">
+        <div class="intro-stat-card">
+          <strong><?= e($user['role'] === ROLE_USER ? 'User' : 'Admin') ?></strong>
+          <span>tipe akun</span>
+        </div>
+        <div class="intro-stat-card">
+          <strong><?= e($user['is_active'] ? 'Aktif' : 'Nonaktif') ?></strong>
+          <span>status akun</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="profile-edit-shell">
+      <article class="detail-panel profile-summary-card">
+        <div class="profile-summary-top">
+          <div class="profile-avatar xl"><?= e(strtoupper(substr((string) $user['name'], 0, 1))) ?></div>
+>>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
           <div>
             <h3><?= e($user['name']) ?></h3>
             <p><?= e($user['email']) ?></p>
           </div>
         </div>
+<<<<<<< HEAD
         <div class="profile-summary-meta">
           <div class="intro-stat-card compact">
             <strong><?= e($user['role'] === ROLE_USER ? 'User' : 'Admin') ?></strong>
@@ -75,6 +112,8 @@ render_layout('Edit Profil', function (?array $currentUser = null) use ($user): 
             <span>status akun</span>
           </div>
         </div>
+=======
+>>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
         <div class="product-store-list">
           <div class="product-mini-card">
             <strong>Status Akun</strong>
@@ -94,6 +133,7 @@ render_layout('Edit Profil', function (?array $currentUser = null) use ($user): 
       </article>
 
       <article class="detail-panel">
+<<<<<<< HEAD
         <div class="profile-form-head">
           <div>
             <h3>Form Edit Profil</h3>
@@ -107,6 +147,10 @@ render_layout('Edit Profil', function (?array $currentUser = null) use ($user): 
             <input type="file" name="profile_image" accept=".jpg,.jpeg,.png,.webp" />
           </label>
           <div class="profile-upload-note">Format yang didukung: JPG, PNG, WEBP.</div>
+=======
+        <h3>Form Edit Profil</h3>
+        <form method="post" class="form-panel" style="margin-top: 18px;">
+>>>>>>> 1f10600b3b58378f025383875086f6a4552707a2
           <label>
             Nama Lengkap
             <input type="text" name="name" value="<?= e($user['name']) ?>" required />
