@@ -1,0 +1,86 @@
+.profile-edit-shell {
+  width: min(100%, 1120px);
+  margin: 24px auto 80px;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1.22fr);
+  gap: 28px;
+}
+
+.profile-summary-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 245, 240, 0.96));
+}
+
+.profile-summary-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profile-summary-top h3 {
+  margin-bottom: 4px;
+}
+
+.profile-summary-card .product-store-list {
+  margin-top: 18px;
+}
+
+.profile-summary-card .product-mini-card {
+  padding: 14px 16px;
+}
+
+.profile-summary-card p,
+.profile-summary-card strong {
+  word-break: break-word;
+}
+
+.muted-note {
+  color: #777;
+  font-size: 14px;
+}
+
+.table-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.data-table th {
+  color: #3e6b48;
+  font-family: "Montserrat", sans-serif;
+}
+
+.pill-role {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #f9f5f0;
+  color: #555;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.empty-state {
+  color: #666;
+  text-align: center;
+  padding: 24px;
+}
+

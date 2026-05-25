@@ -43,26 +43,58 @@ if (is_post()) {
 }
 
 render_layout('Edit Toko', function (?array $user = null) use ($store): void {
+    $userName = (string) ($user['name'] ?? 'Super Admin');
+    $userEmail = (string) ($user['email'] ?? 'admin@pusaka.id');
     ?>
-    <div class="dashboard-shell">
-      <aside class="dashboard-sidebar">
-        <div class="dashboard-brand">
-          <h1>PusakaRasa</h1>
-          <p>Super Admin Dashboard</p>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="sidebar-brand-name">PusakaRasa</div>
+          <div class="sidebar-brand-role">Super Admin Dashboard</div>
         </div>
-        <nav class="dashboard-nav">
-          <a href="<?= e(base_path('admin-dashboard.php')) ?>">Dashboard</a>
-          <a href="<?= e(base_path('admin-store-create.php')) ?>">Tambah Toko</a>
-          <a href="<?= e(base_path('admin-store-admin-create.php')) ?>">Buat Store Admin</a>
-          <a href="<?= e(base_path('admin-store-edit.php?id=' . $store['id'])) ?>" class="active">Edit Toko</a>
-          <a href="<?= e(base_path('logout.php')) ?>">Keluar</a>
+        <nav class="sidebar-nav">
+          <div class="nav-label">Menu Utama</div>
+          <a href="<?= e(base_path('admin-dashboard.php')) ?>" class="nav-link">
+            <span class="nav-link-icon">🏠</span> Dashboard
+          </a>
+          <a href="<?= e(base_path('admin-store-create.php')) ?>" class="nav-link">
+            <span class="nav-link-icon">🏪</span> Tambah Toko
+          </a>
+          <a href="<?= e(base_path('admin-store-admin-create.php')) ?>" class="nav-link">
+            <span class="nav-link-icon">👤</span> Buat Store Admin
+          </a>
+          <a href="<?= e(base_path('admin-store-edit.php?id=' . $store['id'])) ?>" class="nav-link active">
+            <span class="nav-link-icon">✏️</span> Edit Toko
+          </a>
+
+          <div class="nav-divider"></div>
+          <div class="nav-label">Platform</div>
+          <a href="<?= e(base_path('index.php')) ?>" class="nav-link">
+            <span class="nav-link-icon">🌐</span> Beranda
+          </a>
+          <a href="<?= e(base_path('katalog.php')) ?>" class="nav-link">
+            <span class="nav-link-icon">📦</span> Katalog
+          </a>
+          <div class="nav-divider"></div>
+          <a href="<?= e(base_path('logout.php')) ?>" class="nav-link" style="margin-top:auto;color:#c0645a;">
+            <span class="nav-link-icon" style="font-size:14px">🚪</span> Keluar
+          </a>
         </nav>
+        <div class="sidebar-footer">
+          <div class="sidebar-user">
+            <div class="sidebar-avatar"><?= e(strtoupper(substr($userName, 0, 2))) ?></div>
+            <div>
+              <div class="sidebar-user-name"><?= e($userName) ?></div>
+              <div class="sidebar-user-role"><?= e($userEmail) ?></div>
+            </div>
+          </div>
+        </div>
       </aside>
-      <main class="dashboard-main">
-        <div class="dashboard-header">
+      <main class="main">
+        <div class="topbar">
           <div>
-            <h2>Edit Toko</h2>
-            <p class="muted-note">Perbarui data toko tanpa keluar dari area superadmin.</p>
+            <div class="topbar-heading">Edit Toko</div>
+            <div class="topbar-sub">Perbarui data toko tanpa keluar dari area superadmin.</div>
           </div>
           <div class="pill-role">Super Admin</div>
         </div>

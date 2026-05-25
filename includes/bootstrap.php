@@ -294,7 +294,7 @@ function product_regions(): array
     );
 
     return array_values(array_filter(array_map(
-        static fn ($row) => trim((string) ($row['region'] ?? '')),
+        static fn($row) => trim((string) ($row['region'] ?? '')),
         $stmt->fetchAll()
     )));
 }
@@ -461,8 +461,7 @@ function update_current_user_profile(
     string $email,
     ?string $password = null,
     ?string $profileImage = null
-): void
-{
+): void {
     ensure_user_profile_image_column();
     $params = [
         'id' => $userId,
@@ -764,35 +763,33 @@ function paginate_array(array $items, int $page, int $perPage): array
 function render_product_card(array $product): void
 {
     $favoriteId = favorite_product_id($product);
-    ?>
+?>
     <div class="food-card" data-favorite-id="<?= e($favoriteId) ?>">
-      <div class="card-image">
-        <img src="<?= e(base_path($product['image_path'])) ?>" alt="<?= e($product['name']) ?>" />
-        <div class="image-tags">
-          <span><?= e($product['region']) ?></span>
+        <div class="card-image">
+            <img src="<?= e(base_path($product['image_path'])) ?>" alt="<?= e($product['name']) ?>" />
+            <div class="image-tags">
+                <span><?= e($product['region']) ?></span>
+            </div>
+            <button class="fav-btn" type="button" aria-label="Simpan ke favorit"></button>
         </div>
-        <button class="fav-btn" type="button" aria-label="Simpan ke favorit"></button>
-      </div>
-      <div class="card-content">
-        <div class="card-meta-line">
-          <span class="food-store"><?= e($product['store_name']) ?></span>
-          <span class="food-dot"></span>
-          <span class="food-region"><?= e($product['region']) ?></span>
+        <div class="card-content">
+            <div class="card-meta-line">
+                <span class="food-store"><?= e($product['store_name']) ?></span>
+            </div>
+            <h3 class="food-title"><?= e($product['name']) ?></h3>
+            <p class="food-desc"><?= e($product['short_description']) ?></p>
+            <div class="food-rating">
+                <span class="stars"><?= e(stars_from_rating((float) $product['rating'])) ?></span>
+                <span class="review"><?= e(number_format((float) $product['rating'], 1)) ?> • <?= e(number_short((int) $product['review_count'])) ?> ulasan</span>
+            </div>
+            <p class="food-price"><?= e(rupiah($product['price_display'])) ?></p>
         </div>
-        <h3 class="food-title"><?= e($product['name']) ?></h3>
-        <p class="food-desc"><?= e($product['short_description']) ?></p>
-        <div class="food-rating">
-          <span class="stars"><?= e(stars_from_rating((float) $product['rating'])) ?></span>
-          <span class="review"><?= e(number_format((float) $product['rating'], 1)) ?> • <?= e(number_short((int) $product['review_count'])) ?> ulasan</span>
+        <div class="card-footer">
+            <span class="food-tag"><?= e($product['tag_label']) ?></span>
+            <button class="detail-btn" type="button" onclick="window.location.href='<?= e(base_path('product.php?slug=' . $product['slug'])) ?>'">Detail</button>
         </div>
-        <p class="food-price"><?= e(rupiah($product['price_display'])) ?></p>
-      </div>
-      <div class="card-footer">
-        <span class="food-tag"><?= e($product['tag_label']) ?></span>
-        <button class="detail-btn" type="button" onclick="window.location.href='<?= e(base_path('product.php?slug=' . $product['slug'])) ?>'">Detail</button>
-      </div>
     </div>
-    <?php
+<?php
 }
 
 function render_layout(string $title, callable $content, array $options = []): void
@@ -803,146 +800,161 @@ function render_layout(string $title, callable $content, array $options = []): v
     $includeAppCss = $options['app_css'] ?? true;
     $includeDashboardCss = $options['dashboard_css'] ?? false;
     $includeTentangCss = $options['tentang_css'] ?? false;
+    $includeLoginCss = $options['login_css'] ?? false;
     $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
-    ?>
-<!DOCTYPE html>
-<html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?= e($title) ?> | <?= e(app_name()) ?></title>
-    <link rel="icon" type="image/x-icon" href="<?= e(base_path('assets/image/PusakaRasa.webp')) ?>" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-    <link rel="stylesheet" href="<?= e(base_path('assets/css/base.css')) ?>" />
-    <link rel="stylesheet" href="<?= e(base_path('assets/css/component.css')) ?>" />
-    <?php if ($includeAppCss): ?>
-    <link rel="stylesheet" href="<?= e(base_path('assets/css/style.css')) ?>" />
-    <link rel="stylesheet" href="<?= e(base_path('assets/css/app.css')) ?>" />
-    <?php endif; ?>
-    <?php if ($includeDashboardCss): ?>
-    <link rel="stylesheet" href="<?= e(base_path('assets/css/dashboard.css')) ?>" />
-    <?php endif; ?>
-    <?php if ($includeTentangCss): ?>
-    <link rel="stylesheet" href="<?= e(base_path('assets/css/tentang.css')) ?>" />
-    <?php endif; ?>
-  </head>
-  <body class="<?= e($pageClass) ?>">
-    <?php if ($flash): ?>
-      <div class="flash-stack">
-        <div class="flash-banner flash-<?= e($flash['type']) ?>" role="status" aria-live="polite"><?= e($flash['message']) ?></div>
-      </div>
-    <?php endif; ?>
-    <?php if (!($options['hide_header'] ?? false)): ?>
-      <header>
-        <h1><?= e(app_name()) ?></h1>
-        <nav>
-          <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">☰</button>
-          <ul id="navMenu">
-            <li><a href="<?= e(base_path('index.php')) ?>" <?= $currentPage === 'index.php' ? 'class="active"' : '' ?>>Beranda</a></li>
-          <li><a href="<?= e(base_path('katalog.php')) ?>" <?= $currentPage === 'katalog.php' ? 'class="active"' : '' ?>>Katalog</a></li>
-          <li><a href="<?= e(base_path('store.php')) ?>" <?= $currentPage === 'store.php' ? 'class="active"' : '' ?>>Toko</a></li>
-          <li><a href="<?= e(base_path('favorites.php')) ?>" <?= $currentPage === 'favorites.php' ? 'class="active"' : '' ?>>Favorit</a></li>
-          <li><a href="<?= e(base_path('tentang.php')) ?>" <?= $currentPage === 'tentang.php' ? 'class="active"' : '' ?>>Tentang</a></li>
-            <?php if (!$user): ?>
-              <li class="mobile-auth"><a href="<?= e(base_path('login.php')) ?>" class="login">Masuk</a></li>
-              <li class="mobile-auth"><a href="<?= e(base_path('register.php')) ?>" class="register">Daftar</a></li>
-            <?php else: ?>
-              <li class="mobile-auth"><a href="<?= e(base_path('edit-profile.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-user"></i>Edit Profil</a></li>
-              <li class="mobile-auth"><a href="<?= e(base_path('favorites.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-heart"></i>Favorit</a></li>
-              <?php if ($user['role'] !== ROLE_USER): ?>
-                <li class="mobile-auth"><a href="<?= e(base_path(nav_target_for_user($user))) ?>" class="mobile-profile-link"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-              <?php endif; ?>
-              <li class="mobile-auth"><a href="<?= e(base_path('logout.php')) ?>" class="mobile-logout-link"><i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar</a></li>
-            <?php endif; ?>
-          </ul>
-          <span class="nav-indicator"></span>
-        </nav>
-        <div class="auth-buttons">
-          <?php if (!$user): ?>
-            <a href="<?= e(base_path('login.php')) ?>"><button class="btn btn-secondary">Masuk</button></a>
-            <a href="<?= e(base_path('register.php')) ?>"><button class="btn btn-primary">Daftar</button></a>
-          <?php else: ?>
-            <div class="profile-menu" id="profileMenu">
-              <button type="button" class="header-pill profile-trigger" id="profileMenuButton" aria-haspopup="true" aria-expanded="false">
-                <?php if (user_profile_image_url($user) !== ''): ?>
-                  <img class="profile-avatar profile-avatar-image" src="<?= e(user_profile_image_url($user)) ?>" alt="<?= e($user['name']) ?>" />
-                <?php else: ?>
-                  <span class="profile-avatar"><?= e(user_profile_initial($user)) ?></span>
-                <?php endif; ?>
-                <span><?= e($user['name']) ?></span>
-              </button>
-              <div class="profile-dropdown" id="profileDropdown">
-                <div class="profile-header">
-                  <?php if (user_profile_image_url($user) !== ''): ?>
-                    <img class="profile-avatar large profile-avatar-image" src="<?= e(user_profile_image_url($user)) ?>" alt="<?= e($user['name']) ?>" />
-                  <?php else: ?>
-                    <div class="profile-avatar large"><?= e(user_profile_initial($user)) ?></div>
-                  <?php endif; ?>
-                  <div>
-                    <strong><?= e($user['name']) ?></strong>
-                    <span><?= e($user['email']) ?></span>
-                  </div>
-                </div>
-                <a href="<?= e(base_path('edit-profile.php')) ?>"><i class="fa-regular fa-user"></i>Edit Profil</a>
-                <a href="<?= e(base_path('favorites.php')) ?>"><i class="fa-regular fa-heart"></i>Favorit</a>
-                <?php if ($user['role'] !== ROLE_USER): ?>
-                  <a href="<?= e(base_path(nav_target_for_user($user))) ?>"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
-                <?php endif; ?>
-                <a href="<?= e(base_path('logout.php')) ?>" class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar</a>
-              </div>
+    $hideFooter = ($options['hide_footer'] ?? false) || in_array($currentPage, ['login.php', 'register.php'], true);
+?>
+    <!DOCTYPE html>
+    <html lang="id">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><?= e($title) ?> | <?= e(app_name()) ?></title>
+        <link rel="icon" type="image/x-icon" href="<?= e(base_path('assets/image/PusakaRasa.webp')) ?>" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+        <link rel="stylesheet" href="<?= e(base_path('assets/css/variables.css')) ?>" />
+        <link rel="stylesheet" href="<?= e(base_path('assets/css/base.css')) ?>" />
+        <link rel="stylesheet" href="<?= e(base_path('assets/css/component.css')) ?>" />
+        <?php if ($includeAppCss): ?>
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/style.css')) ?>" />
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/app/core-ui.css')) ?>" />
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/app/discovery-catalog.css')) ?>" />
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/app/detail-favorites.css')) ?>" />
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/app/product-detail.css')) ?>" />
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/app/auth.css')) ?>" />
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/app/profile-table.css')) ?>" />
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/app/responsive.css')) ?>" />
+        <?php endif; ?>
+        <?php if ($includeDashboardCss): ?>
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/dashboard.css')) ?>" />
+        <?php endif; ?>
+        <?php if ($includeTentangCss): ?>
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/tentang.css')) ?>" />
+        <?php endif; ?>
+        <?php if ($includeLoginCss): ?>
+            <link rel="stylesheet" href="<?= e(base_path('assets/css/login.css')) ?>" />
+        <?php endif; ?>
+    </head>
+
+    <body class="<?= e($pageClass) ?>">
+        <?php if ($flash): ?>
+            <div class="flash-stack">
+                <div class="flash-banner flash-<?= e($flash['type']) ?>" role="status" aria-live="polite"><?= e($flash['message']) ?></div>
             </div>
-          <?php endif; ?>
-        </div>
-      </header>
-    <?php endif; ?>
+        <?php endif; ?>
+        <?php if (!($options['hide_header'] ?? false)): ?>
+            <header>
+                <h1><?= e(app_name()) ?></h1>
+                <nav>
+                    <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">☰</button>
+                    <ul id="navMenu">
+                        <li><a href="<?= e(base_path('index.php')) ?>" <?= $currentPage === 'index.php' ? 'class="active"' : '' ?>>Beranda</a></li>
+                        <li><a href="<?= e(base_path('katalog.php')) ?>" <?= $currentPage === 'katalog.php' ? 'class="active"' : '' ?>>Katalog</a></li>
+                        <li><a href="<?= e(base_path('store.php')) ?>" <?= $currentPage === 'store.php' ? 'class="active"' : '' ?>>Toko</a></li>
+                        <li><a href="<?= e(base_path('favorites.php')) ?>" <?= $currentPage === 'favorites.php' ? 'class="active"' : '' ?>>Favorit</a></li>
+                        <li><a href="<?= e(base_path('tentang.php')) ?>" <?= $currentPage === 'tentang.php' ? 'class="active"' : '' ?>>Tentang</a></li>
+                        <?php if (!$user): ?>
+                            <li class="mobile-auth"><a href="<?= e(base_path('login.php')) ?>" class="login">Masuk</a></li>
+                            <li class="mobile-auth"><a href="<?= e(base_path('register.php')) ?>" class="register">Daftar</a></li>
+                        <?php else: ?>
+                            <li class="mobile-auth"><a href="<?= e(base_path('edit-profile.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-user"></i>Edit Profil</a></li>
+                            <li class="mobile-auth"><a href="<?= e(base_path('favorites.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-heart"></i>Favorit</a></li>
+                            <?php if ($user['role'] !== ROLE_USER): ?>
+                                <li class="mobile-auth"><a href="<?= e(base_path(nav_target_for_user($user))) ?>" class="mobile-profile-link"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+                            <?php endif; ?>
+                            <li class="mobile-auth"><a href="<?= e(base_path('logout.php')) ?>" class="mobile-logout-link"><i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar</a></li>
+                        <?php endif; ?>
+                    </ul>
+                    <span class="nav-indicator"></span>
+                </nav>
+                <div class="auth-buttons">
+                    <?php if (!$user): ?>
+                        <a href="<?= e(base_path('login.php')) ?>"><button class="btn btn-secondary">Masuk</button></a>
+                        <a href="<?= e(base_path('register.php')) ?>"><button class="btn btn-primary">Daftar</button></a>
+                    <?php else: ?>
+                        <div class="profile-menu" id="profileMenu">
+                            <button type="button" class="header-pill profile-trigger" id="profileMenuButton" aria-label="Buka menu profil" aria-haspopup="true" aria-expanded="false">
+                                <?php if (user_profile_image_url($user) !== ''): ?>
+                                    <img class="profile-avatar profile-avatar-image" src="<?= e(user_profile_image_url($user)) ?>" alt="<?= e($user['name']) ?>" />
+                                <?php else: ?>
+                                    <span class="profile-avatar"><?= e(user_profile_initial($user)) ?></span>
+                                <?php endif; ?>
+                                <i class="fa-solid fa-chevron-down profile-chevron" aria-hidden="true"></i>
+                            </button>
+                            <div class="profile-dropdown" id="profileDropdown">
+                                <div class="profile-header">
+                                    <?php if (user_profile_image_url($user) !== ''): ?>
+                                        <img class="profile-avatar large profile-avatar-image" src="<?= e(user_profile_image_url($user)) ?>" alt="<?= e($user['name']) ?>" />
+                                    <?php else: ?>
+                                        <div class="profile-avatar large"><?= e(user_profile_initial($user)) ?></div>
+                                    <?php endif; ?>
+                                    <div>
+                                        <strong><?= e($user['name']) ?></strong>
+                                        <span><?= e($user['email']) ?></span>
+                                    </div>
+                                </div>
+                                <a href="<?= e(base_path('edit-profile.php')) ?>"><i class="fa-regular fa-user"></i>Edit Profil</a>
+                                <a href="<?= e(base_path('favorites.php')) ?>"><i class="fa-regular fa-heart"></i>Favorit</a>
+                                <?php if ($user['role'] !== ROLE_USER): ?>
+                                    <a href="<?= e(base_path(nav_target_for_user($user))) ?>"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
+                                <?php endif; ?>
+                                <a href="<?= e(base_path('logout.php')) ?>" class="logout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i>Keluar</a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </header>
+        <?php endif; ?>
 
-    <main>
-      <?php $content($user); ?>
-    </main>
+        <main>
+            <?php $content($user); ?>
+        </main>
 
-    <?php if (!($options['hide_footer'] ?? false)): ?>
-      <footer class="footer">
-        <div class="footer-content">
-          <div class="footer-section about">
-            <h3><?= e(app_name()) ?></h3>
-            <p>Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya</p>
-          </div>
+        <?php if (!$hideFooter): ?>
+            <footer class="footer">
+                <div class="footer-content">
+                    <div class="footer-section about">
+                        <h3><?= e(app_name()) ?></h3>
+                        <p>Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya</p>
+                    </div>
 
-          <div class="footer-section navigation">
-            <h4>Navigasi</h4>
-            <ul>
-              <li><a href="<?= e(base_path('index.php')) ?>">Beranda</a></li>
-              <li><a href="<?= e(base_path('katalog.php')) ?>">Katalog</a></li>
-              <li><a href="<?= e(base_path('favorites.php')) ?>">Favorit</a></li>
-            </ul>
-          </div>
+                    <div class="footer-section navigation">
+                        <h4>Navigasi</h4>
+                        <ul>
+                            <li><a href="<?= e(base_path('index.php')) ?>">Beranda</a></li>
+                            <li><a href="<?= e(base_path('katalog.php')) ?>">Katalog</a></li>
+                            <li><a href="<?= e(base_path('favorites.php')) ?>">Favorit</a></li>
+                        </ul>
+                    </div>
 
-          <div class="footer-section support">
-            <h4>Dukungan</h4>
-            <ul>
-              <li><a href="<?= e(base_path('cs.php')) ?>">Customer Service</a></li>
-              <li><a href="<?= e(base_path('cs.php')) ?>">Kontak</a></li>
-              <li><a href="<?= e(base_path('cs.php')) ?>">Sosial Media</a></li>
-            </ul>
-          </div>
-        </div>
+                    <div class="footer-section support">
+                        <h4>Dukungan</h4>
+                        <ul>
+                            <li><a href="<?= e(base_path('cs.php')) ?>">Customer Service</a></li>
+                            <li><a href="<?= e(base_path('cs.php')) ?>">Kontak</a></li>
+                            <li><a href="<?= e(base_path('cs.php')) ?>">Sosial Media</a></li>
+                        </ul>
+                    </div>
+                </div>
 
-        <div class="footer-bottom">
-          <p>© <?= date('Y') ?> <?= e(app_name()) ?> — All rights reserved.</p>
-          <a href="#">Kebijakan Privasi</a>
-          <a href="#">S&K</a>
-        </div>
-      </footer>
-    <?php endif; ?>
+                <div class="footer-bottom">
+                    <p>© <?= date('Y') ?> <?= e(app_name()) ?> — All rights reserved.</p>
+                    <a href="#">Kebijakan Privasi</a>
+                    <a href="#">S&K</a>
+                </div>
+            </footer>
+        <?php endif; ?>
 
-    <script src="<?= e(base_path('assets/js/main.js')) ?>"></script>
-    <?php if (($options['include_detail_js'] ?? false)): ?>
-      <script src="<?= e(base_path('assets/js/detail.js')) ?>"></script>
-    <?php endif; ?>
-  </body>
-</html>
+        <script src="<?= e(base_path('assets/js/main.js')) ?>"></script>
+        <?php if (($options['include_detail_js'] ?? false)): ?>
+            <script src="<?= e(base_path('assets/js/detail.js')) ?>"></script>
+        <?php endif; ?>
+    </body>
+
+    </html>
 <?php
 }

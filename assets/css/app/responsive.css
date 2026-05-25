@@ -1,0 +1,74 @@
+@media (max-width: 900px) {
+  .auth-shell,
+  .detail-layout,
+  .page-intro,
+  .detail-intro,
+  .profile-edit-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-left {
+    min-height: 280px;
+    border-radius: 0 0 24px 24px;
+  }
+
+  .search-form {
+    grid-template-columns: 1fr;
+  }
+
+  .cards-container {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .detail-product-head {
+    flex-direction: column;
+  }
+
+  .detail-price-box {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .flash-stack {
+    top: 12px;
+  }
+
+  .page-intro-copy,
+  .page-intro-stats,
+  .detail-intro-actions,
+  .detail-panel {
+    padding: 22px;
+  }
+
+  .profile-edit-shell,
+  .detail-layout {
+    margin-top: 20px;
+  }
+
+  .intro-fav-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .star-rating-field {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .star-rating-option .star-icon,
+  .review-stars {
+    font-size: 16px;
+  }
+
+  .star-rating-option .star-icon {
+    font-size: 28px;
+  }
+
+  .mobile-auth + .mobile-auth {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 0;
+  }
+}

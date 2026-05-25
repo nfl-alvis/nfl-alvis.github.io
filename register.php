@@ -78,4 +78,4 @@ render_layout('Daftar', function (?array $user = null): void {
       </section>
     </div>
     <?php
-}, ['hide_header' => true, 'app_css' => true]);
+}, ['hide_header' => true, 'hide_footer' => true, 'app_css' => true, 'login_css' => true, 'body_class' => 'login-page']);

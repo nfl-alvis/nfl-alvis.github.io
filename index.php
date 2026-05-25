@@ -5,12 +5,14 @@ declare(strict_types=1);
 require_once __DIR__ . '/includes/bootstrap.php';
 
 $featuredProducts = find_featured_products(4);
-$stores = array_slice(find_stores(), 0, 3);
+$availableStores = find_stores();
+$stores = array_slice($availableStores, 0, 3);
 $storePlaceholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 520'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23f6d6c7'/%3E%3Cstop offset='100%25' stop-color='%23dce9da'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='800' height='520' rx='36' fill='url(%23g)'/%3E%3Crect x='72' y='88' width='656' height='344' rx='28' fill='rgba(255,255,255,0.68)'/%3E%3Cpath d='M140 344l108-118 82 86 126-144 170 176H140z' fill='%23b3c8b4'/%3E%3Ccircle cx='252' cy='196' r='34' fill='%23e06b4c' fill-opacity='0.78'/%3E%3Ctext x='50%25' y='84%25' text-anchor='middle' font-family='Arial,sans-serif' font-size='34' fill='%233e6b48'%3EPlaceholder Toko%3C/text%3E%3C/svg%3E";
 
-render_layout('Beranda', function (?array $user) use ($featuredProducts, $stores, $storePlaceholder): void {
+render_layout('Beranda', function (?array $user) use ($featuredProducts, $availableStores, $stores, $storePlaceholder): void {
 ?>
-  <section class="hero" id="beranda">
+  <section class="hero home-hero" id="beranda">
+    <span class="home-hero-kicker">Kuliner Indonesia terkurasi</span>
     <h2>Warisan<br />Rasa<br />Nusantara.</h2>
     <p>Eksplorasi makanan dan toko kuliner dari berbagai daerah Indonesia dalam satu katalog informatif.</p>
     <div class="hero-actions">
@@ -21,6 +23,21 @@ render_layout('Beranda', function (?array $user) use ($featuredProducts, $stores
         <button class="btn-outline">Lihat Toko</button>
       </a>
     </div>
+  </section>
+
+  <section class="home-highlights" aria-label="Keunggulan PusakaRasa">
+    <article>
+      <strong><?= e((string) count($featuredProducts)) ?></strong>
+      <span>Produk pilihan untuk mulai menjelajah</span>
+    </article>
+    <article>
+      <strong><?= e((string) count($availableStores)) ?></strong>
+      <span>Toko lokal dengan informasi langsung</span>
+    </article>
+    <article class="home-highlight-message">
+      <i class="fa-solid fa-leaf" aria-hidden="true"></i>
+      <span>Kenali cerita, asal, dan penjual kuliner nusantara.</span>
+    </article>
   </section>
 
   <section id="katalog-popular">
