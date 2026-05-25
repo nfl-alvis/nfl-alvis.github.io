@@ -95,4 +95,4 @@ render_layout('Tambah Produk', function (?array $currentUser = null) use ($user,
       </main>
     </div>
     <?php
-}, ['hide_header' => true, 'dashboard_css' => true, 'body_class' => 'dashboard-body']);
+}, ['hide_header' => true, 'hide_footer' => true, 'dashboard_css' => true, 'body_class' => 'dashboard-body']);

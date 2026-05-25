@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/admin-sidebar.php';
 
 require_role(ROLE_SUPER_ADMIN);
 
@@ -27,7 +28,7 @@ if (is_post()) {
       'cover_image' => $coverImage,
     ]);
     set_flash('success', 'Toko baru berhasil dibuat.');
-    redirect_to('admin-dashboard.php');
+    redirect_to('admin-stores.php');
   } catch (Throwable $exception) {
     set_flash('error', 'Data gagal disimpan. Cek input toko yang mungkin duplikat atau tidak valid.');
     redirect_to('admin-store-create.php');
@@ -35,66 +36,14 @@ if (is_post()) {
 }
 
 render_layout('Tambah Toko Baru', function (?array $user = null): void {
-  $userName = (string) ($user['name'] ?? 'Super Admin');
-  $userEmail = (string) ($user['email'] ?? 'admin@pusaka.id');
 ?>
   <div class="shell">
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <div class="sidebar-brand-name">PusakaRasa</div>
-        <div class="sidebar-brand-role">Super Admin Dashboard</div>
-      </div>
-
-      <nav class="sidebar-nav">
-        <div class="nav-label">Menu Utama</div>
-        <a href="<?= e(base_path('admin-dashboard.php')) ?>" class="nav-link">
-          <span class="nav-link-icon">🏠</span>
-          Dashboard
-        </a>
-        <a href="<?= e(base_path('admin-store-create.php')) ?>" class="nav-link active">
-          <span class="nav-link-icon">🏪</span>
-          Tambah Toko
-        </a>
-        <a href="<?= e(base_path('admin-store-admin-create.php')) ?>" class="nav-link">
-          <span class="nav-link-icon">👤</span>
-          Buat Store Admin
-        </a>
-
-        <div class="nav-divider"></div>
-        <div class="nav-label">Platform</div>
-
-        <a href="<?= e(base_path('index.php')) ?>" class="nav-link">
-          <span class="nav-link-icon">🌐</span>
-          Beranda
-        </a>
-        <a href="<?= e(base_path('katalog.php')) ?>" class="nav-link">
-          <span class="nav-link-icon">📦</span>
-          Katalog
-        </a>
-
-        <div class="nav-divider"></div>
-
-        <a href="<?= e(base_path('logout.php')) ?>" class="nav-link" style="margin-top:auto;color:#c0645a;">
-          <span class="nav-link-icon" style="font-size:14px">🚪</span>
-          Keluar
-        </a>
-      </nav>
-
-      <div class="sidebar-footer">
-        <div class="sidebar-user">
-          <div class="sidebar-avatar"><?= e(strtoupper(substr($userName, 0, 2))) ?></div>
-          <div>
-            <div class="sidebar-user-name"><?= e($userName) ?></div>
-            <div class="sidebar-user-role"><?= e($userEmail) ?></div>
-          </div>
-        </div>
-      </div>
-    </aside>
+    <?php render_admin_sidebar($user, 'store-create'); ?>
 
     <main class="main">
       <div class="topbar">
         <div class="topbar-left">
-          <a href="<?= e(base_path('admin-dashboard.php')) ?>" class="back-btn" title="Kembali ke Dashboard">&#8592;</a>
+          <a href="<?= e(base_path('admin-stores.php')) ?>" class="back-btn" title="Kembali ke Daftar Toko">&#8592;</a>
           <div>
             <div class="topbar-heading">Tambah Toko Baru</div>
             <div class="topbar-sub">Isi data toko sebelum dipublikasikan ke platform</div>

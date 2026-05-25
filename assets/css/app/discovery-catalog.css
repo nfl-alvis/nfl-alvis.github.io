@@ -377,6 +377,83 @@
   filter: brightness(0.95);
 }
 
+.catalog-search-panel {
+  margin-top: 28px;
+}
+
+.catalog-search-form {
+  grid-template-columns: minmax(260px, 1.7fr) minmax(150px, 0.82fr) minmax(150px, 0.82fr) auto;
+  align-items: end;
+  padding: 20px;
+  background: #fff;
+}
+
+.search-field {
+  display: grid;
+  gap: 8px;
+}
+
+.search-field span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #677168;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.search-field span i {
+  color: #e06b4c;
+}
+
+.catalog-search-form input,
+.catalog-search-form select {
+  min-height: 50px;
+  border-color: rgba(62, 107, 72, 0.14);
+  color: #2f3e34;
+}
+
+.catalog-search-form input:focus,
+.catalog-search-form select:focus {
+  outline: 2px solid rgba(224, 107, 76, 0.2);
+  border-color: rgba(224, 107, 76, 0.52);
+}
+
+.catalog-search-actions {
+  min-height: 50px;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.catalog-search-actions button,
+.catalog-reset-filter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  padding: 0 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.catalog-reset-filter {
+  border: 1px solid rgba(62, 107, 72, 0.14);
+  color: #657068;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.catalog-reset-filter:hover {
+  border-color: rgba(224, 107, 76, 0.3);
+  background: #fff7f2;
+  color: #c85f42;
+}
+
+.catalog-results-heading {
+  margin-top: 50px;
+}
+
 .cards-container {
   width: min(100%, 1080px);
   margin: 0 auto;
@@ -392,9 +469,28 @@
   gap: 18px;
 }
 
+#katalog .cards-container {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+#katalog .empty-state {
+  grid-column: 1 / -1;
+}
+
 @media (max-width: 900px) {
-  #katalog-popular .cards-container {
+  #katalog-popular .cards-container,
+  #katalog .cards-container {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-form.catalog-search-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .search-field-query,
+  .catalog-search-actions {
+    grid-column: 1 / -1;
   }
 }
 
@@ -450,6 +546,10 @@
   #katalog-popular .cards-container {
     gap: 14px;
   }
+
+  #katalog .cards-container {
+    gap: 14px;
+  }
 }
 
 @media (max-width: 520px) {
@@ -481,5 +581,20 @@
   .section-copy-panel {
     padding: 20px;
     border-radius: 19px;
+  }
+
+  .search-form.catalog-search-form {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .search-field-query,
+  .catalog-search-actions {
+    grid-column: auto;
+  }
+
+  .catalog-search-actions button,
+  .catalog-reset-filter {
+    flex: 1;
   }
 }

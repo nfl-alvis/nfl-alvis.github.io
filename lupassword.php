@@ -1,126 +1,37 @@
-<!DOCTYPE html>
-<html lang="id">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lupa Password | PusakaRasa</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<?php
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="assets/image/PusakaRasa.webp" />
-    
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-    />
-    <link rel="stylesheet" href="assets/css/login.css" />
-    <link rel="stylesheet" href="assets/css/base.css" />
-  </head>
-  <body>
-    <!-- ========================================
-         HERO CONTAINER START
-         ======================================== -->
-    <div class="hero-container">
-      <!-- ========================================
-           HERO LEFT SECTION START
-           ======================================== -->
-      <div class="hero-left">
-        <div class="hero-text">
-          <h1>"Kami siap bantu<br />memulihkan<br />akunmu"</h1>
-          <p>
-            Jangan khawatir, masukkan email yang terdaftar dan kami akan
-            mengirimkan tautan untuk mengatur ulang kata sandi.
-          </p>
-        </div>
-      </div>
-      <!-- ======================================== 
-           HERO LEFT SECTION END 
-           ======================================== -->
+declare(strict_types=1);
 
-      <!-- ========================================
-           HERO RIGHT SECTION START
-           ======================================== -->
-      <div class="hero-right">
-        <!-- Decorative Blur Elements -->
-        <div class="decor red"></div>
-        <div class="decor green"></div>
-        <div class="decor yellow"></div>
+require_once __DIR__ . '/includes/bootstrap.php';
 
-        <!-- Back to Home Link -->
-        <a href="index.php" class="back-link">Kembali Ke Beranda</a>
+if (is_logged_in()) {
+    redirect_to(nav_target_for_user(current_user()));
+}
 
-        <!-- ========================================
-             FORGOT PASSWORD CARD START
-             ======================================== -->
-        <div class="login-card">
-          <div class="login-header">
-            <h2>Lupa Password</h2>
-            <p>Masukkan email akun Anda untuk mengatur ulang kata sandi.</p>
-          </div>
-
-          <!-- Forgot Password Form -->
-          <div class="login-form">
-            <input type="email" placeholder="Email Terdaftar" />
-
-            <button class="btn-primary-login">Kirim Tautan Reset</button>
-          </div>
-
-          <!-- Forgot Password Footer -->
-          <div class="login-footer">
-            <p>
-              Kembali ke <a href="login.php" class="sign-in">Halaman Masuk</a>
-            </p>
-          </div>
-        </div>
-        <!-- ======================================== 
-             FORGOT PASSWORD CARD END 
-             ======================================== -->
-      </div>
-        <!-- ======================================== 
-           HERO RIGHT SECTION END 
-           ======================================== -->
-    </div>
-    <footer class="footer">
-      <div class="footer-content">
-        <div class="footer-section about">
-          <h3>PusakaRasa</h3>
-          <p>Katalog kuliner Indonesia untuk edukasi generasi muda, promosi UMKM, dan pelestarian budaya</p>
-        </div>
-
-        <div class="footer-section navigation">
-          <h4>Navigasi</h4>
-          <ul>
-            <li><a href="index.php">Beranda</a></li>
-            <li><a href="katalog.php">Katalog</a></li>
-            <li><a href="favorites.php">Favorit</a></li>
-          </ul>
-        </div>
-
-        <div class="footer-section support">
-          <h4>Dukungan</h4>
-          <ul>
-            <li><a href="cs.php">Customer Service</a></li>
-            <li><a href="cs.php">Kontak</a></li>
-            <li><a href="cs.php">Sosial Media</a></li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="footer-bottom">
-        <p>© 2025 PusakaRasa — All rights reserved.</p>
+render_layout('Lupa Password', function (?array $user = null): void {
+    ?>
+    <div class="auth-shell">
+      <section class="auth-left">
         <div>
-          <a href="#">Kebijakan Privasi</a>
-          <a href="#">S&K</a>
+          <h2>Kami siap bantu memulihkan akun Anda.</h2>
+          <p>Masukkan email yang terdaftar untuk melanjutkan proses pengaturan ulang kata sandi.</p>
         </div>
-      </div>
-    </footer>
-    <!-- ======================================== 
-         HERO CONTAINER END 
-         ======================================== -->
-  </body>
-</html>
+      </section>
+      <section class="auth-right">
+        <div class="auth-card">
+          <a href="<?= e(base_path('index.php')) ?>" class="inline-link">Kembali ke Beranda</a>
+          <h1>Lupa Password</h1>
+          <p>Gunakan email akun PusakaRasa Anda.</p>
+          <form class="form-panel">
+            <label>
+              Email Terdaftar
+              <input type="email" name="email" placeholder="contoh@pusakarasa.id" required />
+            </label>
+            <button type="submit">Kirim Tautan Reset</button>
+          </form>
+          <p class="auth-helper">Ingat kata sandi Anda? <a href="<?= e(base_path('login.php')) ?>">Kembali masuk</a></p>
+        </div>
+      </section>
+    </div>
+    <?php
+}, ['hide_header' => true, 'hide_footer' => true, 'app_css' => true, 'body_class' => 'login-page']);

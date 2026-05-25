@@ -197,4 +197,4 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
       </div>
     </div>
     <?php
-});
+}, ['hide_footer' => true]);

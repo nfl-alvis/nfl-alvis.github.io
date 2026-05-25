@@ -32,26 +32,38 @@ render_layout('Katalog', function (?array $user = null) use ($search, $type, $re
       </div>
     </section>
 
-    <div class="search-panel search-panel-static">
-      <form class="search-form" method="get">
-        <input type="search" name="search" value="<?= e($search) ?>" placeholder="Cari produk, daerah, atau nama toko..." />
-        <select name="type">
-          <option value="">Semua kategori</option>
-          <option value="Makanan" <?= $type === 'Makanan' ? 'selected' : '' ?>>Makanan</option>
-          <option value="Minuman" <?= $type === 'Minuman' ? 'selected' : '' ?>>Minuman</option>
-        </select>
-        <select name="region">
-          <option value="">Semua daerah</option>
-          <?php foreach ($regions as $availableRegion): ?>
-            <option value="<?= e($availableRegion) ?>" <?= $region === $availableRegion ? 'selected' : '' ?>><?= e($availableRegion) ?></option>
-          <?php endforeach; ?>
-        </select>
-        <button type="submit">Cari Sekarang</button>
+    <div class="search-panel search-panel-static catalog-search-panel">
+      <form class="search-form catalog-search-form" method="get">
+        <label class="search-field search-field-query">
+          <span><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Pencarian</span>
+          <input type="search" name="search" value="<?= e($search) ?>" placeholder="Nama produk, daerah, atau toko..." />
+        </label>
+        <label class="search-field">
+          <span>Kategori</span>
+          <select name="type">
+            <option value="">Semua kategori</option>
+            <option value="Makanan" <?= $type === 'Makanan' ? 'selected' : '' ?>>Makanan</option>
+            <option value="Minuman" <?= $type === 'Minuman' ? 'selected' : '' ?>>Minuman</option>
+          </select>
+        </label>
+        <label class="search-field">
+          <span>Daerah</span>
+          <select name="region">
+            <option value="">Semua daerah</option>
+            <?php foreach ($regions as $availableRegion): ?>
+              <option value="<?= e($availableRegion) ?>" <?= $region === $availableRegion ? 'selected' : '' ?>><?= e($availableRegion) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+        <div class="catalog-search-actions">
+          <button type="submit">Cari</button>
+          <a href="<?= e(base_path('katalog.php')) ?>" class="catalog-reset-filter" aria-label="Reset filter">Reset</a>
+        </div>
       </form>
     </div>
 
-    <section id="katalog">
-      <div class="section-copy" style="margin-top: 50px;">
+    <section id="katalog" class="catalog-results">
+      <div class="section-copy catalog-results-heading">
         <h2>Semua Produk</h2>
         <p><?= e((string) count($products)) ?> hasil ditemukan.</p>
       </div>

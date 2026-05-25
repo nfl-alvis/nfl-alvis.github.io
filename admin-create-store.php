@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/admin-sidebar.php';
 
 require_role(ROLE_SUPER_ADMIN);
 
@@ -29,7 +30,7 @@ if (is_post()) {
         ]);
 
         set_flash('success', 'Toko baru berhasil dibuat.');
-        redirect_to('admin-dashboard.php');
+        redirect_to('admin-stores.php');
     } catch (Throwable $exception) {
         set_flash('error', 'Data gagal disimpan. Cek input toko yang mungkin duplikat atau tidak valid.');
         redirect_to('admin-create-store.php');
@@ -38,56 +39,13 @@ if (is_post()) {
 
 render_layout('Tambah Toko Baru', function (?array $user = null): void {
     ?>
-    <div class="create-store-shell">
-      <aside class="create-store-sidebar">
-        <div class="create-store-sidebar-top">
-          <div class="create-store-brand">PusakaRasa</div>
-          <div class="create-store-role">Super Admin Dashboard</div>
-        </div>
+    <div class="shell">
+      <?php render_admin_sidebar($user, 'store-create'); ?>
 
-        <nav class="create-store-nav">
-          <a href="<?= e(base_path('admin-dashboard.php')) ?>" class="create-store-nav-link">
-            <span class="create-store-nav-icon">🏠</span>
-            Dashboard
-          </a>
-          <a href="<?= e(base_path('admin-create-store.php')) ?>" class="create-store-nav-link active">
-            <span class="create-store-nav-icon">🏪</span>
-            Tambah Toko
-          </a>
-          <a href="<?= e(base_path('admin-store-admin-create.php')) ?>" class="create-store-nav-link">
-            <span class="create-store-nav-icon">👤</span>
-            Buat Store Admin
-          </a>
-
-          <div class="create-store-divider"></div>
-
-          <a href="<?= e(base_path('index.php')) ?>" class="create-store-nav-link">
-            <span class="create-store-nav-icon">🌐</span>
-            Beranda
-          </a>
-          <a href="<?= e(base_path('katalog.php')) ?>" class="create-store-nav-link">
-            <span class="create-store-nav-icon">📦</span>
-            Katalog
-          </a>
-          <a href="<?= e(base_path('logout.php')) ?>" class="create-store-nav-link create-store-logout">
-            <span class="create-store-nav-icon">🚪</span>
-            Keluar
-          </a>
-        </nav>
-
-        <div class="create-store-sidebar-user">
-          <div class="create-store-avatar">SA</div>
-          <div>
-            <div class="create-store-user-name"><?= e($user['name'] ?? 'Super Admin') ?></div>
-            <div class="create-store-user-role"><?= e($user['email'] ?? 'admin@pusaka.id') ?></div>
-          </div>
-        </div>
-      </aside>
-
-      <main class="create-store-main">
+      <main class="main create-store-main">
         <div class="create-store-topbar">
           <div class="create-store-topbar-left">
-            <a href="<?= e(base_path('admin-dashboard.php')) ?>" class="create-store-back-btn" aria-label="Kembali ke dashboard">←</a>
+            <a href="<?= e(base_path('admin-stores.php')) ?>" class="create-store-back-btn" aria-label="Kembali ke daftar toko">&larr;</a>
             <div>
               <div class="create-store-title">Tambah Toko Baru</div>
               <div class="create-store-subtitle">Isi data toko sebelum dipublikasikan ke platform</div>
