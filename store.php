@@ -19,7 +19,7 @@ if ($store) {
     track_store_visit((int) $store['id']);
 }
 
-render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = null) use ($store, $stores): void {
+render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = null) use ($store, $stores, $storePlaceholder): void {
     if ($store): ?>
       <section class="hero">
         <h2><?= e($store['name']) ?></h2>
@@ -27,20 +27,34 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
       </section>
 
       <section class="detail-layout">
-        <article class="detail-panel">
-          <div class="store-card-media">
+        <article class="detail-panel public-store-detail-card">
+          <div class="public-store-cover">
             <img src="<?= e($store['cover_image'] !== '' ? base_path($store['cover_image']) : $storePlaceholder) ?>" alt="<?= e($store['name']) ?>" />
+            <span class="public-store-status <?= (int) ($store['is_open'] ?? 1) === 1 ? '' : 'is-closed' ?>"><?= (int) ($store['is_open'] ?? 1) === 1 ? 'Buka' : 'Tutup' ?></span>
           </div>
-          <h2><?= e($store['name']) ?></h2>
-          <p><?= e($store['description']) ?></p>
-          <div class="meta-row">
-            <span class="meta-chip"><?= e($store['region']) ?></span>
-            <span class="meta-chip"><?= e((string) count($store['products'])) ?> produk</span>
+          <div class="public-store-body">
+            <h2><?= e($store['name']) ?></h2>
+            <div class="public-store-region"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><?= e($store['region']) ?></div>
+            <div class="public-store-row">
+              <span class="public-store-icon"><i class="fa-solid fa-align-left" aria-hidden="true"></i></span>
+              <p><?= e($store['description']) ?></p>
+            </div>
+            <div class="public-store-row">
+              <span class="public-store-icon"><i class="fa-solid fa-map-pin" aria-hidden="true"></i></span>
+              <p><?= e($store['address']) ?></p>
+            </div>
+            <div class="public-store-row">
+              <span class="public-store-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+              <p><?= e($store['operating_hours'] ?? '-') ?></p>
+            </div>
+            <div class="public-store-meta">
+              <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+              <?= e((string) count($store['products'])) ?> produk tersedia
+            </div>
           </div>
-          <p><?= e($store['address']) ?></p>
-          <div class="contact-links">
-            <a href="https://wa.me/<?= e($store['whatsapp']) ?>" target="_blank" rel="noreferrer">WhatsApp</a>
-            <a href="https://instagram.com/<?= e(ltrim($store['instagram'], '@')) ?>" target="_blank" rel="noreferrer">Instagram</a>
+          <div class="public-store-actions">
+            <a class="is-whatsapp" href="https://wa.me/<?= e($store['whatsapp']) ?>" target="_blank" rel="noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp</a>
+            <a href="https://instagram.com/<?= e(ltrim($store['instagram'], '@')) ?>" target="_blank" rel="noreferrer"><i class="fa-brands fa-instagram" aria-hidden="true"></i>Instagram</a>
           </div>
         </article>
         <aside class="detail-panel">
@@ -60,7 +74,7 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
     <?php else: ?>
       <section class="hero">
         <h2>Direktori<br />Toko<br />Kuliner.</h2>
-        <p>Lihat toko aktif, wilayah, dan kontak resmi yang sudah ditampilkan di platform.</p>
+        <p>Lihat status buka toko, jam operasional, wilayah, dan kontak resmi di platform.</p>
       </section>
       <div class="search-panel">
         <form class="search-form" method="get">
@@ -69,22 +83,33 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
           <button type="submit">Cari Toko</button>
         </form>
       </div>
-      <div class="store-grid" style="margin-top: 50px;">
+      <div class="store-grid store-directory-grid">
         <?php foreach ($stores as $item): ?>
-          <article class="store-card">
-            <div class="store-card-media">
-              <img src="<?= e($item['cover_image'] !== '' ? base_path($item['cover_image']) : $storePlaceholder) ?>" alt="Placeholder toko <?= e($item['name']) ?>" />
+          <article class="public-store-card">
+            <div class="public-store-cover">
+              <img src="<?= e($item['cover_image'] !== '' ? base_path($item['cover_image']) : $storePlaceholder) ?>" alt="<?= e($item['name']) ?>" />
+              <span class="public-store-status <?= (int) ($item['is_open'] ?? 1) === 1 ? '' : 'is-closed' ?>"><?= (int) ($item['is_open'] ?? 1) === 1 ? 'Buka' : 'Tutup' ?></span>
             </div>
-            <h3><?= e($item['name']) ?></h3>
-            <p><?= e($item['description']) ?></p>
-            <div class="meta-row">
-              <span class="meta-chip"><?= e($item['region']) ?></span>
-              <span class="meta-chip"><?= e((string) $item['product_count']) ?> produk</span>
+            <div class="public-store-body">
+              <h3><?= e($item['name']) ?></h3>
+              <div class="public-store-region"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><?= e($item['region']) ?></div>
+              <p class="public-store-description"><?= e($item['description']) ?></p>
+              <div class="public-store-row">
+                <span class="public-store-icon"><i class="fa-solid fa-map-pin" aria-hidden="true"></i></span>
+                <p><?= e($item['address']) ?></p>
+              </div>
+              <div class="public-store-row">
+                <span class="public-store-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+                <p><?= e($item['operating_hours'] ?? '-') ?></p>
+              </div>
+              <div class="public-store-meta">
+                <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+                <?= e((string) $item['product_count']) ?> produk tersedia
+              </div>
             </div>
-            <p class="muted-note"><?= e($item['address']) ?></p>
-            <div class="store-links">
-              <a href="<?= e(base_path(is_logged_in() ? 'store.php?slug=' . $item['slug'] : 'login.php')) ?>">Detail Toko</a>
-              <a href="https://wa.me/<?= e($item['whatsapp']) ?>" target="_blank" rel="noreferrer">WhatsApp</a>
+            <div class="public-store-actions">
+              <a href="<?= e(base_path(is_logged_in() ? 'store.php?slug=' . $item['slug'] : 'login.php')) ?>"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Lihat Toko</a>
+              <a class="is-whatsapp" href="https://wa.me/<?= e($item['whatsapp']) ?>" target="_blank" rel="noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp</a>
             </div>
           </article>
         <?php endforeach; ?>

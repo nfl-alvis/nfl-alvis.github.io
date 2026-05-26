@@ -378,7 +378,7 @@ function find_stores(?string $search = null): array
                    COUNT(DISTINCT p.id) AS product_count
             FROM stores s
             LEFT JOIN products p ON p.store_id = s.id AND p.is_active = 1
-            WHERE s.is_active = 1';
+            WHERE 1 = 1';
     $params = [];
 
     if ($search) {
@@ -396,7 +396,7 @@ function find_stores(?string $search = null): array
 
 function find_store_by_slug(string $slug): ?array
 {
-    $stmt = db()->prepare('SELECT * FROM stores WHERE slug = :slug AND is_active = 1 LIMIT 1');
+    $stmt = db()->prepare('SELECT * FROM stores WHERE slug = :slug LIMIT 1');
     $stmt->execute(['slug' => $slug]);
     $store = $stmt->fetch();
 
@@ -501,6 +501,33 @@ function ensure_user_profile_image_column(): void
     db()->exec('ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) NULL AFTER password_hash');
 }
 
+function ensure_store_operational_columns(): void
+{
+    static $checked = false;
+
+    if ($checked) {
+        return;
+    }
+
+    $pdo = db();
+    $pdo->exec(
+        "ALTER TABLE stores
+         ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(120) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description"
+    );
+    $pdo->exec(
+        'ALTER TABLE stores
+         ADD COLUMN IF NOT EXISTS is_open TINYINT(1) NOT NULL DEFAULT 1 AFTER cover_image'
+    );
+
+    $legacyStatus = $pdo->query("SHOW COLUMNS FROM stores LIKE 'is_active'")->fetch();
+    if ($legacyStatus) {
+        $pdo->exec('UPDATE stores SET is_open = is_active');
+        $pdo->exec('ALTER TABLE stores DROP COLUMN is_active');
+    }
+
+    $checked = true;
+}
+
 function update_current_user_profile(
     int $userId,
     string $name,
@@ -586,8 +613,15 @@ function save_uploaded_store_image(array $file, ?string $currentPath = null): st
         return $currentPath ?: 'assets/image/image.png';
     }
 
-    if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-        throw new RuntimeException('Upload gambar toko gagal diproses.');
+    $uploadError = (int) ($file['error'] ?? UPLOAD_ERR_OK);
+    if ($uploadError !== UPLOAD_ERR_OK) {
+        $message = match ($uploadError) {
+            UPLOAD_ERR_INI_SIZE, UPLOAD_ERR_FORM_SIZE => 'Ukuran foto toko melebihi batas upload server.',
+            UPLOAD_ERR_PARTIAL => 'Foto toko hanya terupload sebagian. Silakan pilih file kembali.',
+            default => 'Upload gambar toko gagal diproses.',
+        };
+
+        throw new RuntimeException($message);
     }
 
     $allowed = [

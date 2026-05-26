@@ -14,29 +14,24 @@ $regions = product_regions();
 
 render_layout('Katalog', function (?array $user = null) use ($search, $type, $region, $products, $regions): void {
     ?>
-    <section class="page-intro compact">
-      <div class="page-intro-copy">
-        <span class="eyebrow">Jelajahi Produk</span>
-        <h2>Katalog kuliner yang lebih cepat dicari dan lebih nyaman dipindai.</h2>
-        <p>Filter produk berdasarkan nama, daerah, atau kategori, lalu simpan item yang Anda suka ke halaman favorit.</p>
-      </div>
-      <div class="page-intro-stats">
-        <div class="intro-stat-card">
+    <section class="search-panel search-panel-static catalog-search-panel catalog-toolbar">
+      <div class="catalog-toolbar-head">
+        <div>
+          <span class="catalog-toolbar-kicker">Katalog Produk</span>
+          <h1>Jelajahi Rasa Nusantara</h1>
+        </div>
+        <div class="catalog-result-pill">
           <strong><?= e((string) count($products)) ?></strong>
-          <span>produk tampil</span>
-        </div>
-        <div class="intro-stat-card">
-          <strong><?= e($type !== '' ? $type : 'Semua') ?></strong>
-          <span>kategori aktif</span>
+          <span>produk ditemukan</span>
         </div>
       </div>
-    </section>
-
-    <div class="search-panel search-panel-static catalog-search-panel">
       <form class="search-form catalog-search-form" method="get">
         <label class="search-field search-field-query">
-          <span><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>Pencarian</span>
-          <input type="search" name="search" value="<?= e($search) ?>" placeholder="Nama produk, daerah, atau toko..." />
+          <span>Pencarian</span>
+          <div class="catalog-query-control">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input type="search" name="search" value="<?= e($search) ?>" placeholder="Cari nama produk atau toko" />
+          </div>
         </label>
         <label class="search-field">
           <span>Kategori</span>
@@ -56,11 +51,19 @@ render_layout('Katalog', function (?array $user = null) use ($search, $type, $re
           </select>
         </label>
         <div class="catalog-search-actions">
-          <button type="submit">Cari</button>
-          <a href="<?= e(base_path('katalog.php')) ?>" class="catalog-reset-filter" aria-label="Reset filter">Reset</a>
+          <button type="submit"><i class="fa-solid fa-filter" aria-hidden="true"></i>Tampilkan</button>
+          <a href="<?= e(base_path('katalog.php')) ?>" class="catalog-reset-filter" aria-label="Reset filter"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i>Reset</a>
         </div>
+        <?php if ($search !== '' || $type !== '' || $region !== ''): ?>
+          <div class="catalog-active-filters" aria-label="Filter aktif">
+            <span class="catalog-active-label">Filter aktif</span>
+            <?php if ($search !== ''): ?><span class="catalog-filter-chip"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><?= e($search) ?></span><?php endif; ?>
+            <?php if ($type !== ''): ?><span class="catalog-filter-chip"><i class="fa-solid fa-utensils" aria-hidden="true"></i><?= e($type) ?></span><?php endif; ?>
+            <?php if ($region !== ''): ?><span class="catalog-filter-chip"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><?= e($region) ?></span><?php endif; ?>
+          </div>
+        <?php endif; ?>
       </form>
-    </div>
+    </section>
 
     <section id="katalog" class="catalog-results">
       <div class="section-copy catalog-results-heading">

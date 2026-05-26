@@ -7,16 +7,20 @@ require_once __DIR__ . '/includes/admin-sidebar.php';
 
 require_role(ROLE_SUPER_ADMIN);
 
+$uploadedCoverPath = null;
+
 if (is_post()) {
     try {
+        ensure_store_operational_columns();
         $name = trim($_POST['name'] ?? '');
         $coverImage = save_uploaded_store_image($_FILES['cover_image'] ?? []);
+        $uploadedCoverPath = str_starts_with($coverImage, 'uploads/stores/') ? $coverImage : null;
 
         $stmt = db()->prepare(
             'INSERT INTO stores
-             (name, slug, region, address, whatsapp, instagram, description, cover_image, is_active, created_at, updated_at)
+             (name, slug, region, address, whatsapp, instagram, description, operating_hours, cover_image, is_open, created_at, updated_at)
              VALUES
-             (:name, :slug, :region, :address, :whatsapp, :instagram, :description, :cover_image, 1, NOW(), NOW())'
+             (:name, :slug, :region, :address, :whatsapp, :instagram, :description, :operating_hours, :cover_image, :is_open, NOW(), NOW())'
         );
         $stmt->execute([
             'name' => $name,
@@ -26,13 +30,25 @@ if (is_post()) {
             'whatsapp' => preg_replace('/\D+/', '', $_POST['whatsapp'] ?? ''),
             'instagram' => trim($_POST['instagram'] ?? ''),
             'description' => trim($_POST['description'] ?? ''),
+            'operating_hours' => trim($_POST['operating_hours'] ?? ''),
+            'is_open' => ($_POST['is_open'] ?? '1') === '1' ? 1 : 0,
             'cover_image' => $coverImage,
         ]);
 
         set_flash('success', 'Toko baru berhasil dibuat.');
         redirect_to('admin-stores.php');
     } catch (Throwable $exception) {
-        set_flash('error', 'Data gagal disimpan. Cek input toko yang mungkin duplikat atau tidak valid.');
+        if ($uploadedCoverPath !== null) {
+            $uploadedFile = __DIR__ . '/' . $uploadedCoverPath;
+            if (is_file($uploadedFile)) {
+                unlink($uploadedFile);
+            }
+        }
+
+        $message = $exception instanceof PDOException
+            ? 'Data toko gagal disimpan. Pastikan nama toko tidak duplikat lalu coba kembali.'
+            : $exception->getMessage();
+        set_flash('error', $message);
         redirect_to('admin-create-store.php');
     }
 }
@@ -117,6 +133,24 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
               </div>
 
               <div class="create-store-section-divider">
+                <span>Operasional</span>
+              </div>
+
+              <div class="create-store-grid-2">
+                <label class="create-store-field">
+                  <span class="create-store-field-label">Jam Operasional <span class="req">*</span></span>
+                  <input type="text" name="operating_hours" required placeholder="Setiap hari, 08.00 - 21.00 WIB" />
+                </label>
+                <label class="create-store-field">
+                  <span class="create-store-field-label">Status Toko <span class="req">*</span></span>
+                  <select name="is_open" required>
+                    <option value="1">Buka</option>
+                    <option value="0">Tutup</option>
+                  </select>
+                </label>
+              </div>
+
+              <div class="create-store-section-divider">
                 <span>Media &amp; Deskripsi</span>
               </div>
 
@@ -138,7 +172,7 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
               </label>
 
               <div class="create-store-submit-bar">
-                <p class="create-store-submit-note">Data akan langsung masuk ke daftar toko aktif setelah disimpan.</p>
+                <p class="create-store-submit-note">Status buka atau tutup akan langsung tampil pada halaman publik.</p>
                 <button type="submit" class="create-store-submit-btn">
                   <span class="create-store-btn-icon">✓</span>
                   Tambah Toko
@@ -172,7 +206,7 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
                 Tips
               </div>
               <div class="create-store-tip-box">
-                Toko yang baru dibuat langsung masuk ke daftar <strong>aktif</strong>. Pastikan semua informasi sudah benar sebelum menyimpan agar tidak perlu edit ulang.
+                Pilih status <strong>Buka</strong> atau <strong>Tutup</strong> sesuai kesiapan toko melayani pelanggan.
               </div>
             </div>
 

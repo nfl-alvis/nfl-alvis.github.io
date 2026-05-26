@@ -7,8 +7,9 @@ CREATE TABLE IF NOT EXISTS stores (
   whatsapp VARCHAR(30) NOT NULL,
   instagram VARCHAR(120) NOT NULL,
   description TEXT NOT NULL,
+  operating_hours VARCHAR(120) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB',
   cover_image VARCHAR(255) NOT NULL,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  is_open TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL,
   updated_at DATETIME NOT NULL
 );
@@ -90,17 +91,33 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS base_review_count INT NOT NULL DEF
 ALTER TABLE products MODIFY COLUMN rating DECIMAL(2,1) NOT NULL DEFAULT 0.0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image VARCHAR(255) NULL AFTER password_hash;
 ALTER TABLE users MODIFY COLUMN password_hash VARCHAR(255) NOT NULL;
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(120) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description;
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS is_open TINYINT(1) NOT NULL DEFAULT 1 AFTER cover_image;
+SET @stores_has_is_active = (
+  SELECT COUNT(*)
+  FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'stores' AND COLUMN_NAME = 'is_active'
+);
+SET @stores_status_migration = IF(
+  @stores_has_is_active > 0,
+  'UPDATE stores SET is_open = is_active',
+  'SELECT 1'
+);
+PREPARE migrate_stores_status FROM @stores_status_migration;
+EXECUTE migrate_stores_status;
+DEALLOCATE PREPARE migrate_stores_status;
+ALTER TABLE stores DROP COLUMN IF EXISTS is_active;
 
-INSERT INTO stores (name, slug, region, address, whatsapp, instagram, description, cover_image, is_active, created_at, updated_at)
-SELECT 'RM Minang Pusako', 'rm-minang-pusako', 'Sumatera Barat', 'Jl. Veteran No. 18, Padang', '628123456789', '@rmminangpusako', 'Rumah makan Minang dengan rendang dan sate Padang sebagai menu unggulan.', 'assets/image/Rendang.jpeg', 1, NOW(), NOW()
+INSERT INTO stores (name, slug, region, address, whatsapp, instagram, description, operating_hours, cover_image, is_open, created_at, updated_at)
+SELECT 'RM Minang Pusako', 'rm-minang-pusako', 'Sumatera Barat', 'Jl. Veteran No. 18, Padang', '628123456789', '@rmminangpusako', 'Rumah makan Minang dengan rendang dan sate Padang sebagai menu unggulan.', 'Setiap hari, 08.00 - 21.00 WIB', 'assets/image/Rendang.jpeg', 1, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM stores WHERE slug = 'rm-minang-pusako');
 
-INSERT INTO stores (name, slug, region, address, whatsapp, instagram, description, cover_image, is_active, created_at, updated_at)
-SELECT 'Dapur Jawa Lestari', 'dapur-jawa-lestari', 'Yogyakarta', 'Jl. Malioboro No. 23, Yogyakarta', '6281398765432', '@dapurjawalestari', 'Toko kuliner tradisional Jawa yang fokus pada gudeg, wedang, dan menu rumahan.', 'assets/image/Gudeg.jpg', 1, NOW(), NOW()
+INSERT INTO stores (name, slug, region, address, whatsapp, instagram, description, operating_hours, cover_image, is_open, created_at, updated_at)
+SELECT 'Dapur Jawa Lestari', 'dapur-jawa-lestari', 'Yogyakarta', 'Jl. Malioboro No. 23, Yogyakarta', '6281398765432', '@dapurjawalestari', 'Toko kuliner tradisional Jawa yang fokus pada gudeg, wedang, dan menu rumahan.', 'Senin - Minggu, 07.00 - 20.00 WIB', 'assets/image/Gudeg.jpg', 1, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM stores WHERE slug = 'dapur-jawa-lestari');
 
-INSERT INTO stores (name, slug, region, address, whatsapp, instagram, description, cover_image, is_active, created_at, updated_at)
-SELECT 'Kedai Segar Nusantara', 'kedai-segar-nusantara', 'Jawa Barat', 'Jl. Braga No. 12, Bandung', '6281777011223', '@kedaisegarnusantara', 'Kedai minuman dan makanan ringan khas Nusantara dengan sajian segar untuk keluarga.', 'assets/image/Cendol.jpeg', 1, NOW(), NOW()
+INSERT INTO stores (name, slug, region, address, whatsapp, instagram, description, operating_hours, cover_image, is_open, created_at, updated_at)
+SELECT 'Kedai Segar Nusantara', 'kedai-segar-nusantara', 'Jawa Barat', 'Jl. Braga No. 12, Bandung', '6281777011223', '@kedaisegarnusantara', 'Kedai minuman dan makanan ringan khas Nusantara dengan sajian segar untuk keluarga.', 'Setiap hari, 10.00 - 22.00 WIB', 'assets/image/Cendol.jpeg', 1, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM stores WHERE slug = 'kedai-segar-nusantara');
 
 DELETE FROM users

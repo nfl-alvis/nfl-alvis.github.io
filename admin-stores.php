@@ -6,15 +6,18 @@ require_once __DIR__ . '/includes/bootstrap.php';
 require_once __DIR__ . '/includes/admin-sidebar.php';
 
 require_role(ROLE_SUPER_ADMIN);
+ensure_store_operational_columns();
 
-if (is_post() && ($_POST['action'] ?? '') === 'delete_store') {
+if (is_post() && ($_POST['action'] ?? '') === 'toggle_store_status') {
     try {
-        db()->prepare('UPDATE stores SET is_active = 0, updated_at = NOW() WHERE id = :id')->execute([
+        $isOpen = ($_POST['is_open'] ?? '0') === '1' ? 1 : 0;
+        db()->prepare('UPDATE stores SET is_open = :is_open, updated_at = NOW() WHERE id = :id')->execute([
             'id' => (int) ($_POST['id'] ?? 0),
+            'is_open' => $isOpen,
         ]);
-        set_flash('success', 'Toko berhasil dinonaktifkan.');
+        set_flash('success', $isOpen === 1 ? 'Status toko diubah menjadi buka.' : 'Status toko diubah menjadi tutup.');
     } catch (Throwable $exception) {
-        set_flash('error', 'Toko gagal dinonaktifkan.');
+        set_flash('error', 'Status buka/tutup toko gagal diperbarui.');
     }
     redirect_to('admin-stores.php');
 }
@@ -93,7 +96,7 @@ render_layout('Manajemen Toko', function (?array $user = null) use ($storeSearch
             <div class="table-scroll">
               <table class="data-table">
                 <thead>
-                  <tr><th>No</th><th>Toko</th><th>Wilayah</th><th>Admin</th><th>Produk</th><th>Aksi</th></tr>
+                  <tr><th>No</th><th>Toko</th><th>Wilayah</th><th>Jam Operasional</th><th>Status</th><th>Admin</th><th>Produk</th><th>Aksi</th></tr>
                 </thead>
                 <tbody>
                   <?php foreach ($storesPage['items'] as $index => $item): ?>
@@ -101,15 +104,18 @@ render_layout('Manajemen Toko', function (?array $user = null) use ($storeSearch
                       <td><?= e((string) ($storesPage['offset'] + $index + 1)) ?></td>
                       <td><?= e($item['name']) ?></td>
                       <td><?= e($item['region']) ?></td>
+                      <td><?= e($item['operating_hours'] ?? '-') ?></td>
+                      <td><span class="store-status-badge <?= (int) ($item['is_open'] ?? 1) === 1 ? 'is-open' : 'is-closed' ?>"><?= (int) ($item['is_open'] ?? 1) === 1 ? 'Buka' : 'Tutup' ?></span></td>
                       <td><?= e($item['admins'] ?: '-') ?></td>
                       <td><?= e((string) $item['product_count']) ?></td>
                       <td>
                         <div class="table-actions">
                           <a class="inline-link" href="<?= e(base_path('admin-store-edit.php?id=' . $item['id'])) ?>">Edit</a>
-                          <form method="post" onsubmit="return confirm('Nonaktifkan toko ini?')">
-                            <input type="hidden" name="action" value="delete_store" />
+                          <form method="post">
+                            <input type="hidden" name="action" value="toggle_store_status" />
                             <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>" />
-                            <button type="submit" class="inline-link">Hapus</button>
+                            <input type="hidden" name="is_open" value="<?= (int) ($item['is_open'] ?? 1) === 1 ? '0' : '1' ?>" />
+                            <button type="submit" class="inline-link"><?= (int) ($item['is_open'] ?? 1) === 1 ? 'Tutup' : 'Buka' ?></button>
                           </form>
                         </div>
                       </td>

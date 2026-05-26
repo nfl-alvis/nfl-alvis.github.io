@@ -9,19 +9,26 @@ require_role(ROLE_SUPER_ADMIN);
 
 $stats = super_admin_stats();
 
+$chartStart = (new DateTimeImmutable('today'))->modify('-29 days');
+$chartDates = [];
+for ($offset = 0; $offset < 30; $offset++) {
+    $date = $chartStart->modify('+' . $offset . ' days');
+    $chartDates[$date->format('Y-m-d')] = $date->format('d/m');
+}
+
 $storeGrowthRows = db()->query(
-    "SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS total
+    "SELECT DATE(created_at) AS day, COUNT(*) AS total
      FROM stores
-     GROUP BY month
-     ORDER BY month DESC
-     LIMIT 12"
+     WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
+     GROUP BY day
+     ORDER BY day ASC"
 )->fetchAll();
 $productGrowthRows = db()->query(
-    "SELECT DATE_FORMAT(created_at, '%Y-%m') AS month, COUNT(*) AS total
+    "SELECT DATE(created_at) AS day, COUNT(*) AS total
      FROM products
-     GROUP BY month
-     ORDER BY month DESC
-     LIMIT 12"
+     WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 29 DAY)
+     GROUP BY day
+     ORDER BY day ASC"
 )->fetchAll();
 $roleRows = db()->query(
     'SELECT role, COUNT(*) AS total
@@ -29,16 +36,22 @@ $roleRows = db()->query(
      GROUP BY role'
 )->fetchAll();
 
-$storeGrowthRows = array_reverse($storeGrowthRows);
-$productGrowthRows = array_reverse($productGrowthRows);
+$storeGrowthByDay = array_column($storeGrowthRows, 'total', 'day');
+$productGrowthByDay = array_column($productGrowthRows, 'total', 'day');
 $chartData = [
     'stores' => [
-        'labels' => array_column($storeGrowthRows, 'month'),
-        'values' => array_map('intval', array_column($storeGrowthRows, 'total')),
+        'labels' => array_values($chartDates),
+        'values' => array_map(
+            static fn(string $date): int => (int) ($storeGrowthByDay[$date] ?? 0),
+            array_keys($chartDates)
+        ),
     ],
     'products' => [
-        'labels' => array_column($productGrowthRows, 'month'),
-        'values' => array_map('intval', array_column($productGrowthRows, 'total')),
+        'labels' => array_values($chartDates),
+        'values' => array_map(
+            static fn(string $date): int => (int) ($productGrowthByDay[$date] ?? 0),
+            array_keys($chartDates)
+        ),
     ],
     'roles' => [
         'labels' => array_column($roleRows, 'role'),
@@ -71,18 +84,18 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use ($stat
           <div class="chart-section-head">
             <div>
               <h2>Pertumbuhan Platform</h2>
-              <p>Pergerakan bulanan toko dan produk, serta distribusi role akun.</p>
+              <p>Penambahan harian selama 30 hari terakhir serta distribusi role akun.</p>
             </div>
           </div>
           <div class="chart-grid">
             <article class="chart-card">
               <h3>Pertumbuhan Toko</h3>
-              <p>Toko baru per bulan</p>
+              <p>Toko baru per hari dalam 30 hari terakhir</p>
               <div class="chart-frame"><canvas id="storeGrowthChart"></canvas></div>
             </article>
             <article class="chart-card">
               <h3>Pertumbuhan Produk</h3>
-              <p>Produk baru per bulan</p>
+              <p>Produk baru per hari dalam 30 hari terakhir</p>
               <div class="chart-frame"><canvas id="productGrowthChart"></canvas></div>
             </article>
             <article class="chart-card chart-card-wide">
@@ -104,7 +117,10 @@ render_layout('Dashboard Super Admin', function (?array $user = null) use ($stat
         plugins: { legend: { display: false } },
         scales: {
           y: { beginAtZero: true, ticks: { precision: 0 } },
-          x: { grid: { display: false } }
+          x: {
+            grid: { display: false },
+            ticks: { autoSkip: true, maxTicksLimit: 10, maxRotation: 0 }
+          }
         }
       };
 

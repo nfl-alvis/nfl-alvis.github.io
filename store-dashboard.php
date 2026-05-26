@@ -90,7 +90,7 @@ render_layout('Dashboard Toko', function (?array $currentUser = null) use ($user
 
         <section class="stats-grid">
           <article class="stat-box">
-            <p>Total produk aktif</p>
+            <p>Total produk tersedia</p>
             <h3><?= e((string) $stats['total_products']) ?></h3>
           </article>
           <article class="stat-box">
@@ -257,13 +257,12 @@ render_layout('Dashboard Toko', function (?array $currentUser = null) use ($user
           }]
         },
         options: {
-          indexAxis: 'y',
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            x: { beginAtZero: true, ticks: { precision: 0 } },
-            y: { grid: { display: false } }
+            y: { beginAtZero: true, ticks: { precision: 0 } },
+            x: { grid: { display: false } }
           }
         }
       });
