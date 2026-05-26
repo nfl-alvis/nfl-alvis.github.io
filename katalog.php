@@ -73,7 +73,7 @@ render_layout('Katalog', function (?array $user = null) use ($search, $type, $re
         <?php endif; ?>
 
         <?php foreach ($products as $product): ?>
-          <?php render_product_card($product); ?>
+          <?php render_product_card($product, ['catalog_card' => true]); ?>
         <?php endforeach; ?>
       </div>
     </section>

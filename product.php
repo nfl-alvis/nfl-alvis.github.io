@@ -88,7 +88,7 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
               </div>
             </div>
             <div class="dp-rating-row">
-              <span class="dp-stars"><?= e(stars_from_rating((float) $product['rating'])) ?></span>
+              <span class="dp-stars"><?= rating_stars_html((float) $product['rating']) ?></span>
               <span class="dp-rating-val"><?= e(number_format((float) $product['rating'], 1)) ?></span>
               <span class="dp-rating-count">· <?= e(number_short((int) $product['review_count'])) ?> ulasan</span>
             </div>
@@ -96,7 +96,7 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
             <div class="dp-chips-row">
               <span class="dp-chip"><?= e($product['tag_label']) ?></span>
               <span class="dp-chip"><?= e(number_format((float) $product['rating'], 1)) ?> / 5</span>
-              <span class="dp-chip"><?= e(stars_from_rating((float) $product['rating'])) ?></span>
+              <span class="dp-chip"><?= rating_stars_html((float) $product['rating']) ?></span>
             </div>
             <div class="dp-history">
               <div class="dp-history-title">Deskripsi produk</div>

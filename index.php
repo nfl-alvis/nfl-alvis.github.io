@@ -48,7 +48,7 @@ render_layout('Beranda', function (?array $user) use ($featuredProducts, $availa
 
     <div class="cards-container">
       <?php foreach ($featuredProducts as $product): ?>
-        <?php render_product_card($product); ?>
+        <?php render_product_card($product, ['catalog_card' => true]); ?>
       <?php endforeach; ?>
     </div>
   </section>

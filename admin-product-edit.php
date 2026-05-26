@@ -30,8 +30,7 @@ if (is_post()) {
             'UPDATE products
              SET store_id = :store_id, name = :name, slug = :slug, type = :type, region = :region,
                  short_description = :short_description, long_description = :long_description,
-                 price_display = :price_display, rating = :rating, review_count = :review_count,
-                 tag_label = :tag_label, image_path = :image_path, is_featured = :is_featured,
+                 price_display = :price_display, tag_label = :tag_label, image_path = :image_path, is_featured = :is_featured,
                  is_active = :is_active, updated_at = NOW()
              WHERE id = :id'
         )->execute([
@@ -44,8 +43,6 @@ if (is_post()) {
             'short_description' => trim($_POST['short_description'] ?? ''),
             'long_description' => trim($_POST['long_description'] ?? ''),
             'price_display' => trim($_POST['price_display'] ?? ''),
-            'rating' => (float) ($_POST['rating'] ?? 4.5),
-            'review_count' => (int) ($_POST['review_count'] ?? 0),
             'tag_label' => trim($_POST['tag_label'] ?? ''),
             'image_path' => trim($_POST['image_path'] ?? ''),
             'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
@@ -99,8 +96,6 @@ render_layout('Edit Produk', function (?array $user = null) use ($product, $stor
               <label>Path Gambar <input type="text" name="image_path" value="<?= e($product['image_path']) ?>" required /></label>
               <label>Deskripsi Singkat <textarea name="short_description" required><?= e($product['short_description']) ?></textarea></label>
               <label>Deskripsi Panjang <textarea name="long_description" required><?= e($product['long_description']) ?></textarea></label>
-              <label>Rating <input type="number" name="rating" value="<?= e((string) $product['rating']) ?>" min="1" max="5" step="0.1" required /></label>
-              <label>Jumlah Ulasan <input type="number" name="review_count" value="<?= e((string) $product['review_count']) ?>" min="0" required /></label>
               <label><input type="checkbox" name="is_featured" value="1" <?= (int) $product['is_featured'] === 1 ? 'checked' : '' ?> /> Jadikan produk unggulan</label>
               <label><input type="checkbox" name="is_active" value="1" <?= (int) $product['is_active'] === 1 ? 'checked' : '' ?> /> Aktif</label>
               <button type="submit">Simpan Perubahan</button>

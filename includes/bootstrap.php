@@ -185,11 +185,26 @@ function rupiah(?string $value): string
     return 'Rp ' . $value;
 }
 
-function stars_from_rating(float $rating): string
+function rating_stars_html(float $rating): string
 {
-    $rounded = (int) round($rating);
-    $rounded = max(0, min(5, $rounded));
-    return str_repeat('★', $rounded) . str_repeat('☆', 5 - $rounded);
+    $rating = max(0.0, min(5.0, $rating));
+    $wholeRating = floor($rating);
+    $visualRating = $rating > $wholeRating ? $wholeRating + 0.5 : $wholeRating;
+    $html = '<span class="rating-stars" aria-label="' . e(number_format($rating, 1) . ' dari 5 bintang') . '">';
+
+    for ($star = 1; $star <= 5; $star++) {
+        if ($visualRating >= $star) {
+            $className = 'is-full';
+        } elseif ($visualRating >= $star - 0.5) {
+            $className = 'is-half';
+        } else {
+            $className = 'is-empty';
+        }
+
+        $html .= '<span class="rating-star ' . $className . '" aria-hidden="true">★</span>';
+    }
+
+    return $html . '</span>';
 }
 
 function session_key(): string
@@ -236,11 +251,20 @@ function slugify(string $value): string
 function find_featured_products(int $limit = 4): array
 {
     $stmt = db()->prepare(
-        'SELECT p.*, s.name AS store_name, s.slug AS store_slug
+        'SELECT p.*,
+                COALESCE(rv.rating, 0) AS rating,
+                COALESCE(rv.review_count, 0) AS review_count,
+                s.name AS store_name,
+                s.slug AS store_slug
          FROM products p
          INNER JOIN stores s ON s.id = p.store_id
+         LEFT JOIN (
+             SELECT product_id, ROUND(AVG(stars), 1) AS rating, COUNT(*) AS review_count
+             FROM reviews
+             GROUP BY product_id
+         ) rv ON rv.product_id = p.id
          WHERE p.is_active = 1
-         ORDER BY p.is_featured DESC, p.rating DESC, p.id DESC
+         ORDER BY p.is_featured DESC, COALESCE(rv.rating, 0) DESC, p.id DESC
          LIMIT :limit'
     );
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -270,9 +294,18 @@ function find_products(array $filters = []): array
     }
 
     $sql = sprintf(
-        'SELECT p.*, s.name AS store_name, s.slug AS store_slug
+        'SELECT p.*,
+                COALESCE(rv.rating, 0) AS rating,
+                COALESCE(rv.review_count, 0) AS review_count,
+                s.name AS store_name,
+                s.slug AS store_slug
          FROM products p
          INNER JOIN stores s ON s.id = p.store_id
+         LEFT JOIN (
+             SELECT product_id, ROUND(AVG(stars), 1) AS rating, COUNT(*) AS review_count
+             FROM reviews
+             GROUP BY product_id
+         ) rv ON rv.product_id = p.id
          WHERE %s
          ORDER BY p.is_featured DESC, p.name ASC',
         implode(' AND ', $conditions)
@@ -301,9 +334,22 @@ function product_regions(): array
 function find_product_by_slug(string $slug): ?array
 {
     $stmt = db()->prepare(
-        'SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.whatsapp, s.instagram, s.address, s.description AS store_description
+        'SELECT p.*,
+                COALESCE(rv.rating, 0) AS rating,
+                COALESCE(rv.review_count, 0) AS review_count,
+                s.name AS store_name,
+                s.slug AS store_slug,
+                s.whatsapp,
+                s.instagram,
+                s.address,
+                s.description AS store_description
          FROM products p
          INNER JOIN stores s ON s.id = p.store_id
+         LEFT JOIN (
+             SELECT product_id, ROUND(AVG(stars), 1) AS rating, COUNT(*) AS review_count
+             FROM reviews
+             GROUP BY product_id
+         ) rv ON rv.product_id = p.id
          WHERE p.slug = :slug AND p.is_active = 1
          LIMIT 1'
     );
@@ -379,7 +425,7 @@ function authenticate_user(string $email, string $password): ?array
         return null;
     }
 
-    if (!hash_equals($user['password_hash'], hash('sha256', $password))) {
+    if (!password_verify($password, (string) $user['password_hash'])) {
         return null;
     }
 
@@ -395,7 +441,7 @@ function create_user(string $name, string $email, string $password, string $role
     $stmt->execute([
         'name' => $name,
         'email' => $email,
-        'password_hash' => hash('sha256', $password),
+        'password_hash' => password_hash($password, PASSWORD_BCRYPT),
         'role' => $role,
         'store_id' => $storeId,
     ]);
@@ -481,7 +527,7 @@ function update_current_user_profile(
 
     if ($password !== null && $password !== '') {
         $sql .= ', password_hash = :password_hash';
-        $params['password_hash'] = hash('sha256', $password);
+        $params['password_hash'] = password_hash($password, PASSWORD_BCRYPT);
     }
 
     $sql .= ' WHERE id = :id';
@@ -612,14 +658,10 @@ function recalculate_product_rating(int $productId): void
 {
     $stmt = db()->prepare(
         'SELECT
-            p.base_rating_total,
-            p.base_review_count,
-            COALESCE(SUM(r.stars), 0) AS user_rating_total,
-            COUNT(r.id) AS user_review_count
-         FROM products p
-         LEFT JOIN reviews r ON r.product_id = p.id
-         WHERE p.id = :product_id
-         GROUP BY p.id'
+            COALESCE(AVG(stars), 0) AS rating,
+            COUNT(id) AS review_count
+         FROM reviews
+         WHERE product_id = :product_id'
     );
     $stmt->execute(['product_id' => $productId]);
     $row = $stmt->fetch();
@@ -628,12 +670,8 @@ function recalculate_product_rating(int $productId): void
         return;
     }
 
-    $baseTotal = (float) $row['base_rating_total'];
-    $baseCount = (int) $row['base_review_count'];
-    $userTotal = (float) $row['user_rating_total'];
-    $userCount = (int) $row['user_review_count'];
-    $totalCount = $baseCount + $userCount;
-    $rating = $totalCount > 0 ? round(($baseTotal + $userTotal) / $totalCount, 1) : 0.0;
+    $rating = round((float) $row['rating'], 1);
+    $reviewCount = (int) $row['review_count'];
 
     $updateStmt = db()->prepare(
         'UPDATE products
@@ -644,7 +682,7 @@ function recalculate_product_rating(int $productId): void
     );
     $updateStmt->execute([
         'rating' => $rating,
-        'review_count' => $totalCount,
+        'review_count' => $reviewCount,
         'id' => $productId,
     ]);
 }
@@ -760,17 +798,25 @@ function paginate_array(array $items, int $page, int $perPage): array
     ];
 }
 
-function render_product_card(array $product): void
+function render_product_card(array $product, array $options = []): void
 {
     $favoriteId = favorite_product_id($product);
+    $catalogCard = (bool) ($options['catalog_card'] ?? false);
+    $cardClass = 'food-card' . ($catalogCard ? ' food-card--catalog is-clickable' : '');
+    $detailPath = base_path('product.php?slug=' . $product['slug']);
 ?>
-    <div class="food-card" data-favorite-id="<?= e($favoriteId) ?>">
+    <div class="<?= e($cardClass) ?>" data-favorite-id="<?= e($favoriteId) ?>">
+        <?php if ($catalogCard): ?>
+            <a class="food-card-detail-link" href="<?= e($detailPath) ?>" aria-label="Lihat detail <?= e($product['name']) ?>">
+        <?php endif; ?>
         <div class="card-image">
             <img src="<?= e(base_path($product['image_path'])) ?>" alt="<?= e($product['name']) ?>" />
             <div class="image-tags">
                 <span><?= e($product['region']) ?></span>
             </div>
-            <button class="fav-btn" type="button" aria-label="Simpan ke favorit"></button>
+            <?php if (!$catalogCard): ?>
+                <button class="fav-btn" type="button" aria-label="Simpan ke favorit"></button>
+            <?php endif; ?>
         </div>
         <div class="card-content">
             <div class="card-meta-line">
@@ -779,15 +825,20 @@ function render_product_card(array $product): void
             <h3 class="food-title"><?= e($product['name']) ?></h3>
             <p class="food-desc"><?= e($product['short_description']) ?></p>
             <div class="food-rating">
-                <span class="stars"><?= e(stars_from_rating((float) $product['rating'])) ?></span>
+                <span class="stars"><?= rating_stars_html((float) $product['rating']) ?></span>
                 <span class="review"><?= e(number_format((float) $product['rating'], 1)) ?> • <?= e(number_short((int) $product['review_count'])) ?> ulasan</span>
             </div>
             <p class="food-price"><?= e(rupiah($product['price_display'])) ?></p>
         </div>
-        <div class="card-footer">
-            <span class="food-tag"><?= e($product['tag_label']) ?></span>
-            <button class="detail-btn" type="button" onclick="window.location.href='<?= e(base_path('product.php?slug=' . $product['slug'])) ?>'">Detail</button>
-        </div>
+        <?php if ($catalogCard): ?>
+            </a>
+            <button class="fav-btn" type="button" aria-label="Simpan ke favorit"></button>
+        <?php else: ?>
+            <div class="card-footer">
+                <span class="food-tag"><?= e($product['tag_label']) ?></span>
+                <button class="detail-btn" type="button" onclick="window.location.href='<?= e($detailPath) ?>'">Detail</button>
+            </div>
+        <?php endif; ?>
     </div>
 <?php
 }

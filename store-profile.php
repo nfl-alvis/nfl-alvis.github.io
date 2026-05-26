@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/store-sidebar.php';
 
 require_role(ROLE_STORE_ADMIN);
 
@@ -50,28 +51,16 @@ if (is_post()) {
 
 render_layout('Profil Toko', function (?array $currentUser = null) use ($user, $store): void {
     ?>
-    <div class="dashboard-shell">
-      <aside class="dashboard-sidebar">
-        <div class="dashboard-brand">
-          <h1>PusakaRasa</h1>
-          <p>Store Admin Dashboard</p>
-        </div>
-        <nav class="dashboard-nav">
-          <a href="<?= e(base_path('store-dashboard.php')) ?>">Dashboard</a>
-          <a href="<?= e(base_path('store-profile.php')) ?>" class="active">Profil Toko</a>
-          <a href="<?= e(base_path('store-add-product.php')) ?>">Tambah Produk</a>
-          <a href="<?= e(base_path('store-products.php')) ?>">Produk Saya</a>
-          <a href="<?= e(base_path('store.php?slug=' . $store['slug'])) ?>">Lihat Halaman Toko</a>
-          <a href="<?= e(base_path('logout.php')) ?>">Keluar</a>
-        </nav>
-      </aside>
-      <main class="dashboard-main">
-        <div class="dashboard-header">
+    <div class="shell">
+      <?php render_store_sidebar($user, $store, 'profile'); ?>
+
+      <main class="main">
+        <div class="topbar">
           <div>
-            <h2>Profil Toko</h2>
-            <p class="muted-note">Perbarui kontak dan informasi toko yang tampil ke publik.</p>
+            <div class="topbar-heading">Profil Toko</div>
+            <div class="topbar-sub">Perbarui kontak dan informasi toko yang tampil ke publik.</div>
           </div>
-          <div class="pill-role"><?= e($user['name']) ?> • Store Admin</div>
+          <div class="pill-role"><?= e($user['name']) ?> &bull; Store Admin</div>
         </div>
 
         <article class="table-card">

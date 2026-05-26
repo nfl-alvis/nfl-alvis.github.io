@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/includes/store-sidebar.php';
 
 require_role(ROLE_STORE_ADMIN);
 
@@ -69,28 +70,16 @@ $products = find_store_products($storeId);
 
 render_layout('Produk Saya', function (?array $currentUser = null) use ($user, $store, $products, $editingProduct): void {
     ?>
-    <div class="dashboard-shell">
-      <aside class="dashboard-sidebar">
-        <div class="dashboard-brand">
-          <h1>PusakaRasa</h1>
-          <p>Store Admin Dashboard</p>
-        </div>
-        <nav class="dashboard-nav">
-          <a href="<?= e(base_path('store-dashboard.php')) ?>">Dashboard</a>
-          <a href="<?= e(base_path('store-profile.php')) ?>">Profil Toko</a>
-          <a href="<?= e(base_path('store-add-product.php')) ?>">Tambah Produk</a>
-          <a href="<?= e(base_path('store-products.php')) ?>" class="active">Produk Saya</a>
-          <a href="<?= e(base_path('store.php?slug=' . $store['slug'])) ?>">Lihat Halaman Toko</a>
-          <a href="<?= e(base_path('logout.php')) ?>">Keluar</a>
-        </nav>
-      </aside>
-      <main class="dashboard-main">
-        <div class="dashboard-header">
+    <div class="shell">
+      <?php render_store_sidebar($user, $store, 'products'); ?>
+
+      <main class="main">
+        <div class="topbar">
           <div>
-            <h2>Produk Saya</h2>
-            <p class="muted-note">Kelola produk yang sudah dimiliki toko Anda.</p>
+            <div class="topbar-heading">Produk Saya</div>
+            <div class="topbar-sub">Kelola produk yang sudah dimiliki toko Anda.</div>
           </div>
-          <div class="pill-role"><?= e($user['name']) ?> • Store Admin</div>
+          <div class="pill-role"><?= e($user['name']) ?> &bull; Store Admin</div>
         </div>
 
         <section class="dashboard-grid">
