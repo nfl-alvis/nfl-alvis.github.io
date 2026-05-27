@@ -331,6 +331,71 @@ function product_regions(): array
         $stmt->fetchAll()
     )));
 }
+
+function indonesia_provinces(): array
+{
+    static $provinces = null;
+
+    if (is_array($provinces)) {
+        return $provinces;
+    }
+
+    $names = [];
+
+    try {
+        $stmt = db()->query('SELECT name FROM provinces ORDER BY name ASC');
+        $names = array_map(
+            static fn($row) => trim((string) ($row['name'] ?? '')),
+            $stmt->fetchAll()
+        );
+    } catch (Throwable $exception) {
+        $names = [];
+    }
+
+    if (!$names) {
+        $sqlFile = __DIR__ . '/../indonesia.sql';
+        $sql = is_file($sqlFile) ? file_get_contents($sqlFile) : false;
+
+        if (is_string($sql) && preg_match('/-- Dumping data for table `provinces`(?P<block>.*?)(?:ALTER TABLE `provinces` ENABLE KEYS)/s', $sql, $blockMatch)) {
+            preg_match_all(
+                "/\\('([^']+)'\\s*,\\s*'((?:[^'\\\\]|\\\\.)*)'\\)/",
+                $blockMatch['block'],
+                $matches,
+                PREG_SET_ORDER
+            );
+
+            foreach ($matches as $match) {
+                $names[] = trim(str_replace("\\'", "'", $match[2]));
+            }
+        }
+    }
+
+    $names = array_values(array_unique(array_filter($names)));
+    sort($names, SORT_NATURAL | SORT_FLAG_CASE);
+
+    $provinces = $names;
+
+    return $provinces;
+}
+
+function render_province_options(?string $selected = null): void
+{
+    $selected = trim((string) $selected);
+    $provinces = indonesia_provinces();
+    $hasSelected = $selected !== '' && in_array($selected, $provinces, true);
+
+    echo '<option value="">Pilih provinsi</option>';
+
+    if ($selected !== '' && !$hasSelected) {
+        echo '<option value="' . e($selected) . '" selected>' . e($selected) . ' (data saat ini)</option>';
+    }
+
+    foreach ($provinces as $province) {
+        $isSelected = $selected === $province ? ' selected' : '';
+        echo '<option value="' . e($province) . '"' . $isSelected . '>' . e($province) . '</option>';
+    }
+}
+
 function find_product_by_slug(string $slug): ?array
 {
     $stmt = db()->prepare(
@@ -946,7 +1011,7 @@ function render_layout(string $title, callable $content, array $options = []): v
                             <li class="mobile-auth"><a href="<?= e(base_path('login.php')) ?>" class="login">Masuk</a></li>
                             <li class="mobile-auth"><a href="<?= e(base_path('register.php')) ?>" class="register">Daftar</a></li>
                         <?php else: ?>
-                            <li class="mobile-auth"><a href="<?= e(base_path('edit-profile.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-user"></i>Edit Profil</a></li>
+                            <li class="mobile-auth"><a href="<?= e(base_path('edit-profile.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-user"></i>Dashboard Profil</a></li>
                             <li class="mobile-auth"><a href="<?= e(base_path('favorites.php')) ?>" class="mobile-profile-link"><i class="fa-regular fa-heart"></i>Favorit</a></li>
                             <?php if ($user['role'] !== ROLE_USER): ?>
                                 <li class="mobile-auth"><a href="<?= e(base_path(nav_target_for_user($user))) ?>" class="mobile-profile-link"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
@@ -982,7 +1047,7 @@ function render_layout(string $title, callable $content, array $options = []): v
                                         <span><?= e($user['email']) ?></span>
                                     </div>
                                 </div>
-                                <a href="<?= e(base_path('edit-profile.php')) ?>"><i class="fa-regular fa-user"></i>Edit Profil</a>
+                                <a href="<?= e(base_path('edit-profile.php')) ?>"><i class="fa-regular fa-user"></i>Dashboard Profil</a>
                                 <a href="<?= e(base_path('favorites.php')) ?>"><i class="fa-regular fa-heart"></i>Favorit</a>
                                 <?php if ($user['role'] !== ROLE_USER): ?>
                                     <a href="<?= e(base_path(nav_target_for_user($user))) ?>"><i class="fa-solid fa-table-columns"></i>Dashboard</a>

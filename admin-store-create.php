@@ -92,7 +92,9 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
                 </div>
                 <div class="field-wrap">
                   <label class="field-label" for="store-region">Wilayah <span class="req">*</span></label>
-                  <input id="store-region" type="text" name="region" required placeholder="Jawa Timur" />
+                  <select id="store-region" name="region" required>
+                    <?php render_province_options(); ?>
+                  </select>
                 </div>
               </div>
 

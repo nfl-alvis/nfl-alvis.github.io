@@ -334,7 +334,11 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
                   <option value="Minuman" <?= $editingProduct['type'] === 'Minuman' ? 'selected' : '' ?>>Minuman</option>
                 </select>
               </label>
-              <label>Daerah <input type="text" name="region" value="<?= e($editingProduct['region']) ?>" required /></label>
+              <label>Daerah
+                <select name="region" required>
+                  <?php render_province_options($editingProduct['region'] ?? ''); ?>
+                </select>
+              </label>
               <label>Harga Tampilan <input type="text" name="price_display" value="<?= e($editingProduct['price_display']) ?>" required /></label>
               <label>Tag <input type="text" name="tag_label" value="<?= e($editingProduct['tag_label']) ?>" required /></label>
               <label>Ganti Gambar <input type="file" name="product_image" accept=".jpg,.jpeg,.png,.webp" /></label>

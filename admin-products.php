@@ -7,6 +7,44 @@ require_once __DIR__ . '/includes/admin-sidebar.php';
 
 require_role(ROLE_SUPER_ADMIN);
 
+$listingQuery = $_GET;
+unset($listingQuery['edit']);
+$listingUrl = 'admin-products.php' . ($listingQuery ? '?' . http_build_query($listingQuery) : '');
+
+if (is_post() && ($_POST['action'] ?? '') === 'edit_product') {
+    $productId = (int) ($_POST['id'] ?? 0);
+
+    try {
+        db()->prepare(
+            'UPDATE products
+             SET store_id = :store_id, name = :name, slug = :slug, type = :type, region = :region,
+                 short_description = :short_description, long_description = :long_description,
+                 price_display = :price_display, tag_label = :tag_label, image_path = :image_path, is_featured = :is_featured,
+                 is_active = :is_active, updated_at = NOW()
+             WHERE id = :id'
+        )->execute([
+            'id' => $productId,
+            'store_id' => (int) ($_POST['store_id'] ?? 0),
+            'name' => trim($_POST['name'] ?? ''),
+            'slug' => slugify(trim($_POST['name'] ?? '') . '-' . substr((string) time(), -4)),
+            'type' => trim($_POST['type'] ?? 'Makanan'),
+            'region' => trim($_POST['region'] ?? ''),
+            'short_description' => trim($_POST['short_description'] ?? ''),
+            'long_description' => trim($_POST['long_description'] ?? ''),
+            'price_display' => trim($_POST['price_display'] ?? ''),
+            'tag_label' => trim($_POST['tag_label'] ?? ''),
+            'image_path' => trim($_POST['image_path'] ?? ''),
+            'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
+            'is_active' => isset($_POST['is_active']) ? 1 : 0,
+        ]);
+        set_flash('success', 'Produk berhasil diperbarui.');
+        redirect_to($listingUrl);
+    } catch (Throwable $exception) {
+        set_flash('error', 'Gagal memperbarui produk.');
+        redirect_to('admin-products.php?' . http_build_query(array_merge($listingQuery, ['edit' => $productId])));
+    }
+}
+
 if (is_post() && ($_POST['action'] ?? '') === 'delete_product') {
     try {
         db()->prepare('UPDATE products SET is_active = 0, updated_at = NOW() WHERE id = :id')->execute([
@@ -16,7 +54,7 @@ if (is_post() && ($_POST['action'] ?? '') === 'delete_product') {
     } catch (Throwable $exception) {
         set_flash('error', 'Produk gagal dinonaktifkan.');
     }
-    redirect_to('admin-products.php');
+    redirect_to($listingUrl);
 }
 
 $productSearch = trim($_GET['product_search'] ?? '');
@@ -42,8 +80,27 @@ usort($products, static function (array $a, array $b) use ($productSort): int {
 });
 
 $productsPage = paginate_array($products, $productPage, $productPerPage);
+$stores = all_stores_with_admins();
+$editingProduct = null;
+$editProductId = (int) ($_GET['edit'] ?? 0);
 
-render_layout('Manajemen Produk Platform', function (?array $user = null) use ($productSearch, $productSort, $productPerPage, $productsPage): void {
+if ($editProductId > 0) {
+    $stmt = db()->prepare(
+        'SELECT p.*, s.name AS store_name
+         FROM products p
+         INNER JOIN stores s ON s.id = p.store_id
+         WHERE p.id = :id LIMIT 1'
+    );
+    $stmt->execute(['id' => $editProductId]);
+    $editingProduct = $stmt->fetch() ?: null;
+
+    if (!$editingProduct) {
+        set_flash('error', 'Produk tidak ditemukan.');
+        redirect_to($listingUrl);
+    }
+}
+
+render_layout('Manajemen Produk Platform', function (?array $user = null) use ($productSearch, $productSort, $productPerPage, $productsPage, $stores, $editingProduct, $listingUrl): void {
     $userName = (string) ($user['name'] ?? 'Super Admin');
     ?>
     <div class="shell">
@@ -104,7 +161,7 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
                       <td><?= e(rupiah($item['price_display'])) ?></td>
                       <td>
                         <div class="table-actions">
-                          <a class="inline-link" href="<?= e(base_path('admin-product-edit.php?id=' . $item['id'])) ?>">Edit</a>
+                          <a class="inline-link product-edit-button" href="<?= e(base_path('admin-products.php?' . http_build_query(array_merge($_GET, ['edit' => $item['id']])))) ?>">Edit</a>
                           <form method="post" onsubmit="return confirm('Nonaktifkan produk ini?')">
                             <input type="hidden" name="action" value="delete_product" />
                             <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>" />
@@ -132,5 +189,74 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
         </section>
       </main>
     </div>
+
+    <?php if ($editingProduct): ?>
+      <div class="store-product-modal-backdrop" id="adminProductEditModal" data-close-url="<?= e(base_path($listingUrl)) ?>">
+        <section class="store-product-modal" role="dialog" aria-modal="true" aria-labelledby="adminProductEditTitle">
+          <div class="store-product-modal-head">
+            <div>
+              <h2 id="adminProductEditTitle">Edit Produk</h2>
+              <p>Perbarui detail <?= e($editingProduct['name']) ?> tanpa keluar dari daftar produk.</p>
+            </div>
+            <a class="store-product-modal-close" href="<?= e(base_path($listingUrl)) ?>" aria-label="Tutup form edit">
+              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+            </a>
+          </div>
+
+          <form method="post" class="form-panel store-product-modal-form" action="<?= e(base_path($listingUrl)) ?>">
+            <input type="hidden" name="action" value="edit_product" />
+            <input type="hidden" name="id" value="<?= e((string) $editingProduct['id']) ?>" />
+            <div class="form-grid-2">
+              <label>Nama Produk <input type="text" name="name" value="<?= e($editingProduct['name']) ?>" required /></label>
+              <label>Toko
+                <select name="store_id" required>
+                  <?php foreach ($stores as $store): ?>
+                    <option value="<?= e((string) $store['id']) ?>" <?= (int) $editingProduct['store_id'] === (int) $store['id'] ? 'selected' : '' ?>>
+                      <?= e($store['name']) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </label>
+              <label>Kategori
+                <select name="type" required>
+                  <option value="Makanan" <?= $editingProduct['type'] === 'Makanan' ? 'selected' : '' ?>>Makanan</option>
+                  <option value="Minuman" <?= $editingProduct['type'] === 'Minuman' ? 'selected' : '' ?>>Minuman</option>
+                </select>
+              </label>
+              <label>Wilayah
+                <select name="region" required>
+                  <?php render_province_options($editingProduct['region'] ?? ''); ?>
+                </select>
+              </label>
+              <label>Harga Tampilan <input type="text" name="price_display" value="<?= e($editingProduct['price_display']) ?>" required /></label>
+              <label>Tag <input type="text" name="tag_label" value="<?= e($editingProduct['tag_label']) ?>" required /></label>
+              <label>Path Gambar <input type="text" name="image_path" value="<?= e($editingProduct['image_path']) ?>" required /></label>
+            </div>
+            <label>Deskripsi Singkat <textarea name="short_description" required><?= e($editingProduct['short_description']) ?></textarea></label>
+            <label>Deskripsi Panjang <textarea name="long_description" required><?= e($editingProduct['long_description']) ?></textarea></label>
+            <label><input type="checkbox" name="is_featured" value="1" <?= (int) $editingProduct['is_featured'] === 1 ? 'checked' : '' ?> /> Jadikan produk unggulan</label>
+            <label><input type="checkbox" name="is_active" value="1" <?= (int) $editingProduct['is_active'] === 1 ? 'checked' : '' ?> /> Aktif</label>
+            <div class="store-product-modal-actions">
+              <a class="filter-reset" href="<?= e(base_path($listingUrl)) ?>">Batal</a>
+              <button type="submit"><i class="fa-solid fa-check" aria-hidden="true"></i>Simpan Perubahan</button>
+            </div>
+          </form>
+        </section>
+      </div>
+      <script>
+        (() => {
+          const modal = document.getElementById('adminProductEditModal');
+          if (!modal) return;
+          document.body.classList.add('has-store-product-modal');
+          modal.querySelector('input[name="name"]').focus();
+          modal.addEventListener('click', (event) => {
+            if (event.target === modal) window.location.href = modal.dataset.closeUrl;
+          });
+          document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') window.location.href = modal.dataset.closeUrl;
+          });
+        })();
+      </script>
+    <?php endif; ?>
     <?php
 }, ['hide_header' => true, 'hide_footer' => true, 'dashboard_css' => true, 'body_class' => 'dashboard-body']);

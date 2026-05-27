@@ -66,7 +66,11 @@ render_layout('Edit Toko', function (?array $user = null) use ($store): void {
             <form method="post" class="form-panel" style="margin-top: 18px;">
               <input type="hidden" name="id" value="<?= e((string) $store['id']) ?>" />
               <label>Nama Toko <input type="text" name="name" value="<?= e($store['name']) ?>" required /></label>
-              <label>Wilayah <input type="text" name="region" value="<?= e($store['region']) ?>" required /></label>
+              <label>Wilayah
+                <select name="region" required>
+                  <?php render_province_options($store['region'] ?? ''); ?>
+                </select>
+              </label>
               <label>Alamat <textarea name="address" required><?= e($store['address']) ?></textarea></label>
               <label>WhatsApp <input type="text" name="whatsapp" value="<?= e($store['whatsapp']) ?>" required /></label>
               <label>Instagram <input type="text" name="instagram" value="<?= e($store['instagram']) ?>" required /></label>

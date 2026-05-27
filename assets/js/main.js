@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initStarRatingInputs();
   initFavoritesPage();
   initFlashBanner();
+  initFileDropStates();
 });
 
 function initHamburgerMenu() {
@@ -214,30 +215,95 @@ function initStarRatingInputs() {
 function initFavoritesPage() {
   const favoritesGrid = document.getElementById('favoritesGrid');
   const favoritesEmpty = document.getElementById('favoritesEmpty');
-  const favoriteCount = document.getElementById('favoriteCount');
+  const countEls = [
+    document.getElementById('favoriteCount'),
+    document.getElementById('heroCount'),
+    document.getElementById('favCount')
+  ].filter(Boolean);
+  const storeCount = document.getElementById('storeCount');
+  const clearButton = document.getElementById('favClearBtn');
+  const sortSelect = document.getElementById('favSortSelect');
 
   if (!favoritesGrid) {
     return;
   }
 
   const cards = Array.from(favoritesGrid.querySelectorAll('.food-card'));
+  const initialOrder = new Map(cards.map(function (card, index) {
+    return [card, index];
+  }));
+
+  function sortCards(favorites) {
+    if (!sortSelect) {
+      return;
+    }
+
+    const favoriteOrder = new Map(favorites.map(function (id, index) {
+      return [id, index];
+    }));
+
+    const sortedCards = cards.slice().sort(function (a, b) {
+      const mode = sortSelect.value;
+
+      if (mode === 'price-low') {
+        return getCardPrice(a) - getCardPrice(b);
+      }
+
+      if (mode === 'rating-high') {
+        return getCardRating(b) - getCardRating(a);
+      }
+
+      if (mode === 'name-az') {
+        return getCardTitle(a).localeCompare(getCardTitle(b), 'id');
+      }
+
+      const orderA = favoriteOrder.get(a.dataset.favoriteId || '') ?? initialOrder.get(a) ?? 0;
+      const orderB = favoriteOrder.get(b.dataset.favoriteId || '') ?? initialOrder.get(b) ?? 0;
+      return orderB - orderA;
+    });
+
+    sortedCards.forEach(function (card) {
+      favoritesGrid.appendChild(card);
+    });
+
+    if (favoritesEmpty) {
+      favoritesGrid.appendChild(favoritesEmpty);
+    }
+  }
 
   function syncFavoritesView() {
     const favorites = getFavorites();
+    const visibleStores = new Set();
     let visibleCount = 0;
+
+    sortCards(favorites);
 
     cards.forEach(function (card) {
       const itemId = card.dataset.favoriteId || '';
       const isVisible = favorites.includes(itemId);
+      const button = card.querySelector('.fav-btn');
       card.style.display = isVisible ? '' : 'none';
+
+      if (button) {
+        button.classList.toggle('active', isVisible);
+        button.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+      }
 
       if (isVisible) {
         visibleCount += 1;
+        const storeName = card.querySelector('.food-store')?.textContent.trim();
+        if (storeName) {
+          visibleStores.add(storeName);
+        }
       }
     });
 
-    if (favoriteCount) {
-      favoriteCount.textContent = String(visibleCount);
+    countEls.forEach(function (countEl) {
+      countEl.textContent = String(visibleCount);
+    });
+
+    if (storeCount) {
+      storeCount.textContent = String(visibleStores.size);
     }
 
     if (favoritesEmpty) {
@@ -245,8 +311,40 @@ function initFavoritesPage() {
     }
   }
 
+  if (clearButton) {
+    clearButton.addEventListener('click', function () {
+      const cardIds = new Set(cards.map(function (card) {
+        return card.dataset.favoriteId || '';
+      }).filter(Boolean));
+      const remainingFavorites = getFavorites().filter(function (itemId) {
+        return !cardIds.has(itemId);
+      });
+
+      localStorage.setItem('pusakarasa_favorites', JSON.stringify(remainingFavorites));
+      window.dispatchEvent(new CustomEvent('pusakarasa:favorites-updated', { detail: remainingFavorites }));
+    });
+  }
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', syncFavoritesView);
+  }
+
   syncFavoritesView();
   window.addEventListener('pusakarasa:favorites-updated', syncFavoritesView);
+}
+
+function getCardTitle(card) {
+  return card.querySelector('.food-title')?.textContent.trim() || '';
+}
+
+function getCardRating(card) {
+  const ratingText = card.querySelector('.review')?.textContent.trim() || '0';
+  return Number.parseFloat(ratingText.replace(',', '.')) || 0;
+}
+
+function getCardPrice(card) {
+  const priceText = card.querySelector('.food-price')?.textContent || '0';
+  return Number(priceText.replace(/[^\d]/g, '')) || 0;
 }
 
 function initFlashBanner() {
@@ -259,6 +357,32 @@ function initFlashBanner() {
   window.setTimeout(function () {
     banner.classList.add('is-hidden');
   }, 3200);
+}
+
+function initFileDropStates() {
+  const dropZones = document.querySelectorAll('.file-drop, .create-store-file-drop, .photo-drop-zone');
+
+  dropZones.forEach(function (dropZone) {
+    const input = dropZone.querySelector('input[type="file"]');
+    const hint = dropZone.querySelector('.file-drop-sub, .create-store-file-sub, .photo-drop-sub');
+
+    if (!input) {
+      return;
+    }
+
+    const defaultHint = hint?.textContent || '';
+
+    input.addEventListener('change', function () {
+      const file = input.files && input.files[0];
+      const hasFile = Boolean(file);
+
+      dropZone.classList.toggle('has-file', hasFile);
+
+      if (hint) {
+        hint.textContent = hasFile ? file.name : defaultHint;
+      }
+    });
+  });
 }
 
 function getFavorites() {
