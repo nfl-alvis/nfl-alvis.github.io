@@ -19,6 +19,11 @@ $storeStmt = db()->prepare('SELECT * FROM stores WHERE id = :id LIMIT 1');
 $storeStmt->execute(['id' => $storeId]);
 $store = $storeStmt->fetch();
 
+$listingQuery = $_GET;
+unset($listingQuery['edit']);
+$listingPath = 'store-products.php' . ($listingQuery ? '?' . http_build_query($listingQuery) : '');
+$listingUrl = base_path($listingPath);
+
 $editId = (int) ($_GET['edit'] ?? 0);
 $editingProduct = null;
 
@@ -59,41 +64,67 @@ if (is_post()) {
         redirect_to('store-products.php' . ($returnQuery ? '?' . http_build_query($returnQuery) : ''));
     }
 
-    try {
-        $productId = (int) ($_POST['product_id'] ?? 0);
-        $currentImage = trim($_POST['current_image'] ?? '');
-        $imagePath = save_uploaded_product_image($_FILES['product_image'] ?? [], $currentImage);
-        $stmt = db()->prepare(
-            'UPDATE products
-             SET name = :name,
-                 type = :type,
-                 region = :region,
-                 short_description = :short_description,
-                 long_description = :long_description,
-                 price_display = :price_display,
-                 tag_label = :tag_label,
-                 image_path = :image_path,
-                 updated_at = NOW()
-             WHERE id = :id AND store_id = :store_id AND is_active = 1'
-        );
-        $stmt->execute([
-            'name' => trim($_POST['name'] ?? ''),
-            'type' => trim($_POST['type'] ?? 'Makanan'),
-            'region' => trim($_POST['region'] ?? ''),
-            'short_description' => trim($_POST['short_description'] ?? ''),
-            'long_description' => trim($_POST['long_description'] ?? ''),
-            'price_display' => trim($_POST['price_display'] ?? ''),
-            'tag_label' => trim($_POST['tag_label'] ?? ''),
-            'image_path' => $imagePath,
-            'id' => $productId,
-            'store_id' => $storeId,
-        ]);
-        set_flash('success', 'Produk berhasil diperbarui.');
-        redirect_to('store-products.php');
-    } catch (Throwable $exception) {
-        set_flash('error', $exception->getMessage());
-        redirect_to('store-products.php' . ($editId > 0 ? '?edit=' . $editId : ''));
+    if (($_POST['action'] ?? '') === 'edit_product') {
+        try {
+            $productId = (int) ($_POST['product_id'] ?? 0);
+            $currentImage = trim($_POST['current_image'] ?? '');
+            $uploadedImages = $_FILES['product_images'] ?? ($_FILES['product_image'] ?? []);
+            $hasNewImages = product_upload_entries($uploadedImages) !== [];
+            $imagePaths = save_uploaded_product_images($uploadedImages, $currentImage);
+            $imagePath = $imagePaths[0] ?? $currentImage;
+
+            if ($hasNewImages) {
+                ensure_product_images_table();
+            }
+
+            db()->beginTransaction();
+
+            $stmt = db()->prepare(
+                'UPDATE products
+                 SET name = :name,
+                     type = :type,
+                     region = :region,
+                     short_description = :short_description,
+                     long_description = :long_description,
+                     price_display = :price_display,
+                     tag_label = :tag_label,
+                     image_path = :image_path,
+                     updated_at = NOW()
+                 WHERE id = :id AND store_id = :store_id AND is_active = 1'
+            );
+            $stmt->execute([
+                'name' => trim($_POST['name'] ?? ''),
+                'type' => trim($_POST['type'] ?? 'Makanan'),
+                'region' => trim($_POST['region'] ?? ''),
+                'short_description' => trim($_POST['short_description'] ?? ''),
+                'long_description' => trim($_POST['long_description'] ?? ''),
+                'price_display' => normalize_price_display($_POST['price_display'] ?? ''),
+                'tag_label' => trim($_POST['tag_label'] ?? ''),
+                'image_path' => $imagePath,
+                'id' => $productId,
+                'store_id' => $storeId,
+            ]);
+
+            if ($hasNewImages) {
+                replace_product_images($productId, $imagePaths);
+            }
+
+            db()->commit();
+
+            set_flash('success', 'Produk berhasil diperbarui.');
+            redirect_to($listingPath);
+        } catch (Throwable $exception) {
+            if (db()->inTransaction()) {
+                db()->rollBack();
+            }
+
+            set_flash('error', $exception->getMessage());
+            $productId = (int) ($_POST['product_id'] ?? 0);
+            redirect_to('store-products.php?' . http_build_query(array_merge($listingQuery, ['edit' => $productId])));
+        }
     }
+
+    redirect_to($listingPath);
 }
 
 $products = array_values(array_filter(
@@ -138,10 +169,6 @@ usort($filteredProducts, static function (array $a, array $b) use ($productSort)
 });
 
 $productsPage = paginate_array($filteredProducts, $productPage, $productPerPage);
-
-$listingQuery = $_GET;
-unset($listingQuery['edit']);
-$listingUrl = base_path('store-products.php' . ($listingQuery ? '?' . http_build_query($listingQuery) : ''));
 
 render_layout('Produk Saya', function (?array $currentUser = null) use (
     $user,
@@ -324,6 +351,7 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
           </div>
 
           <form method="post" enctype="multipart/form-data" class="form-panel store-product-modal-form">
+            <input type="hidden" name="action" value="edit_product" />
             <input type="hidden" name="product_id" value="<?= e((string) $editingProduct['id']) ?>" />
             <input type="hidden" name="current_image" value="<?= e($editingProduct['image_path']) ?>" />
             <div class="form-grid-2">
@@ -339,9 +367,9 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
                   <?php render_province_options($editingProduct['region'] ?? ''); ?>
                 </select>
               </label>
-              <label>Harga Tampilan <input type="text" name="price_display" value="<?= e($editingProduct['price_display']) ?>" required /></label>
+              <label>Harga Tampilan <input type="text" name="price_display" value="<?= e($editingProduct['price_display']) ?>" inputmode="numeric" autocomplete="off" data-price-format required /></label>
               <label>Tag <input type="text" name="tag_label" value="<?= e($editingProduct['tag_label']) ?>" required /></label>
-              <label>Ganti Gambar <input type="file" name="product_image" accept=".jpg,.jpeg,.png,.webp" /></label>
+              <label>Ganti Gambar <input type="file" name="product_images[]" accept=".jpg,.jpeg,.png,.webp" multiple /></label>
             </div>
             <label>Deskripsi Singkat <textarea name="short_description" required><?= e($editingProduct['short_description']) ?></textarea></label>
             <label>Deskripsi Panjang <textarea name="long_description" required><?= e($editingProduct['long_description']) ?></textarea></label>

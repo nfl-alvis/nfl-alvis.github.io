@@ -42,7 +42,7 @@ if (is_post()) {
       'whatsapp' => preg_replace('/\D+/', '', $_POST['whatsapp'] ?? ''),
       'instagram' => trim($_POST['instagram'] ?? ''),
       'description' => trim($_POST['description'] ?? ''),
-      'operating_hours' => trim($_POST['operating_hours'] ?? ''),
+      'operating_hours' => operating_schedule_from_post($_POST['operating_hours'] ?? []),
       'is_open' => ($_POST['is_open'] ?? '0') === '1' ? 1 : 0,
       'id' => $storeId,
     ]);
@@ -112,7 +112,7 @@ render_layout('Profil Toko', function (?array $currentUser = null) use ($user, $
                 <span class="store-profile-preview-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
                 <div>
                   <div class="store-profile-preview-label">Jam Operasional</div>
-                  <p><?= e($store['operating_hours'] ?? '-') ?></p>
+                  <p><?= e(operating_hours_display($store['operating_hours'] ?? '')) ?></p>
                 </div>
               </div>
             </div>
@@ -181,12 +181,20 @@ render_layout('Profil Toko', function (?array $currentUser = null) use ($user, $
               <div class="grid-2">
                 <label class="field-wrap">
                   <span class="field-label">WhatsApp <span class="required-mark">*</span></span>
-                  <input type="text" name="whatsapp" value="<?= e($store['whatsapp']) ?>" required />
+                  <span class="social-input social-input--whatsapp">
+                    <span class="social-input-icon"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span>
+                    <span class="social-input-divider" aria-hidden="true"></span>
+                    <input type="text" name="whatsapp" value="<?= e($store['whatsapp']) ?>" required />
+                  </span>
                   <span class="field-hint">Format internasional tanpa tanda +</span>
                 </label>
                 <label class="field-wrap">
                   <span class="field-label">Instagram <span class="required-mark">*</span></span>
-                  <input type="text" name="instagram" value="<?= e($store['instagram']) ?>" required />
+                  <span class="social-input social-input--instagram">
+                    <span class="social-input-icon"><i class="fa-brands fa-instagram" aria-hidden="true"></i></span>
+                    <span class="social-input-divider" aria-hidden="true"></span>
+                    <input type="text" name="instagram" value="<?= e($store['instagram']) ?>" required />
+                  </span>
                   <span class="field-hint">Sertakan awalan @ pada username</span>
                 </label>
               </div>
@@ -195,11 +203,11 @@ render_layout('Profil Toko', function (?array $currentUser = null) use ($user, $
             <div class="sec-divider"><span class="sec-divider-label">Operasional Toko</span></div>
             <div class="form-body">
               <div class="grid-2">
-                <label class="field-wrap">
+                <div class="field-wrap store-profile-operating-hours">
                   <span class="field-label">Jam Operasional <span class="required-mark">*</span></span>
-                  <input type="text" name="operating_hours" value="<?= e($store['operating_hours'] ?? '') ?>" placeholder="Setiap hari, 08.00 - 21.00 WIB" required />
-                  <span class="field-hint">Contoh: Senin - Sabtu, 08.00 - 20.00 WIB</span>
-                </label>
+                  <?php render_operating_hours_selects($store['operating_hours'] ?? ''); ?>
+                  <span class="field-hint">Pilih jam buka untuk masing-masing hari.</span>
+                </div>
                 <label class="field-wrap">
                   <span class="field-label">Status Toko <span class="required-mark">*</span></span>
                   <select name="is_open" required>

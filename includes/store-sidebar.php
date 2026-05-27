@@ -10,7 +10,6 @@ function render_store_sidebar(?array $user, array $store, string $activePage): v
     $links = [
         ['key' => 'dashboard', 'path' => 'store-dashboard.php', 'icon' => 'fa-house', 'label' => 'Dashboard'],
         ['key' => 'profile', 'path' => 'store-profile.php', 'icon' => 'fa-store', 'label' => 'Profil Toko'],
-        ['key' => 'add-product', 'path' => 'store-add-product.php', 'icon' => 'fa-plus', 'label' => 'Tambah Produk'],
         ['key' => 'products', 'path' => 'store-products.php', 'icon' => 'fa-box-open', 'label' => 'Produk Saya'],
     ];
     ?>

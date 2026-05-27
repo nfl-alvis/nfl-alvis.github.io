@@ -45,7 +45,7 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
             </div>
             <div class="public-store-row">
               <span class="public-store-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
-              <p><?= e($store['operating_hours'] ?? '-') ?></p>
+              <p><?= e(operating_hours_display($store['operating_hours'] ?? '')) ?></p>
             </div>
             <div class="public-store-meta">
               <i class="fa-solid fa-box-open" aria-hidden="true"></i>
@@ -100,7 +100,7 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
               </div>
               <div class="public-store-row">
                 <span class="public-store-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
-                <p><?= e($item['operating_hours'] ?? '-') ?></p>
+                <p><?= e(operating_hours_display($item['operating_hours'] ?? '')) ?></p>
               </div>
               <div class="public-store-meta">
                 <i class="fa-solid fa-box-open" aria-hidden="true"></i>

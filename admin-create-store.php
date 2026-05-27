@@ -30,7 +30,7 @@ if (is_post()) {
             'whatsapp' => preg_replace('/\D+/', '', $_POST['whatsapp'] ?? ''),
             'instagram' => trim($_POST['instagram'] ?? ''),
             'description' => trim($_POST['description'] ?? ''),
-            'operating_hours' => trim($_POST['operating_hours'] ?? ''),
+            'operating_hours' => operating_schedule_from_post($_POST['operating_hours'] ?? []),
             'is_open' => ($_POST['is_open'] ?? '1') === '1' ? 1 : 0,
             'cover_image' => $coverImage,
         ]);
@@ -125,12 +125,20 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
               <div class="create-store-grid-2">
                 <label class="create-store-field">
                   <span class="create-store-field-label">WhatsApp <span class="req">*</span></span>
-                  <input type="text" name="whatsapp" required placeholder="6281234567890" />
+                  <span class="social-input social-input--whatsapp">
+                    <span class="social-input-icon"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span>
+                    <span class="social-input-divider" aria-hidden="true"></span>
+                    <input type="text" name="whatsapp" required placeholder="6281234567890" />
+                  </span>
                   <span class="create-store-field-hint">Format internasional tanpa tanda +</span>
                 </label>
                 <label class="create-store-field">
                   <span class="create-store-field-label">Instagram <span class="req">*</span></span>
-                  <input type="text" name="instagram" required placeholder="@namatoko" />
+                  <span class="social-input social-input--instagram">
+                    <span class="social-input-icon"><i class="fa-brands fa-instagram" aria-hidden="true"></i></span>
+                    <span class="social-input-divider" aria-hidden="true"></span>
+                    <input type="text" name="instagram" required placeholder="@namatoko" />
+                  </span>
                 </label>
               </div>
 
@@ -139,10 +147,11 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
               </div>
 
               <div class="create-store-grid-2">
-                <label class="create-store-field">
+                <div class="create-store-field create-store-operating-hours">
                   <span class="create-store-field-label">Jam Operasional <span class="req">*</span></span>
-                  <input type="text" name="operating_hours" required placeholder="Setiap hari, 08.00 - 21.00 WIB" />
-                </label>
+                  <?php render_operating_hours_selects(null); ?>
+                  <span class="create-store-field-hint">Pilih jam buka untuk masing-masing hari.</span>
+                </div>
                 <label class="create-store-field">
                   <span class="create-store-field-label">Status Toko <span class="req">*</span></span>
                   <select name="is_open" required>

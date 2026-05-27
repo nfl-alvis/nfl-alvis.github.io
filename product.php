@@ -45,8 +45,11 @@ if (is_post()) {
 track_store_visit((int) $product['store_id']);
 track_product_view((int) $product['id'], (int) $product['store_id']);
 $reviews = find_reviews_by_product((int) $product['id']);
+$productImages = product_image_paths($product);
 
-render_layout($product['name'], function (?array $user = null) use ($product, $reviews): void {
+render_layout($product['name'], function (?array $user = null) use ($product, $reviews, $productImages): void {
+    $galleryImages = array_map(static fn(string $path): string => base_path($path), $productImages);
+    $galleryJson = json_encode($galleryImages, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?: '[]';
     ?>
     <div class="dp-wrap">
       <div class="dp-breadcrumb">
@@ -60,8 +63,17 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
       <div class="dp-main">
         <div class="dp-left">
           <div class="dp-img-panel">
-            <div class="dp-img-box">
-              <img src="<?= e(base_path($product['image_path'])) ?>" alt="<?= e($product['name']) ?>" />
+            <div class="dp-img-box dp-gallery" data-product-gallery data-images="<?= e($galleryJson) ?>">
+              <img data-gallery-image src="<?= e($galleryImages[0] ?? base_path($product['image_path'])) ?>" alt="<?= e($product['name']) ?>" />
+              <?php if (count($galleryImages) > 1): ?>
+                <button class="dp-gallery-nav dp-gallery-prev" type="button" data-gallery-prev aria-label="Gambar sebelumnya">
+                  <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                </button>
+                <button class="dp-gallery-nav dp-gallery-next" type="button" data-gallery-next aria-label="Gambar berikutnya">
+                  <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                </button>
+                <div class="dp-gallery-count" data-gallery-count>1 / <?= e((string) count($galleryImages)) ?></div>
+              <?php endif; ?>
             </div>
             <div class="dp-img-meta">
               <div class="dp-img-tags">
@@ -196,5 +208,45 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
         </div>
       </div>
     </div>
+    <script>
+      (() => {
+        const gallery = document.querySelector('[data-product-gallery]');
+        if (!gallery) return;
+
+        const image = gallery.querySelector('[data-gallery-image]');
+        const prev = gallery.querySelector('[data-gallery-prev]');
+        const next = gallery.querySelector('[data-gallery-next]');
+        const count = gallery.querySelector('[data-gallery-count]');
+        let images = [];
+        let index = 0;
+
+        try {
+          images = JSON.parse(gallery.dataset.images || '[]');
+        } catch (error) {
+          images = [];
+        }
+
+        function render(nextIndex) {
+          if (!image || images.length === 0) return;
+
+          index = (nextIndex + images.length) % images.length;
+          image.src = images[index];
+
+          if (count) {
+            count.textContent = (index + 1) + ' / ' + images.length;
+          }
+        }
+
+        prev?.addEventListener('click', () => render(index - 1));
+        next?.addEventListener('click', () => render(index + 1));
+
+        gallery.addEventListener('keydown', (event) => {
+          if (event.key === 'ArrowLeft') render(index - 1);
+          if (event.key === 'ArrowRight') render(index + 1);
+        });
+
+        gallery.tabIndex = 0;
+      })();
+    </script>
     <?php
 }, ['hide_footer' => true]);

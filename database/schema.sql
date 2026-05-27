@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS stores (
   whatsapp VARCHAR(30) NOT NULL,
   instagram VARCHAR(120) NOT NULL,
   description TEXT NOT NULL,
-  operating_hours VARCHAR(120) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB',
+  operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB',
   cover_image VARCHAR(255) NOT NULL,
   is_open TINYINT(1) NOT NULL DEFAULT 1,
   created_at DATETIME NOT NULL,
@@ -51,6 +51,15 @@ CREATE TABLE IF NOT EXISTS products (
   CONSTRAINT fk_products_store FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS product_images (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_id INT NOT NULL,
+  image_path VARCHAR(255) NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL,
+  CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS store_visits (
   id INT AUTO_INCREMENT PRIMARY KEY,
   store_id INT NOT NULL,
@@ -91,7 +100,8 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS base_review_count INT NOT NULL DEF
 ALTER TABLE products MODIFY COLUMN rating DECIMAL(2,1) NOT NULL DEFAULT 0.0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image VARCHAR(255) NULL AFTER password_hash;
 ALTER TABLE users MODIFY COLUMN password_hash VARCHAR(255) NOT NULL;
-ALTER TABLE stores ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(120) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description;
+ALTER TABLE stores ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description;
+ALTER TABLE stores MODIFY COLUMN operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB';
 ALTER TABLE stores ADD COLUMN IF NOT EXISTS is_open TINYINT(1) NOT NULL DEFAULT 1 AFTER cover_image;
 SET @stores_has_is_active = (
   SELECT COUNT(*)
@@ -160,6 +170,15 @@ WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug = 'pempek');
 INSERT INTO products (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, base_rating_total, base_review_count, is_featured, is_active, created_at, updated_at)
 SELECT (SELECT id FROM stores WHERE slug = 'dapur-jawa-lestari' LIMIT 1), 'Wedang Jahe', 'wedang-jahe', 'Minuman', 'Jawa Tengah', 'Minuman jahe hangat untuk menemani malam yang dingin.', 'Wedang jahe disajikan hangat dengan aroma rempah yang kuat dan rasa manis yang lembut.', '14.000', 0, 0, '#hangat', 'assets/image/wedangJahe.png', 0, 0, 0, 1, NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM products WHERE slug = 'wedang-jahe');
+
+INSERT INTO product_images (product_id, image_path, sort_order, created_at)
+SELECT p.id, p.image_path, 0, NOW()
+FROM products p
+WHERE NOT EXISTS (
+  SELECT 1
+  FROM product_images pi
+  WHERE pi.product_id = p.id
+);
 
 UPDATE products p
 LEFT JOIN (

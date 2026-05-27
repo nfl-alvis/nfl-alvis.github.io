@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initFavoritesPage();
   initFlashBanner();
   initFileDropStates();
+  initPriceFormatInputs();
 });
 
 function initHamburgerMenu() {
@@ -365,6 +366,7 @@ function initFileDropStates() {
   dropZones.forEach(function (dropZone) {
     const input = dropZone.querySelector('input[type="file"]');
     const hint = dropZone.querySelector('.file-drop-sub, .create-store-file-sub, .photo-drop-sub');
+    let fileList = dropZone.querySelector('.file-drop-list');
 
     if (!input) {
       return;
@@ -373,15 +375,65 @@ function initFileDropStates() {
     const defaultHint = hint?.textContent || '';
 
     input.addEventListener('change', function () {
-      const file = input.files && input.files[0];
-      const hasFile = Boolean(file);
+      const files = Array.from(input.files || []);
+      const hasFile = files.length > 0;
 
       dropZone.classList.toggle('has-file', hasFile);
 
       if (hint) {
-        hint.textContent = hasFile ? file.name : defaultHint;
+        hint.textContent = hasFile
+          ? (files.length > 1 ? files.length + ' file dipilih' : files[0].name)
+          : defaultHint;
       }
+
+      if (!hasFile) {
+        fileList?.remove();
+        fileList = null;
+        return;
+      }
+
+      if (files.length < 2) {
+        fileList?.remove();
+        fileList = null;
+        return;
+      }
+
+      if (!fileList) {
+        fileList = document.createElement('div');
+        fileList.className = 'file-drop-list';
+        fileList.setAttribute('aria-label', 'Daftar file terpilih');
+        dropZone.appendChild(fileList);
+      }
+
+      fileList.innerHTML = '';
+      files.forEach(function (file) {
+        const item = document.createElement('span');
+        item.className = 'file-drop-list-item';
+        item.textContent = file.name;
+        fileList.appendChild(item);
+      });
     });
+  });
+}
+
+function initPriceFormatInputs() {
+  const inputs = document.querySelectorAll('input[name="price_display"], [data-price-format]');
+
+  inputs.forEach(function (input) {
+    input.setAttribute('inputmode', 'numeric');
+    input.setAttribute('autocomplete', 'off');
+
+    function formatValue() {
+      const digits = input.value.replace(/\D/g, '');
+      input.value = digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    input.addEventListener('input', formatValue);
+    input.addEventListener('paste', function () {
+      window.setTimeout(formatValue, 0);
+    });
+
+    formatValue();
   });
 }
 

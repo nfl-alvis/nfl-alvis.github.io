@@ -71,7 +71,7 @@ render_layout('Beranda', function (?array $user) use ($featuredProducts, $availa
             <p class="public-store-description"><?= e($store['description']) ?></p>
             <div class="public-store-row">
               <span class="public-store-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
-              <p><?= e($store['operating_hours'] ?? '-') ?></p>
+              <p><?= e(operating_hours_display($store['operating_hours'] ?? '')) ?></p>
             </div>
             <div class="public-store-meta">
               <i class="fa-solid fa-box-open" aria-hidden="true"></i>

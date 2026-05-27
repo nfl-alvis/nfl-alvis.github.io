@@ -185,6 +185,167 @@ function rupiah(?string $value): string
     return 'Rp ' . $value;
 }
 
+function operating_days(): array
+{
+    return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+}
+
+function operating_time_slots(): array
+{
+    return [
+        'Tutup',
+        '06:00 - 14:00',
+        '07:00 - 15:00',
+        '08:00 - 16:00',
+        '08:00 - 17:00',
+        '08:00 - 20:00',
+        '08:00 - 21:00',
+        '09:00 - 17:00',
+        '09:00 - 21:00',
+        '10:00 - 22:00',
+        '11:00 - 23:00',
+        '12:00 - 22:00',
+        '24 Jam',
+    ];
+}
+
+function normalize_operating_slot(string $value): string
+{
+    $value = trim(str_replace('.', ':', $value));
+
+    if ($value === '24 Jam' || $value === 'Tutup') {
+        return $value;
+    }
+
+    if (preg_match('/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/', $value, $matches)) {
+        return sprintf('%02d:%02d - %02d:%02d', (int) $matches[1], (int) $matches[2], (int) $matches[3], (int) $matches[4]);
+    }
+
+    return '08:00 - 21:00';
+}
+
+function default_operating_schedule(string $slot = '08:00 - 21:00'): array
+{
+    return array_fill_keys(operating_days(), $slot);
+}
+
+function parse_operating_schedule(?string $value): array
+{
+    $value = trim((string) $value);
+
+    if ($value !== '') {
+        $decoded = json_decode($value, true);
+
+        if (is_array($decoded)) {
+            $schedule = [];
+            $allowed = operating_time_slots();
+
+            foreach (operating_days() as $day) {
+                $slot = normalize_operating_slot((string) ($decoded[$day] ?? '08:00 - 21:00'));
+                $schedule[$day] = in_array($slot, $allowed, true) ? $slot : '08:00 - 21:00';
+            }
+
+            return $schedule;
+        }
+
+        if (preg_match('/(\d{1,2}[.:]\d{2})\s*-\s*(\d{1,2}[.:]\d{2})/', $value, $matches)) {
+            $slot = normalize_operating_slot($matches[1] . ' - ' . $matches[2]);
+            return default_operating_schedule($slot);
+        }
+
+        if (stripos($value, '24') !== false) {
+            return default_operating_schedule('24 Jam');
+        }
+    }
+
+    return default_operating_schedule();
+}
+
+function operating_schedule_from_post(mixed $value): string
+{
+    if (!is_array($value)) {
+        $schedule = parse_operating_schedule((string) $value);
+        return json_encode($schedule, JSON_UNESCAPED_UNICODE) ?: '{}';
+    }
+
+    $allowed = operating_time_slots();
+    $schedule = [];
+
+    foreach (operating_days() as $day) {
+        $slot = normalize_operating_slot((string) ($value[$day] ?? ''));
+
+        if (!in_array($slot, $allowed, true)) {
+            throw new RuntimeException('Jam operasional tidak valid.');
+        }
+
+        $schedule[$day] = $slot;
+    }
+
+    return json_encode($schedule, JSON_UNESCAPED_UNICODE) ?: '{}';
+}
+
+function operating_hours_display(?string $value): string
+{
+    $schedule = parse_operating_schedule($value);
+    $uniqueSlots = array_values(array_unique($schedule));
+
+    if (count($uniqueSlots) === 1) {
+        $slot = $uniqueSlots[0];
+
+        return match ($slot) {
+            'Tutup' => 'Tutup setiap hari',
+            '24 Jam' => 'Buka 24 jam setiap hari',
+            default => 'Buka jam ' . $slot . ' setiap hari',
+        };
+    }
+
+    $dayIndex = ((int) date('N')) - 1;
+    $today = operating_days()[$dayIndex] ?? 'Senin';
+    $slot = $schedule[$today] ?? '08:00 - 21:00';
+
+    return match ($slot) {
+        'Tutup' => 'Tutup hari ini',
+        '24 Jam' => 'Buka 24 jam hari ini',
+        default => 'Buka jam ' . $slot . ' hari ini',
+    };
+}
+
+function render_operating_hours_selects(?string $currentValue, string $fieldName = 'operating_hours'): void
+{
+    $schedule = parse_operating_schedule($currentValue);
+    $slots = operating_time_slots();
+    ?>
+    <div class="operating-hours-grid">
+      <?php foreach (operating_days() as $day): ?>
+        <label class="operating-hours-row">
+          <span class="operating-hours-day"><?= e($day) ?></span>
+          <select class="operating-hours-select" name="<?= e($fieldName) ?>[<?= e($day) ?>]" required>
+            <?php foreach ($slots as $slot): ?>
+              <option value="<?= e($slot) ?>" <?= ($schedule[$day] ?? '') === $slot ? 'selected' : '' ?>><?= e($slot) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </label>
+      <?php endforeach; ?>
+    </div>
+    <?php
+}
+
+function normalize_price_display(?string $value): string
+{
+    $digits = preg_replace('/\D+/', '', (string) $value) ?: '';
+
+    if ($digits === '') {
+        throw new RuntimeException('Harga produk wajib diisi angka.');
+    }
+
+    $digits = ltrim($digits, '0');
+    if ($digits === '') {
+        return '0';
+    }
+
+    return preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $digits) ?: $digits;
+}
+
 function rating_stars_html(float $rating): string
 {
     $rating = max(0.0, min(5.0, $rating));
@@ -577,7 +738,11 @@ function ensure_store_operational_columns(): void
     $pdo = db();
     $pdo->exec(
         "ALTER TABLE stores
-         ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(120) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description"
+         ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description"
+    );
+    $pdo->exec(
+        "ALTER TABLE stores
+         MODIFY COLUMN operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB'"
     );
     $pdo->exec(
         'ALTER TABLE stores
@@ -642,8 +807,17 @@ function save_uploaded_product_image(array $file, ?string $currentPath = null): 
         return $currentPath ?: 'assets/image/image.png';
     }
 
+    return save_uploaded_product_image_file($file);
+}
+
+function save_uploaded_product_image_file(array $file): string
+{
     if (($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
         throw new RuntimeException('Upload gambar gagal diproses.');
+    }
+
+    if ((int) ($file['size'] ?? 0) > 5 * 1024 * 1024) {
+        throw new RuntimeException('Ukuran gambar produk maksimal 5MB per file.');
     }
 
     $allowed = [
@@ -670,6 +844,142 @@ function save_uploaded_product_image(array $file, ?string $currentPath = null): 
     }
 
     return 'uploads/products/' . $filename;
+}
+
+function product_upload_entries(array $files): array
+{
+    $names = $files['name'] ?? null;
+
+    if ($names === null || $names === '') {
+        return [];
+    }
+
+    if (!is_array($names)) {
+        return [array_merge($files, ['name' => (string) $names])];
+    }
+
+    $entries = [];
+    $count = count($names);
+
+    for ($index = 0; $index < $count; $index++) {
+        $entries[] = [
+            'name' => $files['name'][$index] ?? '',
+            'type' => $files['type'][$index] ?? '',
+            'tmp_name' => $files['tmp_name'][$index] ?? '',
+            'error' => $files['error'][$index] ?? UPLOAD_ERR_NO_FILE,
+            'size' => $files['size'][$index] ?? 0,
+        ];
+    }
+
+    return array_values(array_filter(
+        $entries,
+        static fn(array $file): bool => (int) ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE
+    ));
+}
+
+function save_uploaded_product_images(array $files, ?string $currentPath = null, bool $required = false): array
+{
+    $entries = product_upload_entries($files);
+
+    if (!$entries) {
+        if ($required && trim((string) $currentPath) === '') {
+            throw new RuntimeException('Minimal satu gambar produk wajib diupload.');
+        }
+
+        return $currentPath ? [$currentPath] : [];
+    }
+
+    $paths = [];
+
+    foreach ($entries as $file) {
+        $paths[] = save_uploaded_product_image_file($file);
+    }
+
+    return $paths;
+}
+
+function ensure_product_images_table(): void
+{
+    static $checked = false;
+
+    if ($checked) {
+        return;
+    }
+
+    db()->exec(
+        'CREATE TABLE IF NOT EXISTS product_images (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          product_id INT NOT NULL,
+          image_path VARCHAR(255) NOT NULL,
+          sort_order INT NOT NULL DEFAULT 0,
+          created_at DATETIME NOT NULL,
+          CONSTRAINT fk_product_images_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        )'
+    );
+
+    $checked = true;
+}
+
+function replace_product_images(int $productId, array $imagePaths): void
+{
+    ensure_product_images_table();
+
+    $imagePaths = array_values(array_filter(array_map(
+        static fn($path): string => trim((string) $path),
+        $imagePaths
+    )));
+
+    if (!$imagePaths) {
+        return;
+    }
+
+    db()->prepare('DELETE FROM product_images WHERE product_id = :product_id')->execute([
+        'product_id' => $productId,
+    ]);
+
+    $stmt = db()->prepare(
+        'INSERT INTO product_images (product_id, image_path, sort_order, created_at)
+         VALUES (:product_id, :image_path, :sort_order, NOW())'
+    );
+
+    foreach ($imagePaths as $index => $path) {
+        $stmt->execute([
+            'product_id' => $productId,
+            'image_path' => $path,
+            'sort_order' => $index,
+        ]);
+    }
+}
+
+function product_image_paths(array $product): array
+{
+    ensure_product_images_table();
+
+    $productId = (int) ($product['id'] ?? 0);
+    $fallback = trim((string) ($product['image_path'] ?? ''));
+
+    if ($productId < 1) {
+        return [$fallback !== '' ? $fallback : 'assets/image/image.png'];
+    }
+
+    $stmt = db()->prepare(
+        'SELECT image_path
+         FROM product_images
+         WHERE product_id = :product_id
+         ORDER BY sort_order ASC, id ASC'
+    );
+    $stmt->execute(['product_id' => $productId]);
+
+    $paths = array_values(array_filter(array_map(
+        static fn(array $row): string => trim((string) ($row['image_path'] ?? '')),
+        $stmt->fetchAll()
+    )));
+
+    if ($fallback !== '' && !in_array($fallback, $paths, true)) {
+        array_unshift($paths, $fallback);
+    }
+
+    return $paths ?: ['assets/image/image.png'];
 }
 
 function save_uploaded_store_image(array $file, ?string $currentPath = null): string

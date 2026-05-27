@@ -22,7 +22,12 @@ $store = $storeStmt->fetch();
 if (is_post()) {
     try {
         $name = trim($_POST['name'] ?? '');
-        $imagePath = save_uploaded_product_image($_FILES['product_image'] ?? []);
+        $imagePaths = save_uploaded_product_images($_FILES['product_images'] ?? [], null, true);
+        $imagePath = $imagePaths[0];
+
+        ensure_product_images_table();
+        db()->beginTransaction();
+
         $stmt = db()->prepare(
             'INSERT INTO products
              (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, base_rating_total, base_review_count, is_featured, is_active, created_at, updated_at)
@@ -37,13 +42,20 @@ if (is_post()) {
             'region' => trim($_POST['region'] ?? ''),
             'short_description' => trim($_POST['short_description'] ?? ''),
             'long_description' => trim($_POST['long_description'] ?? ''),
-            'price_display' => trim($_POST['price_display'] ?? ''),
+            'price_display' => normalize_price_display($_POST['price_display'] ?? ''),
             'tag_label' => trim($_POST['tag_label'] ?? ''),
             'image_path' => $imagePath,
         ]);
+        replace_product_images((int) db()->lastInsertId(), $imagePaths);
+        db()->commit();
+
         set_flash('success', 'Produk baru berhasil ditambahkan.');
         redirect_to('store-products.php');
     } catch (Throwable $exception) {
+        if (db()->inTransaction()) {
+            db()->rollBack();
+        }
+
         set_flash('error', $exception->getMessage());
         redirect_to('store-add-product.php');
     }
@@ -52,7 +64,7 @@ if (is_post()) {
 render_layout('Tambah Produk', function (?array $currentUser = null) use ($user, $store): void {
     ?>
     <div class="shell">
-      <?php render_store_sidebar($user, $store, 'add-product'); ?>
+      <?php render_store_sidebar($user, $store, 'products'); ?>
 
       <main class="main">
         <div class="topbar">
@@ -106,8 +118,8 @@ render_layout('Tambah Produk', function (?array $currentUser = null) use ($user,
                 <div class="grid-2">
                   <div class="field-wrap">
                     <label class="field-label" for="productPrice">Harga Tampilan <span class="required-mark">*</span></label>
-                    <input type="text" id="productPrice" name="price_display" placeholder="Contoh: 25.000" required />
-                    <div class="field-hint">Gunakan format angka lokal, contoh: 25.000</div>
+                    <input type="text" id="productPrice" name="price_display" inputmode="numeric" autocomplete="off" data-price-format placeholder="Contoh: 25.000" required />
+                    <div class="field-hint">Ketik angka saja, sistem akan memformat otomatis.</div>
                   </div>
                   <div class="field-wrap">
                     <label class="field-label" for="productTag">Tag Label <span class="required-mark">*</span></label>
@@ -119,10 +131,10 @@ render_layout('Tambah Produk', function (?array $currentUser = null) use ($user,
                 <div class="sec-divider"><span class="sec-divider-label">Gambar produk</span></div>
 
                 <label class="file-drop" for="productImage">
-                  <input type="file" id="productImage" name="product_image" accept=".jpg,.jpeg,.png,.webp" required />
+                  <input type="file" id="productImage" name="product_images[]" accept=".jpg,.jpeg,.png,.webp" multiple required />
                   <span class="file-drop-icon"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i></span>
                   <span class="file-drop-text"><strong>Klik untuk upload</strong> atau seret file ke sini</span>
-                  <span class="file-drop-sub" id="productImageHint">JPG, PNG, WEBP - maks. 5MB, rasio ideal 4:3</span>
+                  <span class="file-drop-sub" id="productImageHint">Bisa pilih beberapa gambar. JPG, PNG, WEBP - maks. 5MB/file</span>
                 </label>
 
                 <div class="sec-divider"><span class="sec-divider-label">Deskripsi produk</span></div>
@@ -219,13 +231,13 @@ render_layout('Tambah Produk', function (?array $currentUser = null) use ($user,
         }
 
         function formattedPrice(value) {
-          const price = value.trim();
+          const digits = value.replace(/\D/g, '');
 
-          if (!price) {
+          if (!digits) {
             return 'Rp 25.000';
           }
 
-          return price.toLowerCase().startsWith('rp') ? price : 'Rp ' + price;
+          return 'Rp ' + digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
 
         function syncPreview() {
@@ -251,14 +263,15 @@ render_layout('Tambah Produk', function (?array $currentUser = null) use ($user,
 
         if (fields.image && preview.image) {
           fields.image.addEventListener('change', function (event) {
-            const file = event.target.files && event.target.files[0];
+            const files = Array.from(event.target.files || []);
+            const file = files[0];
 
             if (!file) {
               return;
             }
 
             if (preview.imageHint) {
-              preview.imageHint.textContent = file.name;
+              preview.imageHint.textContent = files.length > 1 ? files.length + ' gambar dipilih' : file.name;
             }
 
             const reader = new FileReader();

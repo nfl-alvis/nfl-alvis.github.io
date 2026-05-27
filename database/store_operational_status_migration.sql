@@ -1,5 +1,7 @@
 ALTER TABLE stores
-  ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(120) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description;
+  ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description;
+ALTER TABLE stores
+  MODIFY COLUMN operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB';
 
 ALTER TABLE stores
   ADD COLUMN IF NOT EXISTS is_open TINYINT(1) NOT NULL DEFAULT 1 AFTER cover_image;
