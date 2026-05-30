@@ -28,7 +28,7 @@ $editId = (int) ($_GET['edit'] ?? 0);
 $editingProduct = null;
 
 if ($editId > 0) {
-    $editStmt = db()->prepare('SELECT * FROM products WHERE id = :id AND store_id = :store_id AND is_active = 1 LIMIT 1');
+    $editStmt = db()->prepare('SELECT * FROM products WHERE id = :id AND store_id = :store_id LIMIT 1');
     $editStmt->execute(['id' => $editId, 'store_id' => $storeId]);
     $editingProduct = $editStmt->fetch() ?: null;
 }
@@ -67,15 +67,21 @@ if (is_post()) {
     if (($_POST['action'] ?? '') === 'edit_product') {
         try {
             $productId = (int) ($_POST['product_id'] ?? 0);
-            $currentImage = trim($_POST['current_image'] ?? '');
             $uploadedImages = $_FILES['product_images'] ?? ($_FILES['product_image'] ?? []);
-            $hasNewImages = product_upload_entries($uploadedImages) !== [];
-            $imagePaths = save_uploaded_product_images($uploadedImages, $currentImage);
-            $imagePath = $imagePaths[0] ?? $currentImage;
 
-            if ($hasNewImages) {
-                ensure_product_images_table();
+            $currentProductStmt = db()->prepare('SELECT * FROM products WHERE id = :id AND store_id = :store_id LIMIT 1');
+            $currentProductStmt->execute([
+                'id' => $productId,
+                'store_id' => $storeId,
+            ]);
+            $currentProduct = $currentProductStmt->fetch();
+
+            if (!$currentProduct) {
+                throw new RuntimeException('Produk tidak ditemukan atau sudah dihapus.');
             }
+
+            $imagePaths = edited_product_image_paths($currentProduct, $uploadedImages, $_POST['remove_images'] ?? []);
+            $imagePath = $imagePaths[0];
 
             db()->beginTransaction();
 
@@ -89,8 +95,9 @@ if (is_post()) {
                      price_display = :price_display,
                      tag_label = :tag_label,
                      image_path = :image_path,
+                     is_active = :is_active,
                      updated_at = NOW()
-                 WHERE id = :id AND store_id = :store_id AND is_active = 1'
+                 WHERE id = :id AND store_id = :store_id'
             );
             $stmt->execute([
                 'name' => trim($_POST['name'] ?? ''),
@@ -101,13 +108,12 @@ if (is_post()) {
                 'price_display' => normalize_price_display($_POST['price_display'] ?? ''),
                 'tag_label' => trim($_POST['tag_label'] ?? ''),
                 'image_path' => $imagePath,
+                'is_active' => ($_POST['is_active'] ?? '0') === '1' ? 1 : 0,
                 'id' => $productId,
                 'store_id' => $storeId,
             ]);
 
-            if ($hasNewImages) {
-                replace_product_images($productId, $imagePaths);
-            }
+            replace_product_images($productId, $imagePaths);
 
             db()->commit();
 
@@ -127,14 +133,11 @@ if (is_post()) {
     redirect_to($listingPath);
 }
 
-$products = array_values(array_filter(
-    find_store_products($storeId),
-    static fn (array $product): bool => (int) ($product['is_active'] ?? 0) === 1
-));
+$products = find_store_products($storeId);
 
 $activeProducts = array_values(array_filter($products, static fn (array $product): bool => (int) ($product['is_active'] ?? 0) === 1));
-$totalViews = array_sum(array_map(static fn (array $product): int => (int) ($product['total_views'] ?? 0), $products));
-$ratedProducts = array_values(array_filter($products, static fn (array $product): bool => (float) ($product['rating'] ?? 0) > 0));
+$totalViews = array_sum(array_map(static fn (array $product): int => (int) ($product['total_views'] ?? 0), $activeProducts));
+$ratedProducts = array_values(array_filter($activeProducts, static fn (array $product): bool => (float) ($product['rating'] ?? 0) > 0));
 $averageRating = $ratedProducts
     ? array_sum(array_map(static fn (array $product): float => (float) $product['rating'], $ratedProducts)) / count($ratedProducts)
     : 0.0;
@@ -268,6 +271,7 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
                     <th>Produk</th>
                     <th>Kategori</th>
                     <th>Harga</th>
+                    <th>Status</th>
                     <th>Rating</th>
                     <th>Views</th>
                     <th>Aksi</th>
@@ -288,6 +292,7 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
                       </td>
                       <td><span class="store-product-category"><?= e($product['type']) ?></span></td>
                       <td><?= e(rupiah($product['price_display'])) ?></td>
+                      <td><span class="store-status-badge <?= (int) ($product['is_active'] ?? 1) === 1 ? 'is-open' : 'is-closed' ?>"><?= (int) ($product['is_active'] ?? 1) === 1 ? 'Aktif' : 'Nonaktif' ?></span></td>
                       <td><span class="store-product-rating"><i class="fa-solid fa-star" aria-hidden="true"></i><?= e(number_format((float) $product['rating'], 1)) ?></span></td>
                       <td><?= e(number_short((int) $product['total_views'])) ?></td>
                       <td>
@@ -315,7 +320,7 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
                   <?php endforeach; ?>
                   <?php if (!$productsPage['items']): ?>
                     <tr>
-                      <td class="store-product-empty" colspan="7">Tidak ada produk yang sesuai dengan pencarian.</td>
+                      <td class="store-product-empty" colspan="8">Tidak ada produk yang sesuai dengan pencarian.</td>
                     </tr>
                   <?php endif; ?>
                 </tbody>
@@ -339,45 +344,114 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
 
     <?php if ($editingProduct): ?>
       <div class="store-product-modal-backdrop" id="editProductModal" data-close-url="<?= e($listingUrl) ?>">
-        <section class="store-product-modal" role="dialog" aria-modal="true" aria-labelledby="editProductTitle">
-          <div class="store-product-modal-head">
-            <div>
-              <h2 id="editProductTitle">Edit Produk</h2>
-              <p>Perbarui detail <?= e($editingProduct['name']) ?>.</p>
+        <section class="admin-product-edit-modal" role="dialog" aria-modal="true" aria-labelledby="editProductTitle">
+          <article class="form-card">
+            <div class="form-card-head">
+              <div>
+                <div class="form-card-title" id="editProductTitle">Edit Produk</div>
+                <div class="form-card-meta">Perbarui detail <?= e($editingProduct['name']) ?> tanpa keluar dari daftar produk</div>
+              </div>
+              <a class="store-product-modal-close" href="<?= e($listingUrl) ?>" aria-label="Tutup form edit">
+                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+              </a>
             </div>
-            <a class="store-product-modal-close" href="<?= e($listingUrl) ?>" aria-label="Tutup form edit">
-              <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-            </a>
-          </div>
 
-          <form method="post" enctype="multipart/form-data" class="form-panel store-product-modal-form">
-            <input type="hidden" name="action" value="edit_product" />
-            <input type="hidden" name="product_id" value="<?= e((string) $editingProduct['id']) ?>" />
-            <input type="hidden" name="current_image" value="<?= e($editingProduct['image_path']) ?>" />
-            <div class="form-grid-2">
-              <label>Nama Produk <input type="text" name="name" value="<?= e($editingProduct['name']) ?>" required /></label>
-              <label>Kategori
-                <select name="type">
-                  <option value="Makanan" <?= $editingProduct['type'] === 'Makanan' ? 'selected' : '' ?>>Makanan</option>
-                  <option value="Minuman" <?= $editingProduct['type'] === 'Minuman' ? 'selected' : '' ?>>Minuman</option>
-                </select>
-              </label>
-              <label>Daerah
-                <select name="region" required>
-                  <?php render_province_options($editingProduct['region'] ?? ''); ?>
-                </select>
-              </label>
-              <label>Harga Tampilan <input type="text" name="price_display" value="<?= e($editingProduct['price_display']) ?>" inputmode="numeric" autocomplete="off" data-price-format required /></label>
-              <label>Tag <input type="text" name="tag_label" value="<?= e($editingProduct['tag_label']) ?>" required /></label>
-              <label>Ganti Gambar <input type="file" name="product_images[]" accept=".jpg,.jpeg,.png,.webp" multiple /></label>
-            </div>
-            <label>Deskripsi Singkat <textarea name="short_description" required><?= e($editingProduct['short_description']) ?></textarea></label>
-            <label>Deskripsi Panjang <textarea name="long_description" required><?= e($editingProduct['long_description']) ?></textarea></label>
-            <div class="store-product-modal-actions">
-              <a class="filter-reset" href="<?= e($listingUrl) ?>">Batal</a>
-              <button type="submit"><i class="fa-solid fa-check" aria-hidden="true"></i>Simpan Perubahan</button>
-            </div>
-          </form>
+            <form method="post" enctype="multipart/form-data" action="<?= e($listingUrl) ?>">
+              <input type="hidden" name="action" value="edit_product" />
+              <input type="hidden" name="product_id" value="<?= e((string) $editingProduct['id']) ?>" />
+              <input type="hidden" name="current_image" value="<?= e($editingProduct['image_path']) ?>" />
+
+              <div class="form-body">
+                <div class="sec-divider">
+                  <span class="sec-divider-label">Data Utama</span>
+                </div>
+
+                <div class="grid-2">
+                  <div class="field-wrap">
+                    <label class="field-label" for="store-product-name">Nama Produk <span class="req">*</span></label>
+                    <input id="store-product-name" type="text" name="name" value="<?= e($editingProduct['name']) ?>" required />
+                  </div>
+                  <div class="field-wrap">
+                    <label class="field-label" for="store-product-type">Kategori <span class="req">*</span></label>
+                    <select id="store-product-type" name="type" required>
+                      <option value="Makanan" <?= $editingProduct['type'] === 'Makanan' ? 'selected' : '' ?>>Makanan</option>
+                      <option value="Minuman" <?= $editingProduct['type'] === 'Minuman' ? 'selected' : '' ?>>Minuman</option>
+                    </select>
+                  </div>
+                  <div class="field-wrap">
+                    <label class="field-label" for="store-product-active">Status Produk <span class="req">*</span></label>
+                    <select id="store-product-active" name="is_active" required>
+                      <option value="1" <?= (int) ($editingProduct['is_active'] ?? 1) === 1 ? 'selected' : '' ?>>Aktif</option>
+                      <option value="0" <?= (int) ($editingProduct['is_active'] ?? 1) === 0 ? 'selected' : '' ?>>Nonaktif</option>
+                    </select>
+                    <span class="field-hint">Produk nonaktif tetap tersimpan, tetapi tidak tampil di katalog publik.</span>
+                  </div>
+                </div>
+
+                <div class="field-wrap">
+                  <label class="field-label" for="store-product-region">Wilayah <span class="req">*</span></label>
+                  <select id="store-product-region" name="region" required>
+                    <?php render_province_options($editingProduct['region'] ?? ''); ?>
+                  </select>
+                </div>
+
+                <div class="sec-divider">
+                  <span class="sec-divider-label">Harga &amp; Label</span>
+                </div>
+
+                <div class="grid-2">
+                  <div class="field-wrap">
+                    <label class="field-label" for="store-product-price">Harga Tampilan <span class="req">*</span></label>
+                    <input id="store-product-price" type="text" name="price_display" value="<?= e($editingProduct['price_display']) ?>" inputmode="numeric" autocomplete="off" data-price-format required />
+                    <span class="field-hint">Ketik angka saja, sistem akan memformat otomatis.</span>
+                  </div>
+                  <div class="field-wrap">
+                    <label class="field-label" for="store-product-tag">Tag <span class="req">*</span></label>
+                    <input id="store-product-tag" type="text" name="tag_label" value="<?= e($editingProduct['tag_label']) ?>" required />
+                    <span class="field-hint">Pisahkan dengan spasi jika lebih dari satu.</span>
+                  </div>
+                </div>
+
+                <div class="sec-divider">
+                  <span class="sec-divider-label">Media &amp; Deskripsi</span>
+                </div>
+
+                <div class="field-wrap">
+                  <label class="field-label" for="store-product-image">Tambah Gambar Baru</label>
+                  <label class="file-drop" for="store-product-image">
+                    <input id="store-product-image" type="file" name="product_images[]" accept=".jpg,.jpeg,.png,.webp" multiple />
+                    <div class="file-drop-icon"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i></div>
+                    <div class="file-drop-text">
+                      <strong>Klik untuk upload</strong> atau drag &amp; drop
+                    </div>
+                    <div class="file-drop-sub">Bisa pilih beberapa gambar. Untuk mengganti, hapus foto lama lalu upload foto baru</div>
+                  </label>
+                  <?php render_product_image_delete_controls($editingProduct); ?>
+                </div>
+
+                <div class="field-wrap">
+                  <label class="field-label" for="store-product-short">Deskripsi Singkat <span class="req">*</span></label>
+                  <textarea id="store-product-short" name="short_description" required><?= e($editingProduct['short_description']) ?></textarea>
+                </div>
+
+                <div class="field-wrap">
+                  <label class="field-label" for="store-product-long">Deskripsi Panjang <span class="req">*</span></label>
+                  <textarea id="store-product-long" name="long_description" required><?= e($editingProduct['long_description']) ?></textarea>
+                </div>
+              </div>
+
+              <div class="submit-bar">
+                <p class="submit-note">Produk hanya tampil di katalog publik jika statusnya aktif.</p>
+                <div class="admin-product-edit-actions">
+                  <a class="filter-reset" href="<?= e($listingUrl) ?>">Batal</a>
+                  <button type="submit" class="btn-submit">
+                    <span class="btn-icon"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                    Simpan Perubahan
+                  </button>
+                </div>
+              </div>
+            </form>
+          </article>
         </section>
       </div>
       <script>
@@ -391,6 +465,19 @@ render_layout('Produk Saya', function (?array $currentUser = null) use (
           });
           document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') window.location.href = modal.dataset.closeUrl;
+          });
+          modal.querySelectorAll('[data-product-image-manager]').forEach((manager) => {
+            const form = manager.closest('form');
+            const removeInputs = Array.from(manager.querySelectorAll('[data-product-image-remove]'));
+            const fileInput = form?.querySelector('input[type="file"][name="product_images[]"]');
+            form?.addEventListener('submit', (event) => {
+              const remaining = removeInputs.filter((input) => !input.checked).length;
+              const hasNewUpload = fileInput && fileInput.files.length > 0;
+              if (remaining < 1 && !hasNewUpload) {
+                event.preventDefault();
+                alert('Minimal satu foto produk harus tersisa.');
+              }
+            });
           });
         })();
       </script>

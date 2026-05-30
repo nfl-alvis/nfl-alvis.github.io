@@ -122,6 +122,23 @@ function initFavoriteButtons() {
 
   const favorites = getFavorites();
 
+  function syncFavoriteButton(button, isActive) {
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+    const icon = button.querySelector('i');
+    if (icon) {
+      icon.classList.toggle('fa-solid', isActive);
+      icon.classList.toggle('fa-regular', !isActive);
+    }
+
+    const label = button.querySelector('span');
+    if (label && button.classList.contains('dp-fav-btn')) {
+      label.textContent = isActive ? 'Tersimpan' : 'Favoritkan';
+      button.setAttribute('aria-label', isActive ? 'Hapus dari favorit' : 'Simpan ke favorit');
+    }
+  }
+
   favButtons.forEach(function (button) {
     const card = button.closest('.food-card');
     const itemId = button.dataset.id || card?.dataset.favoriteId || '';
@@ -131,11 +148,7 @@ function initFavoriteButtons() {
     }
 
     button.dataset.id = itemId;
-    button.setAttribute('aria-pressed', favorites.includes(itemId) ? 'true' : 'false');
-
-    if (favorites.includes(itemId)) {
-      button.classList.add('active');
-    }
+    syncFavoriteButton(button, favorites.includes(itemId));
 
     button.addEventListener('click', function (event) {
       event.preventDefault();
@@ -145,8 +158,7 @@ function initFavoriteButtons() {
       const currentIndex = nextFavorites.indexOf(itemId);
       const willBeActive = !button.classList.contains('active');
 
-      button.classList.toggle('active', willBeActive);
-      button.setAttribute('aria-pressed', willBeActive ? 'true' : 'false');
+      syncFavoriteButton(button, willBeActive);
 
       if (willBeActive && currentIndex === -1) {
         nextFavorites.push(itemId);

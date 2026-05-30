@@ -149,12 +149,14 @@
 
 .btn-whatsapp {
   background: var(--gradient-whatsapp);
-  color: var(--color-white);
+  color: var(--color-primary-dark);
+  border: 2px solid rgba(47, 82, 56, 0.28);
 }
 
 .btn-instagram {
   background: var(--gradient-instagram);
-  color: var(--color-white);
+  color: var(--color-primary-darker);
+  border: 2px solid rgba(196, 82, 56, 0.28);
 }
 
 .btn-favorite {
@@ -173,7 +175,8 @@
 
 .btn-location {
   background: var(--gradient-button);
-  color: var(--color-white);
+  color: var(--color-primary-dark);
+  border: 2px solid rgba(47, 82, 56, 0.28);
   width: 100%;
 }
 
@@ -306,9 +309,9 @@
 /* Submit Button */
 .btn-submit-review {
   background: var(--gradient-button);
-  color: var(--color-white);
+  color: var(--color-primary-dark);
   padding: 14px 28px;
-  border: none;
+  border: 1px solid rgba(47, 82, 56, 0.28);
   border-radius: 12px;
   font-size: 16px;
   font-weight: 600;

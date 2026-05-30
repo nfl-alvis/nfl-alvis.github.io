@@ -50,7 +50,6 @@ if (is_post()) {
 
 render_layout('Dashboard', function (?array $currentUser = null) use ($user): void {
   $profileImageUrl = user_profile_image_url($user);
-  $initial = user_profile_initial($user);
   $roleLabel = match ($user['role']) {
     ROLE_SUPER_ADMIN => 'Super Admin',
     ROLE_STORE_ADMIN => 'Admin Toko',
@@ -81,11 +80,11 @@ render_layout('Dashboard', function (?array $currentUser = null) use ($user): vo
       <div class="summary-cover"></div>
 
       <div class="summary-avatar-wrap">
-        <div class="summary-avatar-img">
+        <div class="summary-avatar-img <?= $profileImageUrl === '' ? 'is-default' : '' ?>">
           <?php if ($profileImageUrl !== ''): ?>
             <img src="<?= e($profileImageUrl) ?>" alt="<?= e($user['name']) ?>" />
           <?php else: ?>
-            <?= e($initial) ?>
+            <i class="fa-regular fa-user" aria-hidden="true"></i>
           <?php endif; ?>
         </div>
         <div class="summary-badge"><?= e($statusLabel) ?></div>
@@ -162,11 +161,11 @@ render_layout('Dashboard', function (?array $currentUser = null) use ($user): vo
           <div class="sec-divider"><span>Foto Profil</span></div>
 
           <div class="photo-upload">
-            <div class="photo-preview" id="photoPreview">
+            <div class="photo-preview <?= $profileImageUrl === '' ? 'is-default' : '' ?>" id="photoPreview">
               <?php if ($profileImageUrl !== ''): ?>
                 <img src="<?= e($profileImageUrl) ?>" alt="<?= e($user['name']) ?>" />
               <?php else: ?>
-                <?= e($initial) ?>
+                <i class="fa-regular fa-user" aria-hidden="true"></i>
               <?php endif; ?>
             </div>
             <div class="photo-upload-right">
@@ -249,6 +248,7 @@ render_layout('Dashboard', function (?array $currentUser = null) use ($user): vo
           const reader = new FileReader();
           reader.addEventListener('load', function(readerEvent) {
             const imageUrl = String(readerEvent.target.result || '');
+            photoPreview.classList.remove('is-default');
             photoPreview.innerHTML = '<img src="' + imageUrl + '" alt="Pratinjau foto profil" />';
           });
           reader.readAsDataURL(file);

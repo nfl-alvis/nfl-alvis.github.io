@@ -81,8 +81,8 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
                 <span class="dp-chip"><?= e($product['type']) ?></span>
                 <span class="dp-chip green"><?= e($product['tag_label']) ?></span>
               </div>
-              <button class="fav-btn dp-fav-btn" type="button" data-id="<?= e(favorite_product_id($product)) ?>" aria-label="Simpan ke favorit">
-                <i class="fa-solid fa-heart" aria-hidden="true"></i>
+              <button class="fav-btn dp-fav-btn" type="button" data-id="<?= e(favorite_product_id($product)) ?>" aria-label="Simpan ke favorit" aria-pressed="false">
+                <i class="fa-regular fa-heart" aria-hidden="true"></i>
                 <span>Favoritkan</span>
               </button>
             </div>

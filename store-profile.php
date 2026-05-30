@@ -22,6 +22,7 @@ $store = $storeStmt->fetch();
 
 if (is_post()) {
   try {
+    $operatingHours = operating_schedule_from_post($_POST['operating_hours'] ?? []);
     $stmt = db()->prepare(
       'UPDATE stores
              SET name = :name,
@@ -42,8 +43,8 @@ if (is_post()) {
       'whatsapp' => preg_replace('/\D+/', '', $_POST['whatsapp'] ?? ''),
       'instagram' => trim($_POST['instagram'] ?? ''),
       'description' => trim($_POST['description'] ?? ''),
-      'operating_hours' => operating_schedule_from_post($_POST['operating_hours'] ?? []),
-      'is_open' => ($_POST['is_open'] ?? '0') === '1' ? 1 : 0,
+      'operating_hours' => $operatingHours,
+      'is_open' => operating_schedule_is_open_today($operatingHours) ? 1 : 0,
       'id' => $storeId,
     ]);
     set_flash('success', 'Informasi toko berhasil diperbarui.');
@@ -206,16 +207,8 @@ render_layout('Profil Toko', function (?array $currentUser = null) use ($user, $
                 <div class="field-wrap store-profile-operating-hours">
                   <span class="field-label">Jam Operasional <span class="required-mark">*</span></span>
                   <?php render_operating_hours_selects($store['operating_hours'] ?? ''); ?>
-                  <span class="field-hint">Pilih jam buka untuk masing-masing hari.</span>
+                  <span class="field-hint">Pilih status, lalu isi jam buka dan jam tutup untuk masing-masing hari.</span>
                 </div>
-                <label class="field-wrap">
-                  <span class="field-label">Status Toko <span class="required-mark">*</span></span>
-                  <select name="is_open" required>
-                    <option value="1" <?= (int) ($store['is_open'] ?? 1) === 1 ? 'selected' : '' ?>>Buka</option>
-                    <option value="0" <?= (int) ($store['is_open'] ?? 1) === 0 ? 'selected' : '' ?>>Tutup</option>
-                  </select>
-                  <span class="field-hint">Status ini ditampilkan pada halaman publik.</span>
-                </label>
               </div>
             </div>
 

@@ -14,6 +14,7 @@ if (is_post()) {
     ensure_store_operational_columns();
     $name = trim($_POST['name'] ?? '');
     $coverImage = save_uploaded_store_image($_FILES['cover_image'] ?? []);
+    $operatingHours = operating_schedule_from_post($_POST['operating_hours'] ?? []);
     $uploadedCoverPath = str_starts_with($coverImage, 'uploads/stores/') ? $coverImage : null;
     $stmt = db()->prepare(
       'INSERT INTO stores
@@ -29,8 +30,8 @@ if (is_post()) {
       'whatsapp' => preg_replace('/\D+/', '', $_POST['whatsapp'] ?? ''),
       'instagram' => trim($_POST['instagram'] ?? ''),
       'description' => trim($_POST['description'] ?? ''),
-      'operating_hours' => operating_schedule_from_post($_POST['operating_hours'] ?? []),
-      'is_open' => ($_POST['is_open'] ?? '1') === '1' ? 1 : 0,
+      'operating_hours' => $operatingHours,
+      'is_open' => operating_schedule_is_open_today($operatingHours) ? 1 : 0,
       'cover_image' => $coverImage,
     ]);
     set_flash('success', 'Toko baru berhasil dibuat.');
@@ -59,7 +60,6 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
     <main class="main">
       <div class="topbar">
         <div class="topbar-left">
-          <a href="<?= e(base_path('admin-stores.php')) ?>" class="back-btn" title="Kembali ke Daftar Toko">&#8592;</a>
           <div>
             <div class="topbar-heading">Tambah Toko Baru</div>
             <div class="topbar-sub">Isi data toko sebelum dipublikasikan ke platform</div>
@@ -135,14 +135,7 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
                 <div class="field-wrap create-store-operating-hours">
                   <span class="field-label">Jam Operasional <span class="req">*</span></span>
                   <?php render_operating_hours_selects(null); ?>
-                  <span class="field-hint">Pilih jam buka untuk masing-masing hari.</span>
-                </div>
-                <div class="field-wrap">
-                  <label class="field-label" for="store-open">Status Toko <span class="req">*</span></label>
-                  <select id="store-open" name="is_open" required>
-                    <option value="1">Buka</option>
-                    <option value="0">Tutup</option>
-                  </select>
+                  <span class="field-hint">Status buka/tutup toko otomatis mengikuti jam operasional hari ini.</span>
                 </div>
               </div>
 
@@ -154,11 +147,11 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
                 <label class="field-label" for="store-cover">Foto Toko</label>
                 <label class="file-drop" for="store-cover">
                   <input id="store-cover" type="file" name="cover_image" accept=".jpg,.jpeg,.png,.webp" />
-                  <div class="file-drop-icon">📸</div>
+                  <div class="file-drop-icon"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i></div>
                   <div class="file-drop-text">
                     <strong>Klik untuk upload</strong> atau drag &amp; drop
                   </div>
-                  <div class="file-drop-sub">JPG, PNG, WEBP &middot; Maks. 2 MB</div>
+                  <div class="file-drop-sub" id="storeCoverHint">JPG, PNG, WEBP &middot; Maks. 2 MB</div>
                 </label>
               </div>
 
@@ -178,49 +171,179 @@ render_layout('Tambah Toko Baru', function (?array $user = null): void {
         </div>
 
         <aside class="info-stack">
-          <div class="info-card">
-            <div class="preview-box">
-              <div class="preview-box-icon">🏪</div>
-              <div class="preview-box-label">Preview foto toko</div>
+          <article class="store-profile-preview create-store-live-preview" aria-label="Pratinjau toko">
+            <div class="store-profile-cover">
+              <img id="storePreviewCover" src="<?= e(base_path('assets/image/PusakaRasa.webp')) ?>" alt="Pratinjau foto toko" />
+              <span class="store-profile-status" id="storePreviewStatus">Buka</span>
             </div>
+            <div class="store-profile-preview-body">
+              <h2 id="storePreviewName">Nama Toko</h2>
+              <div class="store-profile-region"><i class="fa-solid fa-location-dot" aria-hidden="true"></i><span id="storePreviewRegion">Wilayah</span></div>
 
-            <div class="info-card-title">
-              <span class="info-title-icon">✅</span>
-              Checklist Sebelum Simpan
+              <div class="store-profile-preview-row">
+                <span class="store-profile-preview-icon"><i class="fa-solid fa-align-left" aria-hidden="true"></i></span>
+                <div>
+                  <div class="store-profile-preview-label">Deskripsi</div>
+                  <p id="storePreviewDescription">Deskripsi singkat toko akan tampil di sini.</p>
+                </div>
+              </div>
+              <div class="store-profile-preview-divider"></div>
+              <div class="store-profile-preview-row">
+                <span class="store-profile-preview-icon"><i class="fa-solid fa-map-pin" aria-hidden="true"></i></span>
+                <div>
+                  <div class="store-profile-preview-label">Alamat</div>
+                  <p id="storePreviewAddress">Alamat lengkap toko</p>
+                </div>
+              </div>
+              <div class="store-profile-preview-row">
+                <span class="store-profile-preview-icon"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i></span>
+                <div>
+                  <div class="store-profile-preview-label">WhatsApp</div>
+                  <p id="storePreviewWhatsapp">6281234567890</p>
+                </div>
+              </div>
+              <div class="store-profile-preview-row">
+                <span class="store-profile-preview-icon"><i class="fa-brands fa-instagram" aria-hidden="true"></i></span>
+                <div>
+                  <div class="store-profile-preview-label">Instagram</div>
+                  <p id="storePreviewInstagram">@namatoko</p>
+                </div>
+              </div>
+              <div class="store-profile-preview-row">
+                <span class="store-profile-preview-icon"><i class="fa-regular fa-clock" aria-hidden="true"></i></span>
+                <div>
+                  <div class="store-profile-preview-label">Jam Operasional</div>
+                  <p id="storePreviewHours">Buka jam 08:00 - 21:00 setiap hari</p>
+                </div>
+              </div>
             </div>
-            <ul class="checklist">
-              <li><span class="check-dot">1</span> Nama &amp; wilayah sudah diisi</li>
-              <li><span class="check-dot">2</span> Nomor WA format internasional</li>
-              <li><span class="check-dot">3</span> Foto toko telah diupload</li>
-              <li><span class="check-dot">4</span> Deskripsi singkat &amp; jelas</li>
-              <li><span class="check-dot">5</span> Instagram pakai awalan @</li>
-            </ul>
-          </div>
+          </article>
 
-          <div class="info-card">
-            <div class="info-card-title">
-              <span class="info-title-icon">💡</span>
-              Tips
-            </div>
-            <div class="tip-box">
-              Toko yang baru dibuat dapat langsung ditandai <strong>Buka</strong> atau <strong>Tutup</strong> dan statusnya tampil ke pengunjung.
-            </div>
-          </div>
-
-          <div class="info-card info-card-green">
-            <div class="info-card-title">
-              <span class="info-title-icon">🔒</span>
-              Akses Super Admin
-            </div>
-            <ul class="checklist">
-              <li><span class="check-dot check-dot-green">✓</span> Buat &amp; kelola semua toko</li>
-              <li><span class="check-dot check-dot-green">✓</span> Assign store admin</li>
-              <li><span class="check-dot check-dot-green">✓</span> Lihat seluruh katalog</li>
-            </ul>
-          </div>
         </aside>
       </div>
     </main>
   </div>
+  <script>
+    (() => {
+      const fields = {
+        name: document.getElementById('store-name'),
+        region: document.getElementById('store-region'),
+        address: document.getElementById('store-address'),
+        whatsapp: document.getElementById('store-whatsapp'),
+        instagram: document.getElementById('store-instagram'),
+        description: document.getElementById('store-description'),
+        cover: document.getElementById('store-cover')
+      };
+
+      const preview = {
+        cover: document.getElementById('storePreviewCover'),
+        status: document.getElementById('storePreviewStatus'),
+        name: document.getElementById('storePreviewName'),
+        region: document.getElementById('storePreviewRegion'),
+        address: document.getElementById('storePreviewAddress'),
+        whatsapp: document.getElementById('storePreviewWhatsapp'),
+        instagram: document.getElementById('storePreviewInstagram'),
+        description: document.getElementById('storePreviewDescription'),
+        hours: document.getElementById('storePreviewHours'),
+        coverHint: document.getElementById('storeCoverHint')
+      };
+
+      const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+
+      const setText = (element, value, fallback) => {
+        if (!element) return;
+        element.textContent = String(value || '').trim() || fallback;
+      };
+
+      const selectedText = (select) => {
+        if (!select || select.selectedIndex < 0) return '';
+        const option = select.options[select.selectedIndex];
+        return option?.value ? option.textContent : '';
+      };
+
+      const rowSlot = (row) => {
+        const status = row.querySelector('.operating-hours-status')?.value || 'Buka';
+
+        if (status === 'Tutup' || status === '24 Jam') {
+          return status;
+        }
+
+        const inputs = row.querySelectorAll('.operating-hours-input');
+        const open = inputs[0]?.value || '08:00';
+        const close = inputs[1]?.value || '21:00';
+        return open + ' - ' + close;
+      };
+
+      const operatingSummary = () => {
+        const rows = Array.from(document.querySelectorAll('.operating-hours-row'));
+        if (!rows.length) return { text: 'Buka jam 08:00 - 21:00 setiap hari', isOpen: true };
+
+        const slots = rows.map(rowSlot);
+        const uniqueSlots = Array.from(new Set(slots));
+        const dayIndex = (new Date().getDay() + 6) % 7;
+        const today = days[dayIndex] || 'Senin';
+        const todaySlot = slots[dayIndex] || '08:00 - 21:00';
+        const isOpen = todaySlot !== 'Tutup';
+
+        if (uniqueSlots.length === 1) {
+          const slot = uniqueSlots[0];
+          if (slot === 'Tutup') return { text: 'Tutup setiap hari', isOpen: false };
+          if (slot === '24 Jam') return { text: 'Buka 24 jam setiap hari', isOpen: true };
+          return { text: 'Buka jam ' + slot + ' setiap hari', isOpen: true };
+        }
+
+        if (todaySlot === 'Tutup') return { text: 'Tutup hari ini (' + today + ')', isOpen: false };
+        if (todaySlot === '24 Jam') return { text: 'Buka 24 jam hari ini (' + today + ')', isOpen: true };
+        return { text: 'Buka jam ' + todaySlot + ' hari ini (' + today + ')', isOpen: true };
+      };
+
+      const syncPreview = () => {
+        setText(preview.name, fields.name?.value, 'Nama Toko');
+        setText(preview.region, selectedText(fields.region), 'Wilayah');
+        setText(preview.address, fields.address?.value, 'Alamat lengkap toko');
+        setText(preview.whatsapp, fields.whatsapp?.value, '6281234567890');
+        setText(preview.instagram, fields.instagram?.value, '@namatoko');
+        setText(preview.description, fields.description?.value, 'Deskripsi singkat toko akan tampil di sini.');
+
+        const hours = operatingSummary();
+        setText(preview.hours, hours.text, 'Buka jam 08:00 - 21:00 setiap hari');
+
+        if (preview.status) {
+          preview.status.textContent = hours.isOpen ? 'Buka' : 'Tutup';
+          preview.status.classList.toggle('is-closed', !hours.isOpen);
+        }
+      };
+
+      Object.values(fields).forEach((field) => {
+        if (!field || field === fields.cover) return;
+        field.addEventListener('input', syncPreview);
+        field.addEventListener('change', syncPreview);
+      });
+
+      document.querySelectorAll('.operating-hours-status, .operating-hours-input').forEach((field) => {
+        field.addEventListener('input', syncPreview);
+        field.addEventListener('change', syncPreview);
+      });
+
+      fields.cover?.addEventListener('change', (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (preview.coverHint) {
+          preview.coverHint.textContent = file.name;
+        }
+
+        const reader = new FileReader();
+        reader.addEventListener('load', (readerEvent) => {
+          if (preview.cover) {
+            preview.cover.src = String(readerEvent.target.result || '');
+          }
+        });
+        reader.readAsDataURL(file);
+      });
+
+      syncPreview();
+    })();
+  </script>
 <?php
 }, ['hide_header' => true, 'hide_footer' => true, 'dashboard_css' => true, 'body_class' => 'dashboard-body create-store-page']);

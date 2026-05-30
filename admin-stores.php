@@ -18,10 +18,11 @@ if (is_post() && ($_POST['action'] ?? '') === 'edit_store') {
 
     try {
         $name = trim($_POST['name'] ?? '');
+        $operatingHours = operating_schedule_from_post($_POST['operating_hours'] ?? []);
         db()->prepare(
             'UPDATE stores
              SET name = :name, slug = :slug, region = :region, address = :address, whatsapp = :whatsapp, instagram = :instagram,
-                 description = :description, operating_hours = :operating_hours, is_open = :is_open,
+                 description = :description, operating_hours = :operating_hours, is_open = :is_open, is_active = :is_active,
                  cover_image = :cover_image, updated_at = NOW()
              WHERE id = :id'
         )->execute([
@@ -33,8 +34,9 @@ if (is_post() && ($_POST['action'] ?? '') === 'edit_store') {
             'whatsapp' => preg_replace('/\D+/', '', $_POST['whatsapp'] ?? ''),
             'instagram' => trim($_POST['instagram'] ?? ''),
             'description' => trim($_POST['description'] ?? ''),
-            'operating_hours' => operating_schedule_from_post($_POST['operating_hours'] ?? []),
-            'is_open' => ($_POST['is_open'] ?? '0') === '1' ? 1 : 0,
+            'operating_hours' => $operatingHours,
+            'is_open' => operating_schedule_is_open_today($operatingHours) ? 1 : 0,
+            'is_active' => ($_POST['is_active'] ?? '0') === '1' ? 1 : 0,
             'cover_image' => save_uploaded_store_image($_FILES['cover_image'] ?? [], trim($_POST['current_cover_image'] ?? '')),
         ]);
         set_flash('success', 'Toko berhasil diperbarui.');
@@ -45,17 +47,61 @@ if (is_post() && ($_POST['action'] ?? '') === 'edit_store') {
     }
 }
 
-if (is_post() && ($_POST['action'] ?? '') === 'toggle_store_status') {
+if (is_post() && ($_POST['action'] ?? '') === 'delete_store') {
+    $storeId = (int) ($_POST['id'] ?? 0);
+
     try {
-        $isOpen = ($_POST['is_open'] ?? '0') === '1' ? 1 : 0;
-        db()->prepare('UPDATE stores SET is_open = :is_open, updated_at = NOW() WHERE id = :id')->execute([
-            'id' => (int) ($_POST['id'] ?? 0),
-            'is_open' => $isOpen,
+        if ($storeId < 1) {
+            throw new RuntimeException('Toko tidak valid.');
+        }
+
+        ensure_product_images_table();
+        db()->beginTransaction();
+
+        db()->prepare(
+            'DELETE pi
+             FROM product_images pi
+             INNER JOIN products p ON p.id = pi.product_id
+             WHERE p.store_id = :store_id'
+        )->execute(['store_id' => $storeId]);
+
+        db()->prepare(
+            'DELETE r
+             FROM reviews r
+             INNER JOIN products p ON p.id = r.product_id
+             WHERE p.store_id = :store_id'
+        )->execute(['store_id' => $storeId]);
+
+        db()->prepare('DELETE FROM product_views WHERE store_id = :store_id')->execute([
+            'store_id' => $storeId,
         ]);
-        set_flash('success', $isOpen === 1 ? 'Status toko diubah menjadi buka.' : 'Status toko diubah menjadi tutup.');
+        db()->prepare('DELETE FROM store_visits WHERE store_id = :store_id')->execute([
+            'store_id' => $storeId,
+        ]);
+        db()->prepare('DELETE FROM products WHERE store_id = :store_id')->execute([
+            'store_id' => $storeId,
+        ]);
+        db()->prepare('UPDATE users SET store_id = NULL, updated_at = NOW() WHERE store_id = :store_id')->execute([
+            'store_id' => $storeId,
+        ]);
+
+        $deleteStmt = db()->prepare('DELETE FROM stores WHERE id = :id');
+        $deleteStmt->execute(['id' => $storeId]);
+
+        if ($deleteStmt->rowCount() < 1) {
+            throw new RuntimeException('Toko tidak ditemukan.');
+        }
+
+        db()->commit();
+        set_flash('success', 'Toko berhasil dihapus.');
     } catch (Throwable $exception) {
-        set_flash('error', 'Status buka/tutup toko gagal diperbarui.');
+        if (db()->inTransaction()) {
+            db()->rollBack();
+        }
+
+        set_flash('error', 'Toko gagal dihapus.');
     }
+
     redirect_to($listingPath);
 }
 
@@ -146,7 +192,7 @@ render_layout('Manajemen Toko', function (?array $user = null) use ($storeSearch
             <div class="table-scroll">
               <table class="data-table">
                 <thead>
-                  <tr><th>No</th><th>Toko</th><th>Wilayah</th><th>Jam Operasional</th><th>Status</th><th>Admin</th><th>Produk</th><th>Aksi</th></tr>
+                  <tr><th>No</th><th>Toko</th><th>Wilayah</th><th>Jam Operasional</th><th>Status</th><th>Publik</th><th>Admin</th><th>Produk</th><th>Aksi</th></tr>
                 </thead>
                 <tbody>
                   <?php foreach ($storesPage['items'] as $index => $item): ?>
@@ -156,16 +202,16 @@ render_layout('Manajemen Toko', function (?array $user = null) use ($storeSearch
                       <td><?= e($item['region']) ?></td>
                       <td><?= e(operating_hours_display($item['operating_hours'] ?? '')) ?></td>
                       <td><span class="store-status-badge <?= (int) ($item['is_open'] ?? 1) === 1 ? 'is-open' : 'is-closed' ?>"><?= (int) ($item['is_open'] ?? 1) === 1 ? 'Buka' : 'Tutup' ?></span></td>
+                      <td><span class="store-status-badge <?= (int) ($item['is_active'] ?? 1) === 1 ? 'is-open' : 'is-closed' ?>"><?= (int) ($item['is_active'] ?? 1) === 1 ? 'Aktif' : 'Nonaktif' ?></span></td>
                       <td><?= e($item['admins'] ?: '-') ?></td>
                       <td><?= e((string) $item['product_count']) ?></td>
                       <td>
                         <div class="table-actions">
                           <a class="inline-link" href="<?= e(base_path('admin-stores.php?' . http_build_query(array_merge($_GET, ['edit' => $item['id']])))) ?>">Edit</a>
-                          <form method="post">
-                            <input type="hidden" name="action" value="toggle_store_status" />
+                          <form method="post" onsubmit="return confirm('Hapus toko ini? Semua produk, ulasan, dan statistik toko juga akan dihapus.')">
+                            <input type="hidden" name="action" value="delete_store" />
                             <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>" />
-                            <input type="hidden" name="is_open" value="<?= (int) ($item['is_open'] ?? 1) === 1 ? '0' : '1' ?>" />
-                            <button type="submit" class="inline-link"><?= (int) ($item['is_open'] ?? 1) === 1 ? 'Tutup' : 'Buka' ?></button>
+                            <button type="submit" class="inline-link product-delete-button">Hapus</button>
                           </form>
                         </div>
                       </td>
@@ -264,14 +310,15 @@ render_layout('Manajemen Toko', function (?array $user = null) use ($storeSearch
                   <div class="field-wrap admin-store-operating-hours">
                     <span class="field-label">Jam Operasional <span class="req">*</span></span>
                     <?php render_operating_hours_selects($editingStore['operating_hours'] ?? ''); ?>
-                    <span class="field-hint">Pilih jam buka untuk masing-masing hari.</span>
+                    <span class="field-hint">Status buka/tutup toko otomatis mengikuti jam operasional hari ini.</span>
                   </div>
                   <div class="field-wrap">
-                    <label class="field-label" for="admin-store-open">Status Toko <span class="req">*</span></label>
-                    <select id="admin-store-open" name="is_open" required>
-                      <option value="1" <?= (int) ($editingStore['is_open'] ?? 1) === 1 ? 'selected' : '' ?>>Buka</option>
-                      <option value="0" <?= (int) ($editingStore['is_open'] ?? 1) === 0 ? 'selected' : '' ?>>Tutup</option>
+                    <label class="field-label" for="admin-store-active">Status Publik <span class="req">*</span></label>
+                    <select id="admin-store-active" name="is_active" required>
+                      <option value="1" <?= (int) ($editingStore['is_active'] ?? 1) === 1 ? 'selected' : '' ?>>Aktif</option>
+                      <option value="0" <?= (int) ($editingStore['is_active'] ?? 1) === 0 ? 'selected' : '' ?>>Nonaktif</option>
                     </select>
+                    <span class="field-hint">Toko nonaktif tetap tersimpan, tetapi tidak tampil di halaman publik.</span>
                   </div>
                 </div>
 
@@ -298,7 +345,7 @@ render_layout('Manajemen Toko', function (?array $user = null) use ($storeSearch
               </div>
 
               <div class="submit-bar">
-                <p class="submit-note">Perubahan akan langsung tampil pada halaman publik toko.</p>
+                <p class="submit-note">Toko hanya tampil di halaman publik jika status publiknya aktif.</p>
                 <div class="admin-product-edit-actions">
                   <a class="filter-reset" href="<?= e($listingUrl) ?>">Batal</a>
                   <button type="submit" class="btn-submit">

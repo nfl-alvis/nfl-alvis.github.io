@@ -190,23 +190,20 @@ function operating_days(): array
     return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
 }
 
-function operating_time_slots(): array
+function normalize_operating_time(string $value, string $default): string
 {
-    return [
-        'Tutup',
-        '06:00 - 14:00',
-        '07:00 - 15:00',
-        '08:00 - 16:00',
-        '08:00 - 17:00',
-        '08:00 - 20:00',
-        '08:00 - 21:00',
-        '09:00 - 17:00',
-        '09:00 - 21:00',
-        '10:00 - 22:00',
-        '11:00 - 23:00',
-        '12:00 - 22:00',
-        '24 Jam',
-    ];
+    $value = trim(str_replace('.', ':', $value));
+
+    if (preg_match('/^(\d{1,2}):(\d{2})$/', $value, $matches)) {
+        $hour = (int) $matches[1];
+        $minute = (int) $matches[2];
+
+        if ($hour >= 0 && $hour <= 23 && $minute >= 0 && $minute <= 59) {
+            return sprintf('%02d:%02d', $hour, $minute);
+        }
+    }
+
+    return $default;
 }
 
 function normalize_operating_slot(string $value): string
@@ -217,11 +214,35 @@ function normalize_operating_slot(string $value): string
         return $value;
     }
 
-    if (preg_match('/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/', $value, $matches)) {
-        return sprintf('%02d:%02d - %02d:%02d', (int) $matches[1], (int) $matches[2], (int) $matches[3], (int) $matches[4]);
+    if (preg_match('/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/', $value, $matches)) {
+        $open = normalize_operating_time($matches[1], '');
+        $close = normalize_operating_time($matches[2], '');
+
+        if ($open !== '' && $close !== '') {
+            return $open . ' - ' . $close;
+        }
     }
 
     return '08:00 - 21:00';
+}
+
+function operating_slot_parts(string $slot): array
+{
+    $slot = normalize_operating_slot($slot);
+
+    if ($slot === 'Tutup') {
+        return ['status' => 'Tutup', 'open' => '08:00', 'close' => '21:00'];
+    }
+
+    if ($slot === '24 Jam') {
+        return ['status' => '24 Jam', 'open' => '00:00', 'close' => '23:30'];
+    }
+
+    if (preg_match('/^(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})$/', $slot, $matches)) {
+        return ['status' => 'Buka', 'open' => $matches[1], 'close' => $matches[2]];
+    }
+
+    return ['status' => 'Buka', 'open' => '08:00', 'close' => '21:00'];
 }
 
 function default_operating_schedule(string $slot = '08:00 - 21:00'): array
@@ -238,11 +259,9 @@ function parse_operating_schedule(?string $value): array
 
         if (is_array($decoded)) {
             $schedule = [];
-            $allowed = operating_time_slots();
 
             foreach (operating_days() as $day) {
-                $slot = normalize_operating_slot((string) ($decoded[$day] ?? '08:00 - 21:00'));
-                $schedule[$day] = in_array($slot, $allowed, true) ? $slot : '08:00 - 21:00';
+                $schedule[$day] = normalize_operating_slot((string) ($decoded[$day] ?? '08:00 - 21:00'));
             }
 
             return $schedule;
@@ -268,20 +287,39 @@ function operating_schedule_from_post(mixed $value): string
         return json_encode($schedule, JSON_UNESCAPED_UNICODE) ?: '{}';
     }
 
-    $allowed = operating_time_slots();
     $schedule = [];
 
     foreach (operating_days() as $day) {
-        $slot = normalize_operating_slot((string) ($value[$day] ?? ''));
+        $postedDay = $value[$day] ?? '';
 
-        if (!in_array($slot, $allowed, true)) {
-            throw new RuntimeException('Jam operasional tidak valid.');
+        if (is_array($postedDay)) {
+            $status = (string) ($postedDay['status'] ?? 'Buka');
+
+            if ($status === 'Tutup' || $status === '24 Jam') {
+                $schedule[$day] = $status;
+                continue;
+            }
+
+            $open = normalize_operating_time((string) ($postedDay['open'] ?? ''), '08:00');
+            $close = normalize_operating_time((string) ($postedDay['close'] ?? ''), '21:00');
+            $schedule[$day] = $open . ' - ' . $close;
+            continue;
         }
 
+        $slot = normalize_operating_slot((string) $postedDay);
         $schedule[$day] = $slot;
     }
 
     return json_encode($schedule, JSON_UNESCAPED_UNICODE) ?: '{}';
+}
+
+function operating_schedule_is_open_today(?string $value): bool
+{
+    $schedule = parse_operating_schedule($value);
+    $dayIndex = ((int) date('N')) - 1;
+    $today = operating_days()[$dayIndex] ?? 'Senin';
+
+    return ($schedule[$today] ?? '08:00 - 21:00') !== 'Tutup';
 }
 
 function operating_hours_display(?string $value): string
@@ -313,18 +351,23 @@ function operating_hours_display(?string $value): string
 function render_operating_hours_selects(?string $currentValue, string $fieldName = 'operating_hours'): void
 {
     $schedule = parse_operating_schedule($currentValue);
-    $slots = operating_time_slots();
     ?>
     <div class="operating-hours-grid">
       <?php foreach (operating_days() as $day): ?>
-        <label class="operating-hours-row">
+        <?php $parts = operating_slot_parts($schedule[$day] ?? '08:00 - 21:00'); ?>
+        <?php $isClosed = $parts['status'] === 'Tutup'; ?>
+        <div class="operating-hours-row">
           <span class="operating-hours-day"><?= e($day) ?></span>
-          <select class="operating-hours-select" name="<?= e($fieldName) ?>[<?= e($day) ?>]" required>
-            <?php foreach ($slots as $slot): ?>
-              <option value="<?= e($slot) ?>" <?= ($schedule[$day] ?? '') === $slot ? 'selected' : '' ?>><?= e($slot) ?></option>
-            <?php endforeach; ?>
-          </select>
-        </label>
+          <div class="operating-hours-controls">
+            <select class="operating-hours-select operating-hours-status" name="<?= e($fieldName) ?>[<?= e($day) ?>][status]" aria-label="Status <?= e($day) ?>" required>
+              <?php foreach (['Buka', 'Tutup', '24 Jam'] as $status): ?>
+                <option value="<?= e($status) ?>" <?= $parts['status'] === $status ? 'selected' : '' ?>><?= e($status) ?></option>
+              <?php endforeach; ?>
+            </select>
+            <input class="operating-hours-input" type="time" name="<?= e($fieldName) ?>[<?= e($day) ?>][open]" value="<?= e($parts['open']) ?>" aria-label="Jam buka <?= e($day) ?>" <?= $isClosed ? 'disabled' : 'required' ?> />
+            <input class="operating-hours-input" type="time" name="<?= e($fieldName) ?>[<?= e($day) ?>][close]" value="<?= e($parts['close']) ?>" aria-label="Jam tutup <?= e($day) ?>" <?= $isClosed ? 'disabled' : 'required' ?> />
+          </div>
+        </div>
       <?php endforeach; ?>
     </div>
     <?php
@@ -411,6 +454,8 @@ function slugify(string $value): string
 
 function find_featured_products(int $limit = 4): array
 {
+    ensure_store_operational_columns();
+
     $stmt = db()->prepare(
         'SELECT p.*,
                 COALESCE(rv.rating, 0) AS rating,
@@ -424,7 +469,7 @@ function find_featured_products(int $limit = 4): array
              FROM reviews
              GROUP BY product_id
          ) rv ON rv.product_id = p.id
-         WHERE p.is_active = 1
+         WHERE p.is_active = 1 AND s.is_active = 1
          ORDER BY p.is_featured DESC, COALESCE(rv.rating, 0) DESC, p.id DESC
          LIMIT :limit'
     );
@@ -436,7 +481,9 @@ function find_featured_products(int $limit = 4): array
 
 function find_products(array $filters = []): array
 {
-    $conditions = ['p.is_active = 1'];
+    ensure_store_operational_columns();
+
+    $conditions = ['p.is_active = 1', 's.is_active = 1'];
     $params = [];
 
     if (!empty($filters['search'])) {
@@ -480,11 +527,14 @@ function find_products(array $filters = []): array
 
 function product_regions(): array
 {
+    ensure_store_operational_columns();
+
     $stmt = db()->query(
-        'SELECT DISTINCT region
-         FROM products
-         WHERE is_active = 1
-         ORDER BY region ASC'
+        'SELECT DISTINCT p.region
+         FROM products p
+         INNER JOIN stores s ON s.id = p.store_id
+         WHERE p.is_active = 1 AND s.is_active = 1
+         ORDER BY p.region ASC'
     );
 
     return array_values(array_filter(array_map(
@@ -559,6 +609,8 @@ function render_province_options(?string $selected = null): void
 
 function find_product_by_slug(string $slug): ?array
 {
+    ensure_store_operational_columns();
+
     $stmt = db()->prepare(
         'SELECT p.*,
                 COALESCE(rv.rating, 0) AS rating,
@@ -576,7 +628,7 @@ function find_product_by_slug(string $slug): ?array
              FROM reviews
              GROUP BY product_id
          ) rv ON rv.product_id = p.id
-         WHERE p.slug = :slug AND p.is_active = 1
+         WHERE p.slug = :slug AND p.is_active = 1 AND s.is_active = 1
          LIMIT 1'
     );
     $stmt->execute(['slug' => $slug]);
@@ -600,11 +652,13 @@ function find_reviews_by_product(int $productId): array
 
 function find_stores(?string $search = null): array
 {
+    ensure_store_operational_columns();
+
     $sql = 'SELECT s.*,
                    COUNT(DISTINCT p.id) AS product_count
             FROM stores s
             LEFT JOIN products p ON p.store_id = s.id AND p.is_active = 1
-            WHERE 1 = 1';
+            WHERE s.is_active = 1';
     $params = [];
 
     if ($search) {
@@ -622,7 +676,9 @@ function find_stores(?string $search = null): array
 
 function find_store_by_slug(string $slug): ?array
 {
-    $stmt = db()->prepare('SELECT * FROM stores WHERE slug = :slug LIMIT 1');
+    ensure_store_operational_columns();
+
+    $stmt = db()->prepare('SELECT * FROM stores WHERE slug = :slug AND is_active = 1 LIMIT 1');
     $stmt->execute(['slug' => $slug]);
     $store = $stmt->fetch();
 
@@ -631,9 +687,17 @@ function find_store_by_slug(string $slug): ?array
     }
 
     $productStmt = db()->prepare(
-        'SELECT * FROM products
-         WHERE store_id = :store_id AND is_active = 1
-         ORDER BY is_featured DESC, name ASC'
+        'SELECT p.*,
+                COALESCE(rv.rating, 0) AS rating,
+                COALESCE(rv.review_count, 0) AS review_count
+         FROM products p
+         LEFT JOIN (
+             SELECT product_id, ROUND(AVG(stars), 1) AS rating, COUNT(*) AS review_count
+             FROM reviews
+             GROUP BY product_id
+         ) rv ON rv.product_id = p.id
+         WHERE p.store_id = :store_id AND p.is_active = 1
+         ORDER BY p.is_featured DESC, p.name ASC'
     );
     $productStmt->execute(['store_id' => $store['id']]);
     $store['products'] = $productStmt->fetchAll();
@@ -749,11 +813,10 @@ function ensure_store_operational_columns(): void
          ADD COLUMN IF NOT EXISTS is_open TINYINT(1) NOT NULL DEFAULT 1 AFTER cover_image'
     );
 
-    $legacyStatus = $pdo->query("SHOW COLUMNS FROM stores LIKE 'is_active'")->fetch();
-    if ($legacyStatus) {
-        $pdo->exec('UPDATE stores SET is_open = is_active');
-        $pdo->exec('ALTER TABLE stores DROP COLUMN is_active');
-    }
+    $pdo->exec(
+        'ALTER TABLE stores
+         ADD COLUMN IF NOT EXISTS is_active TINYINT(1) NOT NULL DEFAULT 1 AFTER is_open'
+    );
 
     $checked = true;
 }
@@ -951,15 +1014,16 @@ function replace_product_images(int $productId, array $imagePaths): void
     }
 }
 
-function product_image_paths(array $product): array
+function product_existing_image_paths(array $product): array
 {
     ensure_product_images_table();
 
     $productId = (int) ($product['id'] ?? 0);
     $fallback = trim((string) ($product['image_path'] ?? ''));
+    $paths = [];
 
     if ($productId < 1) {
-        return [$fallback !== '' ? $fallback : 'assets/image/image.png'];
+        return $fallback !== '' ? [$fallback] : [];
     }
 
     $stmt = db()->prepare(
@@ -979,7 +1043,64 @@ function product_image_paths(array $product): array
         array_unshift($paths, $fallback);
     }
 
+    return array_values(array_unique($paths));
+}
+
+function product_image_paths(array $product): array
+{
+    $paths = product_existing_image_paths($product);
+
     return $paths ?: ['assets/image/image.png'];
+}
+
+function edited_product_image_paths(array $product, array $uploadedFiles, mixed $removedImages): array
+{
+    $existingPaths = product_existing_image_paths($product);
+    $removedPaths = is_array($removedImages) ? $removedImages : [];
+    $removedPaths = array_values(array_intersect(
+        array_map(static fn($path): string => trim((string) $path), $removedPaths),
+        $existingPaths
+    ));
+
+    $keptPaths = array_values(array_filter(
+        $existingPaths,
+        static fn(string $path): bool => !in_array($path, $removedPaths, true)
+    ));
+
+    $uploadedPaths = save_uploaded_product_images($uploadedFiles);
+    $finalPaths = array_values(array_unique(array_filter(array_merge($keptPaths, $uploadedPaths))));
+
+    if (!$finalPaths) {
+        throw new RuntimeException('Minimal satu foto produk harus tersisa.');
+    }
+
+    return $finalPaths;
+}
+
+function render_product_image_delete_controls(array $product): void
+{
+    $paths = product_existing_image_paths($product);
+
+    if (!$paths) {
+        return;
+    }
+    ?>
+    <div class="product-image-manager" data-product-image-manager>
+      <span class="field-label">Foto Saat Ini</span>
+      <div class="product-image-manager-grid">
+        <?php foreach ($paths as $index => $path): ?>
+          <label class="product-image-manager-item">
+            <img src="<?= e(base_path($path)) ?>" alt="Foto produk <?= e((string) ($index + 1)) ?>" />
+            <span class="product-image-manager-check">
+              <input type="checkbox" name="remove_images[]" value="<?= e($path) ?>" data-product-image-remove />
+              Hapus foto
+            </span>
+          </label>
+        <?php endforeach; ?>
+      </div>
+      <span class="field-hint">Centang foto yang ingin dihapus. Minimal satu foto produk harus tersisa.</span>
+    </div>
+    <?php
 }
 
 function save_uploaded_store_image(array $file, ?string $currentPath = null): string
@@ -1341,16 +1462,15 @@ function render_layout(string $title, callable $content, array $options = []): v
                                 <?php if (user_profile_image_url($user) !== ''): ?>
                                     <img class="profile-avatar profile-avatar-image" src="<?= e(user_profile_image_url($user)) ?>" alt="<?= e($user['name']) ?>" />
                                 <?php else: ?>
-                                    <span class="profile-avatar"><?= e(user_profile_initial($user)) ?></span>
+                                    <span class="profile-avatar"><i class="fa-regular fa-user" aria-hidden="true"></i></span>
                                 <?php endif; ?>
-                                <i class="fa-solid fa-chevron-down profile-chevron" aria-hidden="true"></i>
                             </button>
                             <div class="profile-dropdown" id="profileDropdown">
                                 <div class="profile-header">
                                     <?php if (user_profile_image_url($user) !== ''): ?>
                                         <img class="profile-avatar large profile-avatar-image" src="<?= e(user_profile_image_url($user)) ?>" alt="<?= e($user['name']) ?>" />
                                     <?php else: ?>
-                                        <div class="profile-avatar large"><?= e(user_profile_initial($user)) ?></div>
+                                        <div class="profile-avatar large"><i class="fa-regular fa-user" aria-hidden="true"></i></div>
                                     <?php endif; ?>
                                     <div>
                                         <strong><?= e($user['name']) ?></strong>
@@ -1409,6 +1529,33 @@ function render_layout(string $title, callable $content, array $options = []): v
             </footer>
         <?php endif; ?>
 
+        <script>
+            (() => {
+                const syncOperatingHourInputs = (scope = document) => {
+                    scope.querySelectorAll('.operating-hours-status').forEach((select) => {
+                        const row = select.closest('.operating-hours-row');
+                        if (!row) return;
+
+                        const isClosed = select.value === 'Tutup';
+                        row.querySelectorAll('.operating-hours-input').forEach((input) => {
+                            input.disabled = isClosed;
+                            input.required = !isClosed;
+                        });
+                    });
+                };
+
+                document.addEventListener('change', (event) => {
+                    if (!(event.target instanceof Element) || !event.target.matches('.operating-hours-status')) return;
+                    syncOperatingHourInputs(event.target.closest('.operating-hours-row') ?? document);
+                });
+                document.addEventListener('reset', (event) => {
+                    if (event.target instanceof Element) {
+                        window.setTimeout(() => syncOperatingHourInputs(event.target), 0);
+                    }
+                }, true);
+                syncOperatingHourInputs();
+            })();
+        </script>
         <script src="<?= e(base_path('assets/js/main.js')) ?>"></script>
         <?php if (($options['include_detail_js'] ?? false)): ?>
             <script src="<?= e(base_path('assets/js/detail.js')) ?>"></script>

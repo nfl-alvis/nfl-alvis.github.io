@@ -73,35 +73,12 @@
     var(--color-green) 100%
   );
 
-  --gradient-button: linear-gradient(
-    270deg,
-    var(--color-primary) 0%,
-    #ff7b7b 50%,
-    var(--color-green) 100%
-  );
+  --gradient-button: rgba(62, 107, 72, 0.12);
+  --gradient-button-hover: rgba(62, 107, 72, 0.18);
 
-  --gradient-button-hover: linear-gradient(
-    270deg,
-    var(--color-primary-darker) 0%,
-    #ff6a6a 50%,
-    var(--color-green-dark) 100%
-  );
-
-  --gradient-whatsapp: linear-gradient(
-    135deg,
-    var(--color-success),
-    var(--color-success-dark)
-  );
-  --gradient-email: linear-gradient(
-    135deg,
-    var(--color-info),
-    var(--color-info-dark)
-  );
-  --gradient-instagram: linear-gradient(
-    135deg,
-    var(--color-danger),
-    var(--color-danger-dark)
-  );
+  --gradient-whatsapp: rgba(62, 107, 72, 0.12);
+  --gradient-email: rgba(224, 107, 76, 0.12);
+  --gradient-instagram: rgba(224, 107, 76, 0.12);
 
   --gradient-login-bg: linear-gradient(
     159deg,
@@ -344,12 +321,13 @@
 
 .btn-primary-login {
   background: var(--gradient-button);
-  color: var(--color-white);
-  border: none;
+  color: var(--color-primary-darker);
+  border: 1px solid rgba(47, 82, 56, 0.28);
 }
 
 .btn-primary-login:hover {
   background: var(--gradient-button-hover);
+  border-color: rgba(47, 82, 56, 0.38);
 }
 
 .btn-google {

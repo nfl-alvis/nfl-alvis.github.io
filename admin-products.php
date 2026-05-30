@@ -9,65 +9,24 @@ require_role(ROLE_SUPER_ADMIN);
 
 $listingQuery = $_GET;
 unset($listingQuery['edit']);
-unset($listingQuery['add']);
 $listingUrl = 'admin-products.php' . ($listingQuery ? '?' . http_build_query($listingQuery) : '');
-
-if (is_post() && ($_POST['action'] ?? '') === 'add_product') {
-    try {
-        $name = trim($_POST['name'] ?? '');
-        $imagePaths = save_uploaded_product_images($_FILES['product_images'] ?? [], null, true);
-        $imagePath = $imagePaths[0];
-
-        ensure_product_images_table();
-        db()->beginTransaction();
-
-        $stmt = db()->prepare(
-            'INSERT INTO products
-             (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, base_rating_total, base_review_count, is_featured, is_active, created_at, updated_at)
-             VALUES
-             (:store_id, :name, :slug, :type, :region, :short_description, :long_description, :price_display, 0, 0, :tag_label, :image_path, 0, 0, :is_featured, :is_active, NOW(), NOW())'
-        );
-        $stmt->execute([
-            'store_id' => (int) ($_POST['store_id'] ?? 0),
-            'name' => $name,
-            'slug' => slugify($name . '-' . substr((string) time(), -4)),
-            'type' => trim($_POST['type'] ?? 'Makanan'),
-            'region' => trim($_POST['region'] ?? ''),
-            'short_description' => trim($_POST['short_description'] ?? ''),
-            'long_description' => trim($_POST['long_description'] ?? ''),
-            'price_display' => normalize_price_display($_POST['price_display'] ?? ''),
-            'tag_label' => trim($_POST['tag_label'] ?? ''),
-            'image_path' => $imagePath,
-            'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
-            'is_active' => isset($_POST['is_active']) ? 1 : 0,
-        ]);
-        replace_product_images((int) db()->lastInsertId(), $imagePaths);
-        db()->commit();
-
-        set_flash('success', 'Produk baru berhasil ditambahkan.');
-        redirect_to($listingUrl);
-    } catch (Throwable $exception) {
-        if (db()->inTransaction()) {
-            db()->rollBack();
-        }
-
-        set_flash('error', $exception->getMessage());
-        redirect_to('admin-products.php?' . http_build_query(array_merge($listingQuery, ['add' => 1])));
-    }
-}
 
 if (is_post() && ($_POST['action'] ?? '') === 'edit_product') {
     $productId = (int) ($_POST['id'] ?? 0);
 
     try {
         $uploadedImages = $_FILES['product_images'] ?? ($_FILES['product_image'] ?? []);
-        $hasNewImages = product_upload_entries($uploadedImages) !== [];
-        $imagePaths = save_uploaded_product_images($uploadedImages, trim($_POST['current_image'] ?? ''));
-        $imagePath = $imagePaths[0] ?? trim($_POST['current_image'] ?? '');
 
-        if ($hasNewImages) {
-            ensure_product_images_table();
+        $currentProductStmt = db()->prepare('SELECT * FROM products WHERE id = :id LIMIT 1');
+        $currentProductStmt->execute(['id' => $productId]);
+        $currentProduct = $currentProductStmt->fetch();
+
+        if (!$currentProduct) {
+            throw new RuntimeException('Produk tidak ditemukan.');
         }
+
+        $imagePaths = edited_product_image_paths($currentProduct, $uploadedImages, $_POST['remove_images'] ?? []);
+        $imagePath = $imagePaths[0];
 
         db()->beginTransaction();
 
@@ -94,9 +53,7 @@ if (is_post() && ($_POST['action'] ?? '') === 'edit_product') {
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ]);
 
-        if ($hasNewImages) {
-            replace_product_images($productId, $imagePaths);
-        }
+        replace_product_images($productId, $imagePaths);
 
         db()->commit();
 
@@ -113,13 +70,41 @@ if (is_post() && ($_POST['action'] ?? '') === 'edit_product') {
 }
 
 if (is_post() && ($_POST['action'] ?? '') === 'delete_product') {
+    $productId = (int) ($_POST['id'] ?? 0);
+
     try {
-        db()->prepare('UPDATE products SET is_active = 0, updated_at = NOW() WHERE id = :id')->execute([
-            'id' => (int) ($_POST['id'] ?? 0),
+        if ($productId < 1) {
+            throw new RuntimeException('Produk tidak valid.');
+        }
+
+        ensure_product_images_table();
+        db()->beginTransaction();
+
+        db()->prepare('DELETE FROM product_images WHERE product_id = :product_id')->execute([
+            'product_id' => $productId,
         ]);
-        set_flash('success', 'Produk berhasil dinonaktifkan.');
+        db()->prepare('DELETE FROM reviews WHERE product_id = :product_id')->execute([
+            'product_id' => $productId,
+        ]);
+        db()->prepare('DELETE FROM product_views WHERE product_id = :product_id')->execute([
+            'product_id' => $productId,
+        ]);
+
+        $deleteStmt = db()->prepare('DELETE FROM products WHERE id = :id');
+        $deleteStmt->execute(['id' => $productId]);
+
+        if ($deleteStmt->rowCount() < 1) {
+            throw new RuntimeException('Produk tidak ditemukan.');
+        }
+
+        db()->commit();
+        set_flash('success', 'Produk berhasil dihapus.');
     } catch (Throwable $exception) {
-        set_flash('error', 'Produk gagal dinonaktifkan.');
+        if (db()->inTransaction()) {
+            db()->rollBack();
+        }
+
+        set_flash('error', 'Produk gagal dihapus.');
     }
     redirect_to($listingUrl);
 }
@@ -148,7 +133,6 @@ usort($products, static function (array $a, array $b) use ($productSort): int {
 
 $productsPage = paginate_array($products, $productPage, $productPerPage);
 $stores = all_stores_with_admins();
-$addingProduct = isset($_GET['add']);
 $editingProduct = null;
 $editProductId = (int) ($_GET['edit'] ?? 0);
 
@@ -168,7 +152,7 @@ if ($editProductId > 0) {
     }
 }
 
-render_layout('Manajemen Produk Platform', function (?array $user = null) use ($productSearch, $productSort, $productPerPage, $productsPage, $stores, $addingProduct, $editingProduct, $listingUrl): void {
+render_layout('Manajemen Produk Platform', function (?array $user = null) use ($productSearch, $productSort, $productPerPage, $productsPage, $stores, $editingProduct, $listingUrl): void {
     $userName = (string) ($user['name'] ?? 'Super Admin');
     ?>
     <div class="shell">
@@ -190,7 +174,7 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
                 <h3>Daftar Produk</h3>
                 <div class="table-meta">Menampilkan <?= e((string) count($productsPage['items'])) ?> dari <?= e((string) $productsPage['total']) ?> data</div>
               </div>
-              <a class="action-button-link" href="<?= e(base_path($listingUrl . (str_contains($listingUrl, '?') ? '&' : '?') . 'add=1')) ?>">
+              <a class="action-button-link" href="<?= e(base_path('admin-add-product.php')) ?>">
                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
                 Tambah Produk
               </a>
@@ -219,7 +203,7 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
             </form>
 
             <div class="table-scroll">
-              <table class="data-table">
+              <table class="data-table store-product-table">
                 <thead>
                   <tr><th>No</th><th>Produk</th><th>Toko</th><th>Kategori</th><th>Harga</th><th>Aksi</th></tr>
                 </thead>
@@ -227,17 +211,25 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
                   <?php foreach ($productsPage['items'] as $index => $item): ?>
                     <tr>
                       <td><?= e((string) ($productsPage['offset'] + $index + 1)) ?></td>
-                      <td><?= e($item['name']) ?></td>
+                      <td>
+                        <div class="store-product-cell">
+                          <img src="<?= e(base_path(trim((string) ($item['image_path'] ?? '')) !== '' ? $item['image_path'] : 'assets/image/PusakaRasa.webp')) ?>" alt="" />
+                          <div>
+                            <strong><?= e($item['name']) ?></strong>
+                            <span><?= e($item['region'] ?? $item['store_name']) ?></span>
+                          </div>
+                        </div>
+                      </td>
                       <td><?= e($item['store_name']) ?></td>
                       <td><?= e($item['type']) ?></td>
                       <td><?= e(rupiah($item['price_display'])) ?></td>
                       <td>
                         <div class="table-actions">
                           <a class="inline-link product-edit-button" href="<?= e(base_path('admin-products.php?' . http_build_query(array_merge($_GET, ['edit' => $item['id']])))) ?>">Edit</a>
-                          <form method="post" onsubmit="return confirm('Nonaktifkan produk ini?')">
+                          <form method="post" onsubmit="return confirm('Hapus produk ini secara permanen?')">
                             <input type="hidden" name="action" value="delete_product" />
                             <input type="hidden" name="id" value="<?= e((string) $item['id']) ?>" />
-                            <button type="submit" class="inline-link">Hapus</button>
+                            <button type="submit" class="inline-link product-delete-button">Hapus</button>
                           </form>
                         </div>
                       </td>
@@ -261,139 +253,6 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
         </section>
       </main>
     </div>
-
-    <?php if ($addingProduct): ?>
-      <div class="store-product-modal-backdrop" id="adminProductAddModal" data-close-url="<?= e(base_path($listingUrl)) ?>">
-        <section class="admin-product-edit-modal" role="dialog" aria-modal="true" aria-labelledby="adminProductAddTitle">
-          <article class="form-card">
-            <div class="form-card-head">
-              <div>
-                <div class="form-card-title" id="adminProductAddTitle">Tambah Produk</div>
-                <div class="form-card-meta">Tambahkan produk baru ke katalog platform.</div>
-              </div>
-              <a class="store-product-modal-close" href="<?= e(base_path($listingUrl)) ?>" aria-label="Tutup form tambah">
-                <i class="fa-solid fa-xmark" aria-hidden="true"></i>
-              </a>
-            </div>
-
-            <form method="post" enctype="multipart/form-data" action="<?= e(base_path($listingUrl)) ?>">
-              <input type="hidden" name="action" value="add_product" />
-
-              <div class="form-body">
-                <div class="sec-divider">
-                  <span class="sec-divider-label">Data Utama</span>
-                </div>
-
-                <div class="grid-2">
-                  <div class="field-wrap">
-                    <label class="field-label" for="admin-add-product-name">Nama Produk <span class="req">*</span></label>
-                    <input id="admin-add-product-name" type="text" name="name" required />
-                  </div>
-                  <div class="field-wrap">
-                    <label class="field-label" for="admin-add-product-store">Toko <span class="req">*</span></label>
-                    <select id="admin-add-product-store" name="store_id" required>
-                      <option value="">Pilih toko</option>
-                      <?php foreach ($stores as $store): ?>
-                        <option value="<?= e((string) $store['id']) ?>"><?= e($store['name']) ?></option>
-                      <?php endforeach; ?>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="grid-2">
-                  <div class="field-wrap">
-                    <label class="field-label" for="admin-add-product-type">Kategori <span class="req">*</span></label>
-                    <select id="admin-add-product-type" name="type" required>
-                      <option value="Makanan">Makanan</option>
-                      <option value="Minuman">Minuman</option>
-                    </select>
-                  </div>
-                  <div class="field-wrap">
-                    <label class="field-label" for="admin-add-product-region">Wilayah <span class="req">*</span></label>
-                    <select id="admin-add-product-region" name="region" required>
-                      <?php render_province_options(); ?>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="sec-divider">
-                  <span class="sec-divider-label">Harga &amp; Label</span>
-                </div>
-
-                <div class="grid-2">
-                  <div class="field-wrap">
-                    <label class="field-label" for="admin-add-product-price">Harga Tampilan <span class="req">*</span></label>
-                    <input id="admin-add-product-price" type="text" name="price_display" inputmode="numeric" autocomplete="off" data-price-format placeholder="Contoh: 25.000" required />
-                    <span class="field-hint">Ketik angka saja, sistem akan memformat otomatis.</span>
-                  </div>
-                  <div class="field-wrap">
-                    <label class="field-label" for="admin-add-product-tag">Tag <span class="req">*</span></label>
-                    <input id="admin-add-product-tag" type="text" name="tag_label" placeholder="#gurih #tradisional" required />
-                    <span class="field-hint">Pisahkan dengan spasi jika lebih dari satu.</span>
-                  </div>
-                </div>
-
-                <div class="sec-divider">
-                  <span class="sec-divider-label">Media &amp; Deskripsi</span>
-                </div>
-
-                <div class="field-wrap">
-                  <label class="field-label" for="admin-add-product-image">Gambar Produk <span class="req">*</span></label>
-                  <label class="file-drop" for="admin-add-product-image">
-                    <input id="admin-add-product-image" type="file" name="product_images[]" accept=".jpg,.jpeg,.png,.webp" multiple required />
-                    <div class="file-drop-icon"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i></div>
-                    <div class="file-drop-text">
-                      <strong>Klik untuk upload</strong> atau drag &amp; drop
-                    </div>
-                    <div class="file-drop-sub">Bisa pilih beberapa gambar. JPG, PNG, WEBP &middot; maks. 5MB/file</div>
-                  </label>
-                </div>
-
-                <div class="field-wrap">
-                  <label class="field-label" for="admin-add-product-short">Deskripsi Singkat <span class="req">*</span></label>
-                  <textarea id="admin-add-product-short" name="short_description" required></textarea>
-                </div>
-
-                <div class="field-wrap">
-                  <label class="field-label" for="admin-add-product-long">Deskripsi Panjang <span class="req">*</span></label>
-                  <textarea id="admin-add-product-long" name="long_description" required></textarea>
-                </div>
-
-                <div class="admin-product-toggle-row">
-                  <label><input type="checkbox" name="is_featured" value="1" /> Jadikan produk unggulan</label>
-                  <label><input type="checkbox" name="is_active" value="1" checked /> Aktif</label>
-                </div>
-              </div>
-
-              <div class="submit-bar">
-                <p class="submit-note">Produk akan langsung tampil pada katalog jika status aktif.</p>
-                <div class="admin-product-edit-actions">
-                  <a class="filter-reset" href="<?= e(base_path($listingUrl)) ?>">Batal</a>
-                  <button type="submit" class="btn-submit">
-                    <span class="btn-icon"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i></span>
-                    Simpan Produk
-                  </button>
-                </div>
-              </div>
-            </form>
-          </article>
-        </section>
-      </div>
-      <script>
-        (() => {
-          const modal = document.getElementById('adminProductAddModal');
-          if (!modal) return;
-          document.body.classList.add('has-store-product-modal');
-          modal.querySelector('input[name="name"]').focus();
-          modal.addEventListener('click', (event) => {
-            if (event.target === modal) window.location.href = modal.dataset.closeUrl;
-          });
-          document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') window.location.href = modal.dataset.closeUrl;
-          });
-        })();
-      </script>
-    <?php endif; ?>
 
     <?php if ($editingProduct): ?>
       <div class="store-product-modal-backdrop" id="adminProductEditModal" data-close-url="<?= e(base_path($listingUrl)) ?>">
@@ -474,15 +333,16 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
                 </div>
 
                 <div class="field-wrap">
-                  <label class="field-label" for="admin-product-image">Ganti Gambar</label>
+                  <label class="field-label" for="admin-product-image">Tambah Gambar Baru</label>
                   <label class="file-drop" for="admin-product-image">
                     <input id="admin-product-image" type="file" name="product_images[]" accept=".jpg,.jpeg,.png,.webp" multiple />
                     <div class="file-drop-icon"><i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i></div>
                     <div class="file-drop-text">
                       <strong>Klik untuk upload</strong> atau drag &amp; drop
                     </div>
-                    <div class="file-drop-sub">Bisa pilih beberapa gambar. Kosongkan jika tidak diganti</div>
+                    <div class="file-drop-sub">Bisa pilih beberapa gambar. Untuk mengganti, hapus foto lama lalu upload foto baru</div>
                   </label>
+                  <?php render_product_image_delete_controls($editingProduct); ?>
                 </div>
 
                 <div class="field-wrap">
@@ -526,6 +386,19 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
           });
           document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') window.location.href = modal.dataset.closeUrl;
+          });
+          modal.querySelectorAll('[data-product-image-manager]').forEach((manager) => {
+            const form = manager.closest('form');
+            const removeInputs = Array.from(manager.querySelectorAll('[data-product-image-remove]'));
+            const fileInput = form?.querySelector('input[type="file"][name="product_images[]"]');
+            form?.addEventListener('submit', (event) => {
+              const remaining = removeInputs.filter((input) => !input.checked).length;
+              const hasNewUpload = fileInput && fileInput.files.length > 0;
+              if (remaining < 1 && !hasNewUpload) {
+                event.preventDefault();
+                alert('Minimal satu foto produk harus tersisa.');
+              }
+            });
           });
         })();
       </script>

@@ -71,8 +71,8 @@
 }
 
 .intro-fav-btn.active {
-  background: linear-gradient(135deg, #fff2ec, #fff8f4);
-  border-color: rgba(217, 94, 71, 0.28);
+  background: rgba(224, 107, 76, 0.12);
+  border-color: rgba(196, 82, 56, 0.28);
   color: #c85f42;
 }
 
