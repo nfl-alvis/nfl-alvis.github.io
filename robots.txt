@@ -1,0 +1,13 @@
+User-agent: *
+Disallow: /assets/
+Disallow: /uploads/
+Disallow: /config/
+Disallow: /database/
+Disallow: /includes/
+Disallow: /vendor/
+Disallow: /.agents/
+Disallow: /.git/
+Disallow: /composer.json
+Disallow: /composer.lock
+Disallow: /package.json
+Disallow: /package-lock.json

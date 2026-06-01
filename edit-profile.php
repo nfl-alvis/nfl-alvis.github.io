@@ -42,7 +42,7 @@ if (is_post()) {
   } catch (Throwable $exception) {
     $message = $exception instanceof RuntimeException && $exception->getMessage() === 'Email sudah dipakai akun lain.'
       ? 'Email sudah dipakai akun lain.'
-      : 'Foto profil atau profil gagal diperbarui. Coba unggah ulang foto dengan format JPG, PNG, atau WEBP.';
+      : 'Foto profil atau profil gagal diperbarui. Coba unggah ulang foto dengan format JPG, PNG, WEBP, atau GIF.';
     set_flash('error', $message);
     redirect_to('edit-profile.php');
   }
@@ -170,14 +170,14 @@ render_layout('Dashboard', function (?array $currentUser = null) use ($user): vo
             </div>
             <div class="photo-upload-right">
               <label class="photo-drop-zone" for="photoInput">
-                <input type="file" id="photoInput" name="profile_image" accept=".jpg,.jpeg,.png,.webp" />
+                <input type="file" id="photoInput" name="profile_image" accept=".jpg,.jpeg,.png,.webp,.gif" />
                 <div class="photo-drop-icon">
                   <i class="fa-solid fa-cloud-arrow-up" aria-hidden="true"></i>
                 </div>
                 <div class="photo-drop-text">
                   <strong>Klik untuk unggah</strong> atau seret file ke sini
                 </div>
-                <div class="photo-drop-sub">JPG, PNG, WEBP - disarankan ukuran kecil</div>
+                <div class="photo-drop-sub">JPG, PNG, WEBP, GIF - disarankan ukuran kecil</div>
               </label>
             </div>
           </div>

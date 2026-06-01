@@ -1,6 +1,21 @@
 DirectoryIndex index.php index.html
+Options -Indexes
+
+<IfModule mod_headers.c>
+    <FilesMatch "\.(css|js|png|jpe?g|gif|webp|svg|ico|map)$">
+        Header set X-Robots-Tag "noindex"
+    </FilesMatch>
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
 
 RewriteEngine On
+
+RewriteRule (^|/)\. - [F,L]
+RewriteRule ^(config|database|includes|vendor)(/|$) - [F,L]
+RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json)$ - [F,L]
 
 RewriteRule ^login\.html$ login.php [L,R=302]
 RewriteRule ^register\.html$ register.php [L,R=302]

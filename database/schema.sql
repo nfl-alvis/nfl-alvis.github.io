@@ -21,6 +21,14 @@ CREATE TABLE IF NOT EXISTS users (
   email VARCHAR(190) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   profile_image VARCHAR(255) NULL,
+  google_id VARCHAR(255) NULL,
+  picture TEXT NULL,
+  auth_provider ENUM('local','google') NOT NULL DEFAULT 'local',
+  email_verified TINYINT(1) NOT NULL DEFAULT 0,
+  email_verify_token VARCHAR(255) NULL,
+  email_verify_expires DATETIME NULL,
+  reset_token VARCHAR(255) NULL,
+  reset_expires DATETIME NULL,
   role ENUM('user', 'store_admin', 'super_admin') NOT NULL DEFAULT 'user',
   store_id INT NULL,
   is_active TINYINT(1) NOT NULL DEFAULT 1,
@@ -96,10 +104,31 @@ CREATE TABLE IF NOT EXISTS reviews (
   CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS review_replies (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  review_id INT NOT NULL,
+  admin_user_id INT NULL,
+  reply_text TEXT NOT NULL,
+  created_at DATETIME NOT NULL,
+  updated_at DATETIME NOT NULL,
+  UNIQUE KEY uniq_review_replies_review (review_id),
+  CONSTRAINT fk_review_replies_review FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
+  CONSTRAINT fk_review_replies_admin FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 ALTER TABLE products ADD COLUMN IF NOT EXISTS base_rating_total DECIMAL(10,2) NOT NULL DEFAULT 0 AFTER image_path;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS base_review_count INT NOT NULL DEFAULT 0 AFTER base_rating_total;
 ALTER TABLE products MODIFY COLUMN rating DECIMAL(2,1) NOT NULL DEFAULT 0.0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_image VARCHAR(255) NULL AFTER password_hash;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) NULL AFTER profile_image;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS picture TEXT NULL AFTER google_id;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS auth_provider ENUM('local','google') NOT NULL DEFAULT 'local' AFTER picture;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER auth_provider;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verify_token VARCHAR(255) NULL AFTER email_verified;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verify_expires DATETIME NULL AFTER email_verify_token;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255) NULL AFTER email_verify_expires;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_expires DATETIME NULL AFTER reset_token;
+UPDATE users SET email_verified = 1 WHERE email_verified = 0 AND email_verify_token IS NULL AND auth_provider = 'local';
 ALTER TABLE users MODIFY COLUMN password_hash VARCHAR(255) NOT NULL;
 ALTER TABLE stores ADD COLUMN IF NOT EXISTS operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB' AFTER description;
 ALTER TABLE stores MODIFY COLUMN operating_hours VARCHAR(500) NOT NULL DEFAULT 'Setiap hari, 08.00 - 21.00 WIB';
@@ -121,17 +150,17 @@ WHERE NOT EXISTS (SELECT 1 FROM stores WHERE slug = 'kedai-segar-nusantara');
 DELETE FROM users
 WHERE email NOT IN ('admin@pusakarasa.test', 'store@pusakarasa.test', 'user@pusakarasa.test');
 
-INSERT INTO users (id, name, email, password_hash, role, store_id, is_active, created_at, updated_at)
-VALUES (1, 'Super Admin', 'admin@pusakarasa.test', '$2y$12$VZRKzP.9abIlWzXHGpXVxOkxuijYgJZ4wPLCgFI8UsqRwhaDE9VVG', 'super_admin', NULL, 1, NOW(), NOW())
-ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), role = VALUES(role), store_id = VALUES(store_id), is_active = VALUES(is_active), updated_at = NOW();
+INSERT INTO users (id, name, email, password_hash, email_verified, role, store_id, is_active, created_at, updated_at)
+VALUES (1, 'Super Admin', 'admin@pusakarasa.test', '$2y$12$VZRKzP.9abIlWzXHGpXVxOkxuijYgJZ4wPLCgFI8UsqRwhaDE9VVG', 1, 'super_admin', NULL, 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), email_verified = VALUES(email_verified), role = VALUES(role), store_id = VALUES(store_id), is_active = VALUES(is_active), updated_at = NOW();
 
-INSERT INTO users (id, name, email, password_hash, role, store_id, is_active, created_at, updated_at)
-VALUES (2, 'Admin Toko Minang', 'store@pusakarasa.test', '$2y$12$2YcqgPTT0x1Mn21xRi.U1uRyMgRzdV5n3WbRlOjBa.eDeV3zHJilW', 'store_admin', (SELECT id FROM stores WHERE slug = 'rm-minang-pusako' LIMIT 1), 1, NOW(), NOW())
-ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), role = VALUES(role), store_id = VALUES(store_id), is_active = VALUES(is_active), updated_at = NOW();
+INSERT INTO users (id, name, email, password_hash, email_verified, role, store_id, is_active, created_at, updated_at)
+VALUES (2, 'Admin Toko Minang', 'store@pusakarasa.test', '$2y$12$2YcqgPTT0x1Mn21xRi.U1uRyMgRzdV5n3WbRlOjBa.eDeV3zHJilW', 1, 'store_admin', (SELECT id FROM stores WHERE slug = 'rm-minang-pusako' LIMIT 1), 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), email_verified = VALUES(email_verified), role = VALUES(role), store_id = VALUES(store_id), is_active = VALUES(is_active), updated_at = NOW();
 
-INSERT INTO users (id, name, email, password_hash, role, store_id, is_active, created_at, updated_at)
-VALUES (3, 'Pengunjung Demo', 'user@pusakarasa.test', '$2y$12$eq2N0zlTRlieU18zf7qINuCZkupheI.Crr/Ogilz1xCiDy8fnCmqm', 'user', NULL, 1, NOW(), NOW())
-ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), role = VALUES(role), store_id = VALUES(store_id), is_active = VALUES(is_active), updated_at = NOW();
+INSERT INTO users (id, name, email, password_hash, email_verified, role, store_id, is_active, created_at, updated_at)
+VALUES (3, 'Pengunjung Demo', 'user@pusakarasa.test', '$2y$12$eq2N0zlTRlieU18zf7qINuCZkupheI.Crr/Ogilz1xCiDy8fnCmqm', 1, 'user', NULL, 1, NOW(), NOW())
+ON DUPLICATE KEY UPDATE name = VALUES(name), email = VALUES(email), password_hash = VALUES(password_hash), email_verified = VALUES(email_verified), role = VALUES(role), store_id = VALUES(store_id), is_active = VALUES(is_active), updated_at = NOW();
 
 ALTER TABLE users AUTO_INCREMENT = 4;
 

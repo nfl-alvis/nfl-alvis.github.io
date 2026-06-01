@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/includes/bootstrap.php';
+require_once __DIR__ . '/config/mail.php';
 
 if (is_logged_in()) {
     redirect_to(nav_target_for_user(current_user()));
@@ -19,25 +20,33 @@ if (is_post()) {
         redirect_to('register.php');
     }
 
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        set_flash('error', 'Format email tidak valid.');
+        redirect_to('register.php');
+    }
+
     if ($password !== $passwordConfirm) {
         set_flash('error', 'Konfirmasi kata sandi tidak sesuai.');
         redirect_to('register.php');
     }
 
     try {
-        create_user($name, $email, $password);
+        $userId = create_user($name, $email, $password, ROLE_USER, null, false);
+        $token = create_email_verification_token($userId);
     } catch (Throwable $exception) {
         set_flash('error', 'Email sudah dipakai atau data tidak valid.');
         redirect_to('register.php');
     }
 
-    $user = authenticate_user($email, $password);
-    if ($user) {
-        login_user($user);
+    try {
+        send_verification_email($email, $name, $token);
+    } catch (Throwable $exception) {
+        set_flash('error', 'Akun berhasil dibuat, tetapi email verifikasi gagal dikirim. Silakan coba kirim ulang verifikasi.');
+        redirect_to('auth/resend-verification.php?' . http_build_query(['email' => $email]));
     }
 
-    set_flash('success', 'Pendaftaran berhasil. Selamat datang di PusakaRasa.');
-    redirect_to('katalog.php');
+    set_flash('success', 'Pendaftaran berhasil. Silakan cek email Anda untuk verifikasi sebelum masuk.');
+    redirect_to('login.php');
 }
 
 render_layout('Daftar', function (?array $user = null): void {

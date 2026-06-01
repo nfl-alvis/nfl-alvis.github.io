@@ -23,6 +23,11 @@ if (is_post()) {
     redirect_to('login.php');
   }
 
+  if (user_needs_email_verification($user)) {
+    set_flash('error', 'Email belum diverifikasi. Silakan cek email Anda atau kirim ulang verifikasi.');
+    redirect_to('login.php');
+  }
+
   login_user($user);
   set_flash('success', 'Berhasil masuk ke akun Anda.');
   redirect_to(nav_target_for_user($user));
@@ -53,9 +58,15 @@ render_layout('Masuk', function (?array $user = null): void {
           </label>
           <button type="submit">Masuk</button>
         </form>
+        <div class="auth-divider"><span>atau</span></div>
+        <a class="google-login-btn" href="<?= e(base_path('auth/google-login.php')) ?>">
+          <img src="<?= e(base_path('assets/image/icons/google.svg')) ?>" alt="" aria-hidden="true" />
+          Login dengan Google
+        </a>
+        <p class="auth-helper"><a href="<?= e(base_path('auth/forgot-password.php')) ?>">Lupa password?</a> &middot; <a href="<?= e(base_path('auth/resend-verification.php')) ?>">Kirim ulang verifikasi</a></p>
         <p class="auth-helper">Belum punya akun? <a href="<?= e(base_path('register.php')) ?>">Daftar di sini</a></p>
       </div>
     </section>
   </div>
 <?php
-}, ['hide_header' => true, 'app_css' => true]);
+}, ['hide_header' => true, 'hide_footer' => true, 'app_css' => true]);

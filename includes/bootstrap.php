@@ -18,6 +18,10 @@ function app_name(): string
 function base_path(string $path = ''): string
 {
     $root = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/\\');
+    if (basename($root) === 'auth') {
+        $root = rtrim(dirname($root), '/\\');
+    }
+
     $root = $root === '/' ? '' : $root;
 
     return $root . '/' . ltrim($path, '/');
@@ -91,7 +95,15 @@ function user_profile_image_url(?array $user): string
     $path = trim((string) ($user['profile_image'] ?? ''));
 
     if ($path === '') {
+        $path = trim((string) ($user['picture'] ?? ''));
+    }
+
+    if ($path === '') {
         return '';
+    }
+
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
     }
 
     return base_path($path);
@@ -131,6 +143,21 @@ function has_role(string ...$roles): bool
     }
 
     return in_array($user['role'], $roles, true);
+}
+
+function user_can_manage_product_reviews(?array $user, array $product): bool
+{
+    if (!$user) {
+        return false;
+    }
+
+    if (($user['role'] ?? '') === ROLE_SUPER_ADMIN) {
+        return true;
+    }
+
+    return (($user['role'] ?? '') === ROLE_STORE_ADMIN)
+        && (int) ($user['store_id'] ?? 0) > 0
+        && (int) ($user['store_id'] ?? 0) === (int) ($product['store_id'] ?? 0);
 }
 
 function require_login(): void
@@ -452,6 +479,15 @@ function slugify(string $value): string
     return trim($value, '-');
 }
 
+function search_word_tokens(string $value): array
+{
+    if (!preg_match_all('/[\p{L}\p{N}]+/u', $value, $matches)) {
+        return [];
+    }
+
+    return array_values(array_filter($matches[0], static fn(string $token): bool => $token !== ''));
+}
+
 function find_featured_products(int $limit = 4): array
 {
     ensure_store_operational_columns();
@@ -487,8 +523,17 @@ function find_products(array $filters = []): array
     $params = [];
 
     if (!empty($filters['search'])) {
-        $conditions[] = '(p.name LIKE :search OR p.region LIKE :search OR s.name LIKE :search)';
-        $params['search'] = '%' . $filters['search'] . '%';
+        $searchTokens = search_word_tokens((string) $filters['search']);
+
+        if (!$searchTokens) {
+            $conditions[] = '1 = 0';
+        }
+
+        foreach ($searchTokens as $index => $token) {
+            $param = 'search_' . $index;
+            $conditions[] = "LOWER(CONCAT(' ', p.name, ' ', p.region, ' ', s.name)) LIKE :{$param}";
+            $params[$param] = '% ' . strtolower($token) . '%';
+        }
     }
 
     if (!empty($filters['type']) && in_array($filters['type'], ['Makanan', 'Minuman'], true)) {
@@ -638,16 +683,53 @@ function find_product_by_slug(string $slug): ?array
 
 function find_reviews_by_product(int $productId): array
 {
+    ensure_review_replies_table();
+
     $stmt = db()->prepare(
-        'SELECT r.*, u.name AS reviewer_name
+        'SELECT r.*,
+                u.name AS reviewer_name,
+                rr.id AS reply_id,
+                rr.reply_text,
+                rr.created_at AS reply_created_at,
+                rr.updated_at AS reply_updated_at,
+                rr.admin_user_id AS reply_admin_user_id,
+                au.name AS reply_admin_name,
+                au.role AS reply_admin_role
          FROM reviews r
          INNER JOIN users u ON u.id = r.user_id
+         LEFT JOIN review_replies rr ON rr.review_id = r.id
+         LEFT JOIN users au ON au.id = rr.admin_user_id
          WHERE r.product_id = :product_id
          ORDER BY r.created_at DESC'
     );
     $stmt->execute(['product_id' => $productId]);
 
     return $stmt->fetchAll();
+}
+
+function ensure_review_replies_table(): void
+{
+    static $checked = false;
+
+    if ($checked) {
+        return;
+    }
+
+    db()->exec(
+        'CREATE TABLE IF NOT EXISTS review_replies (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          review_id INT NOT NULL,
+          admin_user_id INT NULL,
+          reply_text TEXT NOT NULL,
+          created_at DATETIME NOT NULL,
+          updated_at DATETIME NOT NULL,
+          UNIQUE KEY uniq_review_replies_review (review_id),
+          CONSTRAINT fk_review_replies_review FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
+          CONSTRAINT fk_review_replies_admin FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE SET NULL
+        )'
+    );
+
+    $checked = true;
 }
 
 function find_stores(?string $search = null): array
@@ -705,11 +787,36 @@ function find_store_by_slug(string $slug): ?array
     return $store;
 }
 
+function find_user_by_id(int $id): ?array
+{
+    ensure_user_auth_columns();
+
+    $stmt = db()->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');
+    $stmt->execute(['id' => $id]);
+
+    return $stmt->fetch() ?: null;
+}
+
+function find_user_by_email(string $email, bool $activeOnly = false): ?array
+{
+    ensure_user_auth_columns();
+
+    $email = strtolower(trim($email));
+    $sql = 'SELECT * FROM users WHERE email = :email';
+
+    if ($activeOnly) {
+        $sql .= ' AND is_active = 1';
+    }
+
+    $stmt = db()->prepare($sql . ' LIMIT 1');
+    $stmt->execute(['email' => $email]);
+
+    return $stmt->fetch() ?: null;
+}
+
 function authenticate_user(string $email, string $password): ?array
 {
-    $stmt = db()->prepare('SELECT * FROM users WHERE email = :email AND is_active = 1 LIMIT 1');
-    $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch();
+    $user = find_user_by_email($email, true);
 
     if (!$user) {
         return null;
@@ -722,19 +829,192 @@ function authenticate_user(string $email, string $password): ?array
     return $user;
 }
 
-function create_user(string $name, string $email, string $password, string $role = ROLE_USER, ?int $storeId = null): void
+function user_needs_email_verification(array $user): bool
 {
+    return (($user['auth_provider'] ?? 'local') === 'local')
+        && (int) ($user['email_verified'] ?? 0) !== 1;
+}
+
+function create_user(
+    string $name,
+    string $email,
+    string $password,
+    string $role = ROLE_USER,
+    ?int $storeId = null,
+    bool $emailVerified = true
+): int {
+    ensure_user_auth_columns();
+
     $stmt = db()->prepare(
-        'INSERT INTO users (name, email, password_hash, profile_image, role, store_id, is_active, created_at, updated_at)
-         VALUES (:name, :email, :password_hash, NULL, :role, :store_id, 1, NOW(), NOW())'
+        'INSERT INTO users
+            (name, email, password_hash, profile_image, google_id, picture, auth_provider, email_verified, email_verify_token, email_verify_expires, reset_token, reset_expires, role, store_id, is_active, created_at, updated_at)
+         VALUES
+            (:name, :email, :password_hash, NULL, NULL, NULL, :auth_provider, :email_verified, NULL, NULL, NULL, NULL, :role, :store_id, 1, NOW(), NOW())'
     );
     $stmt->execute([
         'name' => $name,
-        'email' => $email,
+        'email' => strtolower(trim($email)),
         'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+        'auth_provider' => 'local',
+        'email_verified' => $emailVerified ? 1 : 0,
         'role' => $role,
         'store_id' => $storeId,
     ]);
+
+    return (int) db()->lastInsertId();
+}
+
+function make_auth_token(): string
+{
+    return bin2hex(random_bytes(32));
+}
+
+function auth_token_hash(string $token): string
+{
+    return hash('sha256', $token);
+}
+
+function create_email_verification_token(int $userId, int $ttlSeconds = 86400): string
+{
+    ensure_user_auth_columns();
+
+    $token = make_auth_token();
+    $expires = date('Y-m-d H:i:s', time() + $ttlSeconds);
+
+    $stmt = db()->prepare(
+        'UPDATE users
+         SET email_verify_token = :token_hash,
+             email_verify_expires = :expires,
+             updated_at = NOW()
+         WHERE id = :id'
+    );
+    $stmt->execute([
+        'token_hash' => auth_token_hash($token),
+        'expires' => $expires,
+        'id' => $userId,
+    ]);
+
+    return $token;
+}
+
+function verify_user_email_token(string $email, string $token): bool
+{
+    ensure_user_auth_columns();
+
+    $email = strtolower(trim($email));
+    $token = trim($token);
+
+    if ($email === '' || $token === '') {
+        return false;
+    }
+
+    $stmt = db()->prepare(
+        'SELECT id
+         FROM users
+         WHERE email = :email
+           AND email_verify_token = :token_hash
+           AND email_verify_expires IS NOT NULL
+           AND email_verify_expires >= NOW()
+         LIMIT 1'
+    );
+    $stmt->execute([
+        'email' => $email,
+        'token_hash' => auth_token_hash($token),
+    ]);
+    $user = $stmt->fetch();
+
+    if (!$user) {
+        return false;
+    }
+
+    $updateStmt = db()->prepare(
+        'UPDATE users
+         SET email_verified = 1,
+             email_verify_token = NULL,
+             email_verify_expires = NULL,
+             updated_at = NOW()
+         WHERE id = :id'
+    );
+    $updateStmt->execute(['id' => $user['id']]);
+
+    return true;
+}
+
+function create_password_reset_token(int $userId, int $ttlSeconds = 3600): string
+{
+    ensure_user_auth_columns();
+
+    $token = make_auth_token();
+    $expires = date('Y-m-d H:i:s', time() + $ttlSeconds);
+
+    $stmt = db()->prepare(
+        'UPDATE users
+         SET reset_token = :token_hash,
+             reset_expires = :expires,
+             updated_at = NOW()
+         WHERE id = :id'
+    );
+    $stmt->execute([
+        'token_hash' => auth_token_hash($token),
+        'expires' => $expires,
+        'id' => $userId,
+    ]);
+
+    return $token;
+}
+
+function find_user_by_reset_token(string $email, string $token): ?array
+{
+    ensure_user_auth_columns();
+
+    $email = strtolower(trim($email));
+    $token = trim($token);
+
+    if ($email === '' || $token === '') {
+        return null;
+    }
+
+    $stmt = db()->prepare(
+        'SELECT *
+         FROM users
+         WHERE email = :email
+           AND reset_token = :token_hash
+           AND reset_expires IS NOT NULL
+           AND reset_expires >= NOW()
+           AND email_verified = 1
+           AND is_active = 1
+         LIMIT 1'
+    );
+    $stmt->execute([
+        'email' => $email,
+        'token_hash' => auth_token_hash($token),
+    ]);
+
+    return $stmt->fetch() ?: null;
+}
+
+function reset_user_password_with_token(string $email, string $token, string $password): bool
+{
+    $user = find_user_by_reset_token($email, $token);
+
+    if (!$user) {
+        return false;
+    }
+
+    $stmt = db()->prepare(
+        'UPDATE users
+         SET password_hash = :password_hash,
+             reset_token = NULL,
+             reset_expires = NULL,
+             updated_at = NOW()
+         WHERE id = :id'
+    );
+    $stmt->execute([
+        'password_hash' => password_hash($password, PASSWORD_BCRYPT),
+        'id' => $user['id'],
+    ]);
+
+    return true;
 }
 
 function save_uploaded_profile_image(array $file, ?string $currentPath = null): string
@@ -751,11 +1031,12 @@ function save_uploaded_profile_image(array $file, ?string $currentPath = null): 
         'image/jpeg' => 'jpg',
         'image/png' => 'png',
         'image/webp' => 'webp',
+        'image/gif' => 'gif',
     ];
 
     $mime = mime_content_type($file['tmp_name']);
     if (!isset($allowed[$mime])) {
-        throw new RuntimeException('Format foto profil harus JPG, PNG, atau WEBP.');
+        throw new RuntimeException('Format foto profil harus JPG, PNG, WEBP, atau GIF.');
     }
 
     $uploadDir = __DIR__ . '/../uploads/profiles';
@@ -789,6 +1070,77 @@ function ensure_user_profile_image_column(): void
     }
 
     db()->exec('ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) NULL AFTER password_hash');
+}
+
+function ensure_user_auth_columns(): void
+{
+    static $checked = false;
+
+    if ($checked) {
+        return;
+    }
+
+    ensure_user_profile_image_column();
+
+    $columns = [];
+    $stmt = db()->query('SHOW COLUMNS FROM users');
+
+    foreach ($stmt->fetchAll() as $column) {
+        $field = (string) ($column['Field'] ?? '');
+
+        if ($field !== '') {
+            $columns[$field] = true;
+        }
+    }
+
+    if (!isset($columns['google_id'])) {
+        db()->exec('ALTER TABLE users ADD COLUMN google_id VARCHAR(255) NULL AFTER profile_image');
+    }
+
+    if (!isset($columns['picture'])) {
+        db()->exec('ALTER TABLE users ADD COLUMN picture TEXT NULL AFTER google_id');
+    }
+
+    $pdo = db();
+
+    if (!isset($columns['auth_provider'])) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN auth_provider ENUM('local','google') NOT NULL DEFAULT 'local' AFTER picture");
+    }
+
+    if (!isset($columns['email_verified'])) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN email_verified TINYINT(1) NOT NULL DEFAULT 0 AFTER auth_provider');
+    }
+
+    if (!isset($columns['email_verify_token'])) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN email_verify_token VARCHAR(255) NULL AFTER email_verified');
+    }
+
+    if (!isset($columns['email_verify_expires'])) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN email_verify_expires DATETIME NULL AFTER email_verify_token');
+    }
+
+    if (!isset($columns['reset_token'])) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN reset_token VARCHAR(255) NULL AFTER email_verify_expires');
+    }
+
+    if (!isset($columns['reset_expires'])) {
+        $pdo->exec('ALTER TABLE users ADD COLUMN reset_expires DATETIME NULL AFTER reset_token');
+    }
+
+    $pdo->exec(
+        "UPDATE users
+         SET email_verified = 1
+         WHERE email_verified = 0
+           AND email_verify_token IS NULL
+           AND auth_provider = 'local'"
+    );
+
+    $checked = true;
+}
+
+function ensure_user_google_columns(): void
+{
+    ensure_user_auth_columns();
 }
 
 function ensure_store_operational_columns(): void
@@ -1162,8 +1514,66 @@ function submit_product_review(int $productId, int $userId, int $stars, string $
     recalculate_product_rating($productId);
 }
 
+function save_review_reply(int $reviewId, int $productId, int $adminUserId, string $replyText): bool
+{
+    ensure_review_replies_table();
+
+    $reviewStmt = db()->prepare(
+        'SELECT id
+         FROM reviews
+         WHERE id = :id AND product_id = :product_id
+         LIMIT 1'
+    );
+    $reviewStmt->execute([
+        'id' => $reviewId,
+        'product_id' => $productId,
+    ]);
+
+    if (!$reviewStmt->fetch()) {
+        return false;
+    }
+
+    $stmt = db()->prepare(
+        'INSERT INTO review_replies (review_id, admin_user_id, reply_text, created_at, updated_at)
+         VALUES (:review_id, :admin_user_id, :reply_text, NOW(), NOW())
+         ON DUPLICATE KEY UPDATE
+             admin_user_id = VALUES(admin_user_id),
+             reply_text = VALUES(reply_text),
+             updated_at = NOW()'
+    );
+    $stmt->execute([
+        'review_id' => $reviewId,
+        'admin_user_id' => $adminUserId,
+        'reply_text' => $replyText,
+    ]);
+
+    return true;
+}
+
+function delete_review_reply(int $reviewId, int $productId): bool
+{
+    ensure_review_replies_table();
+
+    $stmt = db()->prepare(
+        'DELETE FROM review_replies
+         WHERE review_id IN (
+             SELECT id
+             FROM reviews
+             WHERE id = :review_id AND product_id = :product_id
+         )'
+    );
+    $stmt->execute([
+        'review_id' => $reviewId,
+        'product_id' => $productId,
+    ]);
+
+    return $stmt->rowCount() > 0;
+}
+
 function delete_product_review(int $reviewId, int $productId, int $userId): bool
 {
+    ensure_review_replies_table();
+
     $stmt = db()->prepare(
         'DELETE FROM reviews
          WHERE id = :id AND product_id = :product_id AND user_id = :user_id
@@ -1173,6 +1583,29 @@ function delete_product_review(int $reviewId, int $productId, int $userId): bool
         'id' => $reviewId,
         'product_id' => $productId,
         'user_id' => $userId,
+    ]);
+
+    if ($stmt->rowCount() < 1) {
+        return false;
+    }
+
+    recalculate_product_rating($productId);
+
+    return true;
+}
+
+function delete_product_review_by_manager(int $reviewId, int $productId): bool
+{
+    ensure_review_replies_table();
+
+    $stmt = db()->prepare(
+        'DELETE FROM reviews
+         WHERE id = :id AND product_id = :product_id
+         LIMIT 1'
+    );
+    $stmt->execute([
+        'id' => $reviewId,
+        'product_id' => $productId,
     ]);
 
     if ($stmt->rowCount() < 1) {
