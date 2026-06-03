@@ -1,3 +1,5 @@
+const FAVORITES_STORAGE_KEY = 'pusakarasa_favorites';
+
 document.addEventListener('DOMContentLoaded', function () {
   initHamburgerMenu();
   initNavIndicator();
@@ -5,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initFavoriteButtons();
   initStarRatingInputs();
   initFavoritesPage();
+  migrateLocalFavoritesToDatabase();
   initFlashBanner();
   initFileDropStates();
   initPriceFormatInputs();
@@ -120,25 +123,6 @@ function initFavoriteButtons() {
     return;
   }
 
-  const favorites = getFavorites();
-
-  function syncFavoriteButton(button, isActive) {
-    button.classList.toggle('active', isActive);
-    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-
-    const icon = button.querySelector('i');
-    if (icon) {
-      icon.classList.toggle('fa-solid', isActive);
-      icon.classList.toggle('fa-regular', !isActive);
-    }
-
-    const label = button.querySelector('span');
-    if (label && button.classList.contains('dp-fav-btn')) {
-      label.textContent = isActive ? 'Tersimpan' : 'Favoritkan';
-      button.setAttribute('aria-label', isActive ? 'Hapus dari favorit' : 'Simpan ke favorit');
-    }
-  }
-
   favButtons.forEach(function (button) {
     const card = button.closest('.food-card');
     const itemId = button.dataset.id || card?.dataset.favoriteId || '';
@@ -148,30 +132,39 @@ function initFavoriteButtons() {
     }
 
     button.dataset.id = itemId;
-    syncFavoriteButton(button, favorites.includes(itemId));
+    syncFavoriteButton(button, getFavorites().includes(itemId));
 
     button.addEventListener('click', function (event) {
       event.preventDefault();
       event.stopPropagation();
 
-      const nextFavorites = getFavorites();
-      const currentIndex = nextFavorites.indexOf(itemId);
-      const willBeActive = !button.classList.contains('active');
-
-      syncFavoriteButton(button, willBeActive);
-
-      if (willBeActive && currentIndex === -1) {
-        nextFavorites.push(itemId);
+      const config = getFavoriteConfig();
+      if (!config.isLoggedIn) {
+        window.location.href = config.loginUrl || 'login.php';
+        return;
       }
 
-      if (!willBeActive && currentIndex >= 0) {
-        nextFavorites.splice(currentIndex, 1);
+      if (!/^\d+$/.test(itemId)) {
+        return;
       }
 
-      localStorage.setItem('pusakarasa_favorites', JSON.stringify(nextFavorites));
-      window.dispatchEvent(new CustomEvent('pusakarasa:favorites-updated', { detail: nextFavorites }));
+      button.disabled = true;
+      postFavoriteAction('toggle', { product_id: itemId })
+        .then(function (payload) {
+          setFavorites(payload.favorites || []);
+          syncAllFavoriteButtons();
+          window.dispatchEvent(new CustomEvent('pusakarasa:favorites-updated', { detail: getFavorites() }));
+        })
+        .catch(function (error) {
+          window.alert(error.message || 'Gagal memperbarui favorit.');
+        })
+        .finally(function () {
+          button.disabled = false;
+        });
     });
   });
+
+  syncAllFavoriteButtons();
 }
 
 function initStarRatingInputs() {
@@ -298,8 +291,7 @@ function initFavoritesPage() {
       card.style.display = isVisible ? '' : 'none';
 
       if (button) {
-        button.classList.toggle('active', isVisible);
-        button.setAttribute('aria-pressed', isVisible ? 'true' : 'false');
+        syncFavoriteButton(button, isVisible);
       }
 
       if (isVisible) {
@@ -326,15 +318,25 @@ function initFavoritesPage() {
 
   if (clearButton) {
     clearButton.addEventListener('click', function () {
-      const cardIds = new Set(cards.map(function (card) {
-        return card.dataset.favoriteId || '';
-      }).filter(Boolean));
-      const remainingFavorites = getFavorites().filter(function (itemId) {
-        return !cardIds.has(itemId);
-      });
+      const config = getFavoriteConfig();
+      if (!config.isLoggedIn) {
+        window.location.href = config.loginUrl || 'login.php';
+        return;
+      }
 
-      localStorage.setItem('pusakarasa_favorites', JSON.stringify(remainingFavorites));
-      window.dispatchEvent(new CustomEvent('pusakarasa:favorites-updated', { detail: remainingFavorites }));
+      clearButton.disabled = true;
+      postFavoriteAction('clear')
+        .then(function (payload) {
+          setFavorites(payload.favorites || []);
+          syncAllFavoriteButtons();
+          window.dispatchEvent(new CustomEvent('pusakarasa:favorites-updated', { detail: getFavorites() }));
+        })
+        .catch(function (error) {
+          window.alert(error.message || 'Gagal menghapus favorit.');
+        })
+        .finally(function () {
+          clearButton.disabled = false;
+        });
     });
   }
 
@@ -449,10 +451,133 @@ function initPriceFormatInputs() {
   });
 }
 
-function getFavorites() {
-  try {
-    return JSON.parse(localStorage.getItem('pusakarasa_favorites') || '[]');
-  } catch (error) {
+function syncFavoriteButton(button, isActive) {
+  button.classList.toggle('active', isActive);
+  button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+
+  const icon = button.querySelector('i');
+  if (icon) {
+    icon.classList.toggle('fa-solid', isActive);
+    icon.classList.toggle('fa-regular', !isActive);
+  }
+
+  const label = button.querySelector('span');
+  if (label && button.classList.contains('dp-fav-btn')) {
+    label.textContent = isActive ? 'Tersimpan' : 'Favoritkan';
+    button.setAttribute('aria-label', isActive ? 'Hapus dari favorit' : 'Simpan ke favorit');
+  }
+}
+
+function syncAllFavoriteButtons() {
+  const favorites = new Set(getFavorites());
+
+  document.querySelectorAll('.fav-btn').forEach(function (button) {
+    const card = button.closest('.food-card');
+    const itemId = button.dataset.id || card?.dataset.favoriteId || '';
+
+    if (!itemId) {
+      return;
+    }
+
+    button.dataset.id = itemId;
+    syncFavoriteButton(button, favorites.has(itemId));
+  });
+}
+
+function getFavoriteConfig() {
+  if (!window.PUSAKARASA_CONFIG || typeof window.PUSAKARASA_CONFIG !== 'object') {
+    window.PUSAKARASA_CONFIG = {};
+  }
+
+  return window.PUSAKARASA_CONFIG;
+}
+
+function normalizeFavoriteIds(ids) {
+  if (!Array.isArray(ids)) {
     return [];
   }
+
+  return ids.map(function (id) {
+    return String(id);
+  }).filter(Boolean);
+}
+
+function getFavorites() {
+  const config = getFavoriteConfig();
+  config.favoriteIds = normalizeFavoriteIds(config.favoriteIds);
+
+  return config.favoriteIds;
+}
+
+function setFavorites(ids) {
+  const config = getFavoriteConfig();
+  config.favoriteIds = normalizeFavoriteIds(ids);
+}
+
+function postFavoriteAction(action, data = {}) {
+  const config = getFavoriteConfig();
+
+  if (!config.favoriteEndpoint) {
+    return Promise.reject(new Error('Endpoint favorit belum tersedia.'));
+  }
+
+  const body = new URLSearchParams();
+  body.set('action', action);
+
+  Object.entries(data).forEach(function ([key, value]) {
+    body.set(key, String(value));
+  });
+
+  return fetch(config.favoriteEndpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body
+  }).then(function (response) {
+    return response.json().catch(function () {
+      return { ok: false, message: 'Respons server tidak valid.' };
+    }).then(function (payload) {
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.message || 'Gagal memperbarui favorit.');
+      }
+
+      return payload;
+    });
+  });
+}
+
+function migrateLocalFavoritesToDatabase() {
+  const config = getFavoriteConfig();
+
+  if (!config.isLoggedIn || !config.favoriteEndpoint) {
+    return;
+  }
+
+  let legacyFavorites = [];
+  try {
+    legacyFavorites = JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY) || '[]');
+  } catch (error) {
+    legacyFavorites = [];
+  }
+
+  legacyFavorites = normalizeFavoriteIds(legacyFavorites);
+  if (!legacyFavorites.length) {
+    return;
+  }
+
+  postFavoriteAction('import', {
+    legacy_ids: JSON.stringify(legacyFavorites)
+  }).then(function (payload) {
+    setFavorites(payload.favorites || []);
+    localStorage.removeItem(FAVORITES_STORAGE_KEY);
+    syncAllFavoriteButtons();
+    window.dispatchEvent(new CustomEvent('pusakarasa:favorites-updated', { detail: getFavorites() }));
+
+    if (document.getElementById('favoritesPage')) {
+      window.location.reload();
+    }
+  }).catch(function () {
+    // Biarkan data lokal tetap ada agar bisa dicoba lagi pada kunjungan berikutnya.
+  });
 }

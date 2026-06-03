@@ -30,9 +30,9 @@ if (is_post()) {
 
         $stmt = db()->prepare(
             'INSERT INTO products
-             (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, base_rating_total, base_review_count, is_featured, is_active, created_at, updated_at)
+             (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, base_rating_total, base_review_count, is_active, created_at, updated_at)
              VALUES
-             (:store_id, :name, :slug, :type, :region, :short_description, :long_description, :price_display, 0, 0, :tag_label, :image_path, 0, 0, 0, 1, NOW(), NOW())'
+             (:store_id, :name, :slug, :type, :region, :short_description, :long_description, :price_display, 0, 0, :tag_label, :image_path, 0, 0, 1, NOW(), NOW())'
         );
         $stmt->execute([
             'store_id' => $storeId,

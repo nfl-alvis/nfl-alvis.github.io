@@ -34,7 +34,7 @@ if (is_post() && ($_POST['action'] ?? '') === 'edit_product') {
             'UPDATE products
              SET store_id = :store_id, name = :name, slug = :slug, type = :type, region = :region,
                  short_description = :short_description, long_description = :long_description,
-                 price_display = :price_display, tag_label = :tag_label, image_path = :image_path, is_featured = :is_featured,
+                 price_display = :price_display, tag_label = :tag_label, image_path = :image_path,
                  is_active = :is_active, updated_at = NOW()
              WHERE id = :id'
         )->execute([
@@ -49,7 +49,6 @@ if (is_post() && ($_POST['action'] ?? '') === 'edit_product') {
             'price_display' => normalize_price_display($_POST['price_display'] ?? ''),
             'tag_label' => trim($_POST['tag_label'] ?? ''),
             'image_path' => $imagePath,
-            'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ]);
 
@@ -356,7 +355,6 @@ render_layout('Manajemen Produk Platform', function (?array $user = null) use ($
                 </div>
 
                 <div class="admin-product-toggle-row">
-                  <label><input type="checkbox" name="is_featured" value="1" <?= (int) $editingProduct['is_featured'] === 1 ? 'checked' : '' ?> /> Jadikan produk unggulan</label>
                   <label><input type="checkbox" name="is_active" value="1" <?= (int) $editingProduct['is_active'] === 1 ? 'checked' : '' ?> /> Aktif</label>
                 </div>
               </div>

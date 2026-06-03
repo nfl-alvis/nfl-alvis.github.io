@@ -20,9 +20,9 @@ if (is_post()) {
 
         $stmt = db()->prepare(
             'INSERT INTO products
-             (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, base_rating_total, base_review_count, is_featured, is_active, created_at, updated_at)
+             (store_id, name, slug, type, region, short_description, long_description, price_display, rating, review_count, tag_label, image_path, base_rating_total, base_review_count, is_active, created_at, updated_at)
              VALUES
-             (:store_id, :name, :slug, :type, :region, :short_description, :long_description, :price_display, 0, 0, :tag_label, :image_path, 0, 0, :is_featured, :is_active, NOW(), NOW())'
+             (:store_id, :name, :slug, :type, :region, :short_description, :long_description, :price_display, 0, 0, :tag_label, :image_path, 0, 0, :is_active, NOW(), NOW())'
         );
         $stmt->execute([
             'store_id' => (int) ($_POST['store_id'] ?? 0),
@@ -35,7 +35,6 @@ if (is_post()) {
             'price_display' => normalize_price_display($_POST['price_display'] ?? ''),
             'tag_label' => trim($_POST['tag_label'] ?? ''),
             'image_path' => $imagePath,
-            'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
             'is_active' => isset($_POST['is_active']) ? 1 : 0,
         ]);
         replace_product_images((int) db()->lastInsertId(), $imagePaths);
@@ -155,7 +154,6 @@ render_layout('Tambah Produk', function (?array $user = null) use ($stores): voi
                 </div>
 
                 <div class="admin-product-toggle-row">
-                  <label><input type="checkbox" name="is_featured" value="1" /> Jadikan produk unggulan</label>
                   <label><input type="checkbox" name="is_active" value="1" checked /> Aktif</label>
                 </div>
               </div>

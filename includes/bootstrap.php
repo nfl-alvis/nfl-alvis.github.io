@@ -145,7 +145,18 @@ function has_role(string ...$roles): bool
     return in_array($user['role'], $roles, true);
 }
 
-function user_can_manage_product_reviews(?array $user, array $product): bool
+function user_can_reply_product_reviews(?array $user, array $product): bool
+{
+    if (!$user) {
+        return false;
+    }
+
+    return (($user['role'] ?? '') === ROLE_STORE_ADMIN)
+        && (int) ($user['store_id'] ?? 0) > 0
+        && (int) ($user['store_id'] ?? 0) === (int) ($product['store_id'] ?? 0);
+}
+
+function user_can_delete_product_reviews(?array $user, array $product): bool
 {
     if (!$user) {
         return false;
@@ -155,9 +166,12 @@ function user_can_manage_product_reviews(?array $user, array $product): bool
         return true;
     }
 
-    return (($user['role'] ?? '') === ROLE_STORE_ADMIN)
-        && (int) ($user['store_id'] ?? 0) > 0
-        && (int) ($user['store_id'] ?? 0) === (int) ($product['store_id'] ?? 0);
+    return user_can_reply_product_reviews($user, $product);
+}
+
+function user_can_delete_product_review_replies(?array $user, array $product): bool
+{
+    return user_can_delete_product_reviews($user, $product);
 }
 
 function require_login(): void
@@ -488,7 +502,7 @@ function search_word_tokens(string $value): array
     return array_values(array_filter($matches[0], static fn(string $token): bool => $token !== ''));
 }
 
-function find_featured_products(int $limit = 4): array
+function find_popular_products(int $limit = 4): array
 {
     ensure_store_operational_columns();
 
@@ -497,7 +511,9 @@ function find_featured_products(int $limit = 4): array
                 COALESCE(rv.rating, 0) AS rating,
                 COALESCE(rv.review_count, 0) AS review_count,
                 s.name AS store_name,
-                s.slug AS store_slug
+                s.slug AS store_slug,
+                COALESCE(wv.weekly_views, 0) AS weekly_views,
+                COALESCE(av.total_views, 0) AS total_views
          FROM products p
          INNER JOIN stores s ON s.id = p.store_id
          LEFT JOIN (
@@ -505,8 +521,19 @@ function find_featured_products(int $limit = 4): array
              FROM reviews
              GROUP BY product_id
          ) rv ON rv.product_id = p.id
+         LEFT JOIN (
+             SELECT product_id, COUNT(*) AS weekly_views
+             FROM product_views
+             WHERE viewed_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+             GROUP BY product_id
+         ) wv ON wv.product_id = p.id
+         LEFT JOIN (
+             SELECT product_id, COUNT(*) AS total_views
+             FROM product_views
+             GROUP BY product_id
+         ) av ON av.product_id = p.id
          WHERE p.is_active = 1 AND s.is_active = 1
-         ORDER BY p.is_featured DESC, COALESCE(rv.rating, 0) DESC, p.id DESC
+         ORDER BY weekly_views DESC, total_views DESC, COALESCE(rv.rating, 0) DESC, p.id DESC
          LIMIT :limit'
     );
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -560,7 +587,7 @@ function find_products(array $filters = []): array
              GROUP BY product_id
          ) rv ON rv.product_id = p.id
          WHERE %s
-         ORDER BY p.is_featured DESC, p.name ASC',
+         ORDER BY p.name ASC',
         implode(' AND ', $conditions)
     );
 
@@ -688,6 +715,8 @@ function find_reviews_by_product(int $productId): array
     $stmt = db()->prepare(
         'SELECT r.*,
                 u.name AS reviewer_name,
+                u.profile_image AS reviewer_profile_image,
+                u.picture AS reviewer_picture,
                 rr.id AS reply_id,
                 rr.reply_text,
                 rr.created_at AS reply_created_at,
@@ -756,6 +785,36 @@ function find_stores(?string $search = null): array
     return $stmt->fetchAll();
 }
 
+function find_popular_stores(int $limit = 3): array
+{
+    ensure_store_operational_columns();
+
+    $stmt = db()->prepare(
+        'SELECT s.*,
+                COALESCE(pc.product_count, 0) AS product_count,
+                COALESCE(vc.visit_count, 0) AS visit_count
+         FROM stores s
+         LEFT JOIN (
+             SELECT store_id, COUNT(*) AS product_count
+             FROM products
+             WHERE is_active = 1
+             GROUP BY store_id
+         ) pc ON pc.store_id = s.id
+         LEFT JOIN (
+             SELECT store_id, COUNT(*) AS visit_count
+             FROM store_visits
+             GROUP BY store_id
+         ) vc ON vc.store_id = s.id
+         WHERE s.is_active = 1
+         ORDER BY visit_count DESC, product_count DESC, s.name ASC
+         LIMIT :limit'
+    );
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll();
+}
+
 function find_store_by_slug(string $slug): ?array
 {
     ensure_store_operational_columns();
@@ -779,7 +838,7 @@ function find_store_by_slug(string $slug): ?array
              GROUP BY product_id
          ) rv ON rv.product_id = p.id
          WHERE p.store_id = :store_id AND p.is_active = 1
-         ORDER BY p.is_featured DESC, p.name ASC'
+         ORDER BY p.name ASC'
     );
     $productStmt->execute(['store_id' => $store['id']]);
     $store['products'] = $productStmt->fetchAll();
@@ -878,19 +937,18 @@ function create_email_verification_token(int $userId, int $ttlSeconds = 86400): 
 {
     ensure_user_auth_columns();
 
+    $ttlSeconds = max(1, $ttlSeconds);
     $token = make_auth_token();
-    $expires = date('Y-m-d H:i:s', time() + $ttlSeconds);
 
     $stmt = db()->prepare(
         'UPDATE users
          SET email_verify_token = :token_hash,
-             email_verify_expires = :expires,
+             email_verify_expires = DATE_ADD(NOW(), INTERVAL ' . $ttlSeconds . ' SECOND),
              updated_at = NOW()
          WHERE id = :id'
     );
     $stmt->execute([
         'token_hash' => auth_token_hash($token),
-        'expires' => $expires,
         'id' => $userId,
     ]);
 
@@ -944,19 +1002,18 @@ function create_password_reset_token(int $userId, int $ttlSeconds = 3600): strin
 {
     ensure_user_auth_columns();
 
+    $ttlSeconds = max(1, $ttlSeconds);
     $token = make_auth_token();
-    $expires = date('Y-m-d H:i:s', time() + $ttlSeconds);
 
     $stmt = db()->prepare(
         'UPDATE users
          SET reset_token = :token_hash,
-             reset_expires = :expires,
+             reset_expires = DATE_ADD(NOW(), INTERVAL ' . $ttlSeconds . ' SECOND),
              updated_at = NOW()
          WHERE id = :id'
     );
     $stmt->execute([
         'token_hash' => auth_token_hash($token),
-        'expires' => $expires,
         'id' => $userId,
     ]);
 
@@ -1652,7 +1709,184 @@ function recalculate_product_rating(int $productId): void
 
 function favorite_product_id(array $product): string
 {
+    return (string) ($product['id'] ?? '');
+}
+
+function favorite_product_legacy_id(array $product): string
+{
     return (string) ($product['slug'] ?? slugify((string) ($product['name'] ?? 'item')));
+}
+
+function ensure_favorites_table(): void
+{
+    static $checked = false;
+
+    if ($checked) {
+        return;
+    }
+
+    db()->exec(
+        'CREATE TABLE IF NOT EXISTS favorites (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          product_id INT NOT NULL,
+          created_at DATETIME NOT NULL,
+          UNIQUE KEY uniq_favorites_user_product (user_id, product_id),
+          KEY idx_favorites_user_created (user_id, created_at),
+          KEY idx_favorites_product (product_id),
+          CONSTRAINT fk_favorites_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+          CONSTRAINT fk_favorites_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+        )'
+    );
+
+    $checked = true;
+}
+
+function user_favorite_product_ids(int $userId): array
+{
+    ensure_favorites_table();
+
+    $stmt = db()->prepare(
+        'SELECT product_id
+         FROM favorites
+         WHERE user_id = :user_id
+         ORDER BY created_at ASC, id ASC'
+    );
+    $stmt->execute(['user_id' => $userId]);
+
+    return array_map('strval', array_column($stmt->fetchAll(), 'product_id'));
+}
+
+function find_favorite_products(int $userId): array
+{
+    ensure_favorites_table();
+
+    $stmt = db()->prepare(
+        'SELECT p.*,
+                COALESCE(rv.rating, 0) AS rating,
+                COALESCE(rv.review_count, 0) AS review_count,
+                s.name AS store_name,
+                s.slug AS store_slug,
+                f.created_at AS favorited_at
+         FROM favorites f
+         INNER JOIN products p ON p.id = f.product_id
+         INNER JOIN stores s ON s.id = p.store_id
+         LEFT JOIN (
+             SELECT product_id, ROUND(AVG(stars), 1) AS rating, COUNT(*) AS review_count
+             FROM reviews
+             GROUP BY product_id
+         ) rv ON rv.product_id = p.id
+         WHERE f.user_id = :user_id AND p.is_active = 1 AND s.is_active = 1
+         ORDER BY f.created_at DESC, f.id DESC'
+    );
+    $stmt->execute(['user_id' => $userId]);
+
+    return $stmt->fetchAll();
+}
+
+function favorite_product_db_id_by_reference(string $reference): ?int
+{
+    $reference = trim($reference);
+
+    if ($reference === '') {
+        return null;
+    }
+
+    $numericId = ctype_digit($reference) ? (int) $reference : 0;
+    $stmt = db()->prepare(
+        'SELECT p.id
+         FROM products p
+         INNER JOIN stores s ON s.id = p.store_id
+         WHERE p.is_active = 1
+           AND s.is_active = 1
+           AND ((:numeric_id > 0 AND p.id = :numeric_id) OR p.slug = :slug)
+         LIMIT 1'
+    );
+    $stmt->execute([
+        'numeric_id' => $numericId,
+        'slug' => $reference,
+    ]);
+
+    $productId = $stmt->fetchColumn();
+
+    return $productId ? (int) $productId : null;
+}
+
+function add_user_favorite(int $userId, int $productId): void
+{
+    ensure_favorites_table();
+
+    $stmt = db()->prepare(
+        'INSERT IGNORE INTO favorites (user_id, product_id, created_at)
+         VALUES (:user_id, :product_id, NOW())'
+    );
+    $stmt->execute([
+        'user_id' => $userId,
+        'product_id' => $productId,
+    ]);
+}
+
+function toggle_user_favorite(int $userId, string $productReference): bool
+{
+    ensure_favorites_table();
+
+    $productId = favorite_product_db_id_by_reference($productReference);
+    if (!$productId) {
+        throw new RuntimeException('Produk favorit tidak ditemukan.');
+    }
+
+    $existingStmt = db()->prepare(
+        'SELECT id
+         FROM favorites
+         WHERE user_id = :user_id AND product_id = :product_id
+         LIMIT 1'
+    );
+    $existingStmt->execute([
+        'user_id' => $userId,
+        'product_id' => $productId,
+    ]);
+
+    if ($existingStmt->fetch()) {
+        $deleteStmt = db()->prepare(
+            'DELETE FROM favorites
+             WHERE user_id = :user_id AND product_id = :product_id'
+        );
+        $deleteStmt->execute([
+            'user_id' => $userId,
+            'product_id' => $productId,
+        ]);
+
+        return false;
+    }
+
+    add_user_favorite($userId, $productId);
+
+    return true;
+}
+
+function import_user_favorites(int $userId, array $references): void
+{
+    ensure_favorites_table();
+
+    $seen = [];
+    foreach (array_slice($references, 0, 100) as $reference) {
+        $productId = favorite_product_db_id_by_reference((string) $reference);
+
+        if (!$productId || isset($seen[$productId])) {
+            continue;
+        }
+
+        add_user_favorite($userId, $productId);
+        $seen[$productId] = true;
+    }
+}
+
+function clear_user_favorites(int $userId): void
+{
+    ensure_favorites_table();
+
+    $stmt = db()->prepare('DELETE FROM favorites WHERE user_id = :user_id');
+    $stmt->execute(['user_id' => $userId]);
 }
 
 function find_store_products(int $storeId): array
@@ -1764,11 +1998,12 @@ function paginate_array(array $items, int $page, int $perPage): array
 function render_product_card(array $product, array $options = []): void
 {
     $favoriteId = favorite_product_id($product);
+    $favoriteLegacyId = favorite_product_legacy_id($product);
     $catalogCard = (bool) ($options['catalog_card'] ?? false);
     $cardClass = 'food-card' . ($catalogCard ? ' food-card--catalog is-clickable' : '');
     $detailPath = base_path('product.php?slug=' . $product['slug']);
 ?>
-    <div class="<?= e($cardClass) ?>" data-favorite-id="<?= e($favoriteId) ?>">
+    <div class="<?= e($cardClass) ?>" data-favorite-id="<?= e($favoriteId) ?>" data-favorite-legacy-id="<?= e($favoriteLegacyId) ?>">
         <?php if ($catalogCard): ?>
             <a class="food-card-detail-link" href="<?= e($detailPath) ?>" aria-label="Lihat detail <?= e($product['name']) ?>">
         <?php endif; ?>
@@ -1817,6 +2052,7 @@ function render_layout(string $title, callable $content, array $options = []): v
     $includeLoginCss = $options['login_css'] ?? false;
     $currentPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
     $hideFooter = ($options['hide_footer'] ?? false) || in_array($currentPage, ['login.php', 'register.php'], true);
+    $favoriteIds = $user ? user_favorite_product_ids((int) $user['id']) : [];
 ?>
     <!DOCTYPE html>
     <html lang="id">
@@ -1988,6 +2224,14 @@ function render_layout(string $title, callable $content, array $options = []): v
                 }, true);
                 syncOperatingHourInputs();
             })();
+        </script>
+        <script>
+            window.PUSAKARASA_CONFIG = <?= json_encode([
+                'favoriteEndpoint' => base_path('favorite-action.php'),
+                'loginUrl' => base_path('login.php'),
+                'isLoggedIn' => $user !== null,
+                'favoriteIds' => $favoriteIds,
+            ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '{}' ?>;
         </script>
         <script src="<?= e(base_path('assets/js/main.js')) ?>"></script>
         <?php if (($options['include_detail_js'] ?? false)): ?>

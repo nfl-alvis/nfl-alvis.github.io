@@ -219,10 +219,9 @@ render_layout($store ? $store['name'] : 'Daftar Toko', function (?array $user = 
         <h2>Direktori<br />Toko<br />Kuliner.</h2>
         <p>Lihat status buka toko, jam operasional, wilayah, dan kontak resmi di platform.</p>
       </section>
-      <div class="search-panel">
-        <form class="search-form" method="get">
-          <input type="search" name="search" value="<?= e($_GET['search'] ?? '') ?>" placeholder="Cari nama toko atau daerah..." />
-          <div></div>
+      <div class="search-panel store-search-panel">
+        <form class="search-form store-search-form" method="get">
+          <input type="search" name="search" value="<?= e($_GET['search'] ?? '') ?>" placeholder="Cari nama toko atau daerah..." aria-label="Cari nama toko atau daerah" />
           <button type="submit">Cari Toko</button>
         </form>
       </div>

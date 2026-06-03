@@ -21,14 +21,16 @@ if (is_post()) {
         redirect_to('login.php');
     }
 
-    $canManageReviews = user_can_manage_product_reviews($currentUser, $product);
+    $canReplyReviews = user_can_reply_product_reviews($currentUser, $product);
+    $canDeleteReviews = user_can_delete_product_reviews($currentUser, $product);
+    $canDeleteReviewReplies = user_can_delete_product_review_replies($currentUser, $product);
     $action = $_POST['action'] ?? 'submit_review';
 
     if ($action === 'reply_review') {
         $reviewId = (int) ($_POST['review_id'] ?? 0);
         $replyText = trim($_POST['reply_text'] ?? '');
 
-        if (!$canManageReviews) {
+        if (!$canReplyReviews) {
             set_flash('error', 'Anda tidak memiliki akses untuk membalas ulasan produk ini.');
             redirect_to('product.php?slug=' . $product['slug']);
         }
@@ -55,7 +57,7 @@ if (is_post()) {
     if ($action === 'delete_review_reply') {
         $reviewId = (int) ($_POST['review_id'] ?? 0);
 
-        if (!$canManageReviews) {
+        if (!$canDeleteReviewReplies) {
             set_flash('error', 'Anda tidak memiliki akses untuk menghapus balasan ulasan ini.');
             redirect_to('product.php?slug=' . $product['slug']);
         }
@@ -75,7 +77,7 @@ if (is_post()) {
             ? delete_product_review($reviewId, (int) $product['id'], (int) $currentUser['id'])
             : false;
 
-        if (!$deleted && $reviewId > 0 && $canManageReviews) {
+        if (!$deleted && $reviewId > 0 && $canDeleteReviews) {
             $deleted = delete_product_review_by_manager($reviewId, (int) $product['id']);
         }
 
@@ -112,9 +114,18 @@ $reviews = find_reviews_by_product((int) $product['id']);
 $productImages = product_image_paths($product);
 
 render_layout($product['name'], function (?array $user = null) use ($product, $reviews, $productImages): void {
-    $canManageReviews = user_can_manage_product_reviews($user, $product);
+    $canReplyReviews = user_can_reply_product_reviews($user, $product);
+    $canDeleteReviews = user_can_delete_product_reviews($user, $product);
+    $canDeleteReviewReplies = user_can_delete_product_review_replies($user, $product);
     $galleryImages = array_map(static fn(string $path): string => base_path($path), $productImages);
     $galleryJson = json_encode($galleryImages, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?: '[]';
+    $reviewRatingCounts = array_fill(1, 5, 0);
+    foreach ($reviews as $reviewCountItem) {
+        $reviewStars = (int) ($reviewCountItem['stars'] ?? 0);
+        if ($reviewStars >= 1 && $reviewStars <= 5) {
+            $reviewRatingCounts[$reviewStars]++;
+        }
+    }
     ?>
     <div class="dp-wrap">
       <div class="dp-breadcrumb">
@@ -146,7 +157,7 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
                 <span class="dp-chip"><?= e($product['type']) ?></span>
                 <span class="dp-chip green"><?= e($product['tag_label']) ?></span>
               </div>
-              <button class="fav-btn dp-fav-btn" type="button" data-id="<?= e(favorite_product_id($product)) ?>" aria-label="Simpan ke favorit" aria-pressed="false">
+              <button class="fav-btn dp-fav-btn" type="button" data-id="<?= e(favorite_product_id($product)) ?>" data-legacy-id="<?= e(favorite_product_legacy_id($product)) ?>" aria-label="Simpan ke favorit" aria-pressed="false">
                 <i class="fa-regular fa-heart" aria-hidden="true"></i>
                 <span>Favoritkan</span>
               </button>
@@ -212,108 +223,116 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
         </div>
       </div>
 
-      <div class="dp-review-section">
-        <div class="dp-review-header">
-          <div class="dp-review-heading-copy">
-            <span class="dp-review-title">Ulasan pengguna</span>
-            <span class="dp-review-count"><?= e(number_format(count($reviews))) ?> ulasan ditampilkan</span>
-          </div>
-          <div class="dp-review-filters" data-review-filters aria-label="Filter ulasan berdasarkan rating">
-            <button class="dp-review-filter active" type="button" data-review-filter="all">Semua</button>
-            <?php for ($filterStar = 5; $filterStar >= 1; $filterStar--): ?>
-              <button class="dp-review-filter" type="button" data-review-filter="<?= e((string) $filterStar) ?>"><?= e((string) $filterStar) ?> bintang</button>
-            <?php endfor; ?>
-          </div>
-        </div>
+      <div class="dp-review-section reviews">
         <div class="dp-review-grid">
-          <div class="dp-review-form">
+          <div class="dp-review-form review-form">
             <form method="post">
               <input type="hidden" name="action" value="submit_review" />
-              <div class="dp-review-compose-main">
-                <div class="dp-review-form-copy">
-                  <span>Tambah ulasan</span>
-                  <strong>Bagikan pengalaman Anda</strong>
-                </div>
-                <div class="dp-review-input-control">
-                  <div class="dp-form-label">Tulis ulasan</div>
-                  <textarea class="dp-review-textarea" name="review_text" placeholder="Bagikan pengalaman Anda terhadap produk ini..." required></textarea>
-                  <div class="dp-review-submit-row">
-                    <button type="submit" class="dp-submit-btn">Kirim ulasan</button>
+              <div class="review-compose">
+                <div class="review-compose__top">
+                  <div class="dp-review-form-copy">
+                    <p class="review-compose__eyebrow">Bagikan pengalaman Anda</p>
+                    <h3 class="review-compose__title">Tulis ulasan untuk produk ini</h3>
                   </div>
-                </div>
-              </div>
-              <div class="dp-review-side-control">
-                <div class="dp-review-rating-control">
-                  <div class="dp-form-label">Rating bintang</div>
-                  <div class="star-rating-field dp-star-row" data-selected="0" aria-label="Pilih rating bintang">
+                  <div class="dp-review-rating-control star-picker star-rating-field dp-star-row" data-selected="0" aria-label="Pilih rating bintang">
                     <?php for ($star = 5; $star >= 1; $star--): ?>
-                      <label class="star-rating-option dp-star-option" data-value="<?= e((string) $star) ?>" aria-label="<?= e((string) $star) ?> bintang">
+                      <label class="star-picker__button star-rating-option dp-star-option" data-value="<?= e((string) $star) ?>" aria-label="<?= e((string) $star) ?> bintang">
                         <input type="radio" name="stars" value="<?= e((string) $star) ?>" required />
                         <span class="star-icon dp-star">★</span>
                       </label>
                     <?php endfor; ?>
                   </div>
                 </div>
+                <textarea class="input-review dp-review-textarea" name="review_text" placeholder="Tulis ulasan Anda tentang produk ini" required></textarea>
+                <div class="review-compose__footer">
+                  <span class="review-feedback" aria-hidden="true"></span>
+                  <button type="submit" class="btn-submit dp-submit-btn">Kirim Ulasan</button>
+                </div>
               </div>
             </form>
           </div>
 
-          <div class="dp-reviews-list">
-            <?php if (!$reviews): ?>
-              <div class="empty-state">Belum ada review pengguna untuk produk ini.</div>
-            <?php endif; ?>
-            <?php foreach ($reviews as $review): ?>
-              <?php
-                $canDeleteReview = $user && ((int) $review['user_id'] === (int) $user['id'] || $canManageReviews);
-                $hasReviewActions = $canManageReviews || $canDeleteReview;
-                $reviewerName = (string) ($review['reviewer_name'] ?? 'User');
-                $reviewerInitial = strtoupper(substr(trim($reviewerName) !== '' ? trim($reviewerName) : 'U', 0, 1));
-              ?>
-              <div class="dp-review-item <?= $hasReviewActions ? 'has-review-actions' : '' ?>" data-review-stars="<?= e((string) (int) $review['stars']) ?>">
-                <div class="dp-review-item-header">
-                  <div class="dp-reviewer-profile">
-                    <span class="dp-reviewer-avatar"><?= e($reviewerInitial) ?></span>
-                    <span class="dp-reviewer-meta">
-                      <strong class="dp-reviewer-name"><?= e($reviewerName) ?></strong>
-                      <small><?= e(date('d M Y H:i', strtotime((string) $review['created_at']))) ?></small>
-                    </span>
-                  </div>
-                  <span class="dp-reviewer-stars" aria-label="<?= e((string) (int) $review['stars']) ?> dari 5 bintang">
-                    <i class="fa-solid fa-star" aria-hidden="true"></i><?= e(number_format((float) $review['stars'], 1)) ?>
-                  </span>
-                </div>
-                <p class="dp-review-text"><?= e($review['review_text']) ?></p>
-                <?php if (!empty($review['reply_text'])): ?>
-                  <div class="dp-review-reply">
-                    <div class="dp-review-reply-head">
-                      <span><i class="fa-solid fa-reply" aria-hidden="true"></i><?= ($review['reply_admin_role'] ?? '') === ROLE_SUPER_ADMIN ? 'Balasan Super Admin' : 'Balasan Admin Toko' ?></span>
-                      <small><?= e(date('d M Y H:i', strtotime((string) $review['reply_updated_at']))) ?></small>
+          <div class="review-list-panel">
+            <div class="dp-review-header">
+              <div class="dp-review-heading-copy">
+                <h2 class="dp-review-title">Ulasan</h2>
+                <span class="dp-review-count"><?= e(number_format(count($reviews))) ?> ulasan ditampilkan</span>
+              </div>
+              <div class="dp-review-filters" data-review-filters aria-label="Filter ulasan berdasarkan rating">
+                <button class="dp-review-filter active" type="button" data-review-filter="all">Semua</button>
+                <?php for ($filterStar = 5; $filterStar >= 1; $filterStar--): ?>
+                  <button class="dp-review-filter" type="button" data-review-filter="<?= e((string) $filterStar) ?>"><?= e((string) $filterStar) ?> bintang (<?= e(number_format($reviewRatingCounts[$filterStar] ?? 0)) ?>)</button>
+                <?php endfor; ?>
+              </div>
+            </div>
+
+            <div class="dp-reviews-list review-list">
+              <?php if (!$reviews): ?>
+                <div class="review-empty empty-state">Belum ada review pengguna untuk produk ini.</div>
+              <?php endif; ?>
+              <?php foreach ($reviews as $review): ?>
+                <?php
+                  $canDeleteOwnReview = $user && (int) $review['user_id'] === (int) $user['id'];
+                  $canDeleteThisReview = $canDeleteOwnReview || $canDeleteReviews;
+                  $canDeleteThisReply = !empty($review['reply_text']) && $canDeleteReviewReplies;
+                  $hasReviewActions = $canReplyReviews || $canDeleteThisReply || $canDeleteThisReview;
+                  $reviewerName = (string) ($review['reviewer_name'] ?? 'User');
+                  $reviewerInitial = strtoupper(substr(trim($reviewerName) !== '' ? trim($reviewerName) : 'U', 0, 1));
+                  $reviewerAvatarUrl = user_profile_image_url([
+                      'profile_image' => $review['reviewer_profile_image'] ?? '',
+                      'picture' => $review['reviewer_picture'] ?? '',
+                  ]);
+                ?>
+                <article class="review-card dp-review-item <?= $hasReviewActions ? 'has-review-actions' : '' ?>" data-review-stars="<?= e((string) (int) $review['stars']) ?>">
+                  <div class="review-header dp-review-item-header">
+                    <?php if ($reviewerAvatarUrl !== ''): ?>
+                      <img class="review-avatar dp-reviewer-avatar profile-avatar-image" src="<?= e($reviewerAvatarUrl) ?>" alt="<?= e($reviewerName) ?>" />
+                    <?php else: ?>
+                      <div class="review-avatar dp-reviewer-avatar"><?= e($reviewerInitial) ?></div>
+                    <?php endif; ?>
+                    <div class="review-content">
+                      <div class="review-info dp-reviewer-meta">
+                        <h4 class="dp-reviewer-name"><?= e($reviewerName) ?></h4>
+                        <div class="stars dp-reviewer-stars" aria-label="Rating <?= e((string) (int) $review['stars']) ?> dari 5">
+                          <?= e(str_repeat('★', (int) $review['stars']) . str_repeat('☆', 5 - (int) $review['stars'])) ?>
+                        </div>
+                        <p class="review-tgl"><?= e(date('d M Y H:i', strtotime((string) $review['created_at']))) ?></p>
+                      </div>
+                      <p class="review-text dp-review-text"><?= nl2br(e($review['review_text'])) ?></p>
+                      <?php if (!empty($review['reply_text'])): ?>
+                        <div class="dp-review-reply">
+                          <div class="dp-review-reply-head">
+                            <span><i class="fa-solid fa-reply" aria-hidden="true"></i><?= ($review['reply_admin_role'] ?? '') === ROLE_SUPER_ADMIN ? 'Balasan Super Admin' : 'Balasan Admin Toko' ?></span>
+                            <small><?= e(date('d M Y H:i', strtotime((string) $review['reply_updated_at']))) ?></small>
+                          </div>
+                          <p><?= e($review['reply_text']) ?></p>
+                        </div>
+                      <?php endif; ?>
+                      <?php if ($canReplyReviews): ?>
+                        <div class="review-reply-panel" id="reply-panel-<?= e((string) $review['id']) ?>" hidden>
+                          <form method="post" class="review-reply-form">
+                            <input type="hidden" name="action" value="reply_review" />
+                            <input type="hidden" name="review_id" value="<?= e((string) $review['id']) ?>" />
+                            <label for="reply-<?= e((string) $review['id']) ?>">Balasan admin</label>
+                            <textarea id="reply-<?= e((string) $review['id']) ?>" name="reply_text" maxlength="1200" placeholder="Tulis balasan resmi untuk ulasan ini..." required><?= e((string) ($review['reply_text'] ?? '')) ?></textarea>
+                            <button type="submit" class="review-reply-btn"><?= empty($review['reply_text']) ? 'Kirim balasan' : 'Perbarui balasan' ?></button>
+                          </form>
+                        </div>
+                      <?php endif; ?>
                     </div>
-                    <p><?= e($review['reply_text']) ?></p>
                   </div>
-                <?php endif; ?>
-                <?php if ($canManageReviews): ?>
-                  <div class="review-reply-panel" id="reply-panel-<?= e((string) $review['id']) ?>" hidden>
-                    <form method="post" class="review-reply-form">
-                      <input type="hidden" name="action" value="reply_review" />
-                      <input type="hidden" name="review_id" value="<?= e((string) $review['id']) ?>" />
-                      <label for="reply-<?= e((string) $review['id']) ?>">Balasan admin</label>
-                      <textarea id="reply-<?= e((string) $review['id']) ?>" name="reply_text" maxlength="1200" placeholder="Tulis balasan resmi untuk ulasan ini..." required><?= e((string) ($review['reply_text'] ?? '')) ?></textarea>
-                      <button type="submit" class="review-reply-btn"><?= empty($review['reply_text']) ? 'Kirim balasan' : 'Perbarui balasan' ?></button>
-                    </form>
-                  </div>
-                <?php endif; ?>
-                <?php if ($hasReviewActions): ?>
-                  <div class="review-action-menu" data-review-menu>
-                    <button class="review-action-toggle" type="button" data-review-menu-toggle aria-expanded="false" aria-controls="review-menu-<?= e((string) $review['id']) ?>" aria-label="Opsi ulasan">
-                      <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
-                    </button>
-                    <div class="review-action-popover" id="review-menu-<?= e((string) $review['id']) ?>" data-review-menu-popover hidden>
-                      <?php if ($canManageReviews): ?>
-                        <button type="button" class="review-menu-item" data-review-reply-open="reply-panel-<?= e((string) $review['id']) ?>">
-                          <i class="fa-regular fa-comment-dots" aria-hidden="true"></i><?= empty($review['reply_text']) ? 'Balas komentar' : 'Edit balasan' ?>
-                        </button>
-                        <?php if (!empty($review['reply_text'])): ?>
+                  <?php if ($hasReviewActions): ?>
+                    <div class="review-action-menu" data-review-menu>
+                      <button class="review-action-toggle" type="button" data-review-menu-toggle aria-expanded="false" aria-controls="review-menu-<?= e((string) $review['id']) ?>" aria-label="Opsi ulasan">
+                        <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
+                      </button>
+                      <div class="review-action-popover" id="review-menu-<?= e((string) $review['id']) ?>" data-review-menu-popover hidden>
+                        <?php if ($canReplyReviews): ?>
+                          <button type="button" class="review-menu-item" data-review-reply-open="reply-panel-<?= e((string) $review['id']) ?>">
+                            <i class="fa-regular fa-comment-dots" aria-hidden="true"></i><?= empty($review['reply_text']) ? 'Balas komentar' : 'Edit balasan' ?>
+                          </button>
+                        <?php endif; ?>
+                        <?php if ($canDeleteThisReply): ?>
                           <form method="post">
                             <input type="hidden" name="action" value="delete_review_reply" />
                             <input type="hidden" name="review_id" value="<?= e((string) $review['id']) ?>" />
@@ -322,24 +341,24 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
                             </button>
                           </form>
                         <?php endif; ?>
-                      <?php endif; ?>
-                      <?php if ($canDeleteReview): ?>
-                        <form method="post">
-                          <input type="hidden" name="action" value="delete_review" />
-                          <input type="hidden" name="review_id" value="<?= e((string) $review['id']) ?>" />
-                          <button type="submit" class="review-menu-item is-danger" onclick="return confirm('Hapus ulasan ini?');">
-                            <i class="fa-regular fa-trash-can" aria-hidden="true"></i><?= $canManageReviews ? 'Hapus ulasan' : 'Hapus pesan' ?>
-                          </button>
-                        </form>
-                      <?php endif; ?>
+                        <?php if ($canDeleteThisReview): ?>
+                          <form method="post">
+                            <input type="hidden" name="action" value="delete_review" />
+                            <input type="hidden" name="review_id" value="<?= e((string) $review['id']) ?>" />
+                            <button type="submit" class="review-menu-item is-danger" onclick="return confirm('Hapus ulasan ini?');">
+                              <i class="fa-regular fa-trash-can" aria-hidden="true"></i><?= $canDeleteReviews ? 'Hapus ulasan' : 'Hapus pesan' ?>
+                            </button>
+                          </form>
+                        <?php endif; ?>
+                      </div>
                     </div>
-                  </div>
-                <?php endif; ?>
-              </div>
-            <?php endforeach; ?>
-            <?php if ($reviews): ?>
-              <div class="dp-review-filter-empty" data-review-filter-empty hidden>Tidak ada ulasan untuk filter rating ini.</div>
-            <?php endif; ?>
+                  <?php endif; ?>
+                </article>
+              <?php endforeach; ?>
+              <?php if ($reviews): ?>
+                <div class="review-empty dp-review-filter-empty" data-review-filter-empty hidden>Tidak ada ulasan untuk filter rating ini.</div>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
       </div>
@@ -391,29 +410,44 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
         const items = Array.from(document.querySelectorAll('[data-review-stars]'));
         const empty = document.querySelector('[data-review-filter-empty]');
 
+        function updateReviewFilter(selected) {
+          let visibleCount = 0;
+          let firstVisibleItem = null;
+
+          items.forEach((item) => {
+            const shouldShow = selected === 'all' || item.dataset.reviewStars === selected;
+            item.hidden = !shouldShow;
+            item.classList.remove('is-first-visible-review');
+
+            if (shouldShow) {
+              if (!firstVisibleItem) {
+                firstVisibleItem = item;
+              }
+
+              visibleCount++;
+            }
+          });
+
+          firstVisibleItem?.classList.add('is-first-visible-review');
+
+          if (empty) {
+            empty.hidden = visibleCount > 0 || items.length === 0;
+          }
+        }
+
+        updateReviewFilter('all');
+
         filterGroup.addEventListener('click', (event) => {
           const button = event.target instanceof Element ? event.target.closest('[data-review-filter]') : null;
           if (!button) return;
 
           const selected = button.dataset.reviewFilter || 'all';
-          let visibleCount = 0;
 
           filterGroup.querySelectorAll('[data-review-filter]').forEach((filterButton) => {
             filterButton.classList.toggle('active', filterButton === button);
           });
 
-          items.forEach((item) => {
-            const shouldShow = selected === 'all' || item.dataset.reviewStars === selected;
-            item.hidden = !shouldShow;
-
-            if (shouldShow) {
-              visibleCount++;
-            }
-          });
-
-          if (empty) {
-            empty.hidden = visibleCount > 0 || items.length === 0;
-          }
+          updateReviewFilter(selected);
         });
       })();
 
