@@ -103,7 +103,9 @@
   color: #fff;
   cursor: pointer;
   transform: translateY(-50%);
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .dp-gallery-nav:hover {
@@ -328,52 +330,65 @@
   gap: 14px;
   border-right: 1px solid var(--dp-border);
   background:
-    linear-gradient(135deg, rgba(62, 107, 72, 0.96), rgba(45, 82, 55, 0.94)),
+    linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(251, 247, 242, 0.96)
+    ),
     var(--dp-surface-soft);
-  color: #fff;
-}
-
-.dp-store-header::after {
-  content: "";
-  position: absolute;
-  right: -18px;
-  bottom: -36px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
+  color: var(--dp-text);
 }
 
 .dp-store-card {
   display: grid;
-  grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1fr) minmax(250px, 0.72fr);
+  grid-template-columns: minmax(260px, 0.78fr) minmax(0, 1fr) minmax(
+      250px,
+      0.72fr
+    );
   align-items: stretch;
   min-height: 154px;
   background:
-    linear-gradient(90deg, rgba(62, 107, 72, 0.035), rgba(224, 107, 76, 0.025)),
+    linear-gradient(
+      90deg,
+      rgba(224, 107, 76, 0.035),
+      rgba(251, 247, 242, 0.72)
+    ),
     var(--dp-surface);
 }
 
 .dp-store-avatar {
   position: relative;
   z-index: 1;
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid rgba(224, 107, 76, 0.22);
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.16);
-  box-shadow: 0 12px 26px rgba(20, 43, 27, 0.18);
-  color: #fff;
-  font-size: 20px;
+  background: #fff;
+  box-shadow: 0 12px 26px rgba(31, 41, 55, 0.08);
+}
+
+.dp-store-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.dp-store-heading {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
 }
 
 .dp-store-name {
   position: relative;
   z-index: 1;
-  color: #fff;
+  color: var(--dp-text);
   font-size: 16px;
   font-weight: 800;
   line-height: 1.25;
@@ -383,7 +398,7 @@
   position: relative;
   z-index: 1;
   margin-top: 4px;
-  color: rgba(255, 255, 255, 0.78);
+  color: var(--dp-muted);
   font-size: 12px;
   font-weight: 600;
 }
@@ -391,17 +406,18 @@
 .dp-store-body {
   padding: 18px 20px;
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   border-right: 1px solid var(--dp-border);
 }
 
-.dp-store-row {
-  margin-bottom: 0;
-  padding: 10px 12px;
+.dp-store-stat {
+  min-width: 0;
+  padding: 12px;
   display: flex;
-  align-items: start;
+  align-items: center;
   gap: 10px;
-  border: 1px solid rgba(62, 107, 72, 0.09);
+  border: 1px solid rgba(224, 107, 76, 0.14);
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.72);
   color: var(--dp-muted);
@@ -409,23 +425,36 @@
   line-height: 1.55;
 }
 
-.dp-store-row:last-child {
-  margin-bottom: 0;
-}
-
-.dp-store-row i {
+.dp-store-stat i {
   width: 24px;
   height: 24px;
-  margin-top: 0;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
-  background: #edf5ee;
-  color: #3e6b48;
+  background: rgba(224, 107, 76, 0.1);
+  color: #c85f42;
   text-align: center;
   font-size: 11px;
+}
+
+.dp-store-stat strong,
+.dp-store-stat span {
+  display: block;
+}
+
+.dp-store-stat strong {
+  color: var(--dp-text);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.dp-store-stat span {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .dp-store-actions {
@@ -448,7 +477,10 @@
   box-shadow: 0 8px 18px rgba(31, 41, 55, 0.035);
   font-size: 12px;
   font-weight: 800;
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
 }
 
 .dp-store-btn:hover {
@@ -456,10 +488,17 @@
   transform: translateY(-1px);
 }
 
-.dp-store-btn.green {
-  border-color: #3e6b48;
-  background: #3e6b48;
-  color: #fff;
+.dp-store-visit-btn {
+  width: max-content;
+  min-height: 32px;
+  margin-top: 10px;
+  padding: 7px 11px;
+  border-color: rgba(224, 107, 76, 0.36);
+  border-radius: 10px;
+  background: rgba(224, 107, 76, 0.08);
+  color: #b65339;
+  box-shadow: none;
+  font-size: 11px;
 }
 
 .dp-store-btn.wa {
@@ -479,7 +518,11 @@
   margin: 0 auto;
   padding: 28px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 250, 246, 0.92)),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.98),
+      rgba(255, 250, 246, 0.92)
+    ),
     var(--dp-surface);
 }
 
@@ -523,9 +566,14 @@
   border-radius: 999px;
   background: #fff;
   color: var(--dp-muted);
-  font: 600 11px "Poppins", sans-serif;
+  font:
+    600 11px "Poppins",
+    sans-serif;
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 
 .dp-review-filter:hover,
@@ -547,7 +595,11 @@
   border: 1px solid rgba(62, 107, 72, 0.1);
   border-radius: 18px;
   background:
-    linear-gradient(135deg, rgba(62, 107, 72, 0.055), rgba(224, 107, 76, 0.045)),
+    linear-gradient(
+      135deg,
+      rgba(62, 107, 72, 0.055),
+      rgba(224, 107, 76, 0.045)
+    ),
     #fff;
   box-shadow: 0 14px 28px rgba(31, 41, 55, 0.04);
 }
@@ -658,10 +710,15 @@
   background: #e06b4c;
   color: #fff;
   box-shadow: 0 8px 16px rgba(224, 107, 76, 0.18);
-  font: 800 12px "Poppins", sans-serif;
+  font:
+    800 12px "Poppins",
+    sans-serif;
   cursor: pointer;
   white-space: nowrap;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
 }
 
 .dp-submit-btn:hover {
@@ -716,7 +773,9 @@
   border-radius: 14px;
   background: linear-gradient(135deg, #3e6b48, #24442e);
   color: #fff;
-  font: 800 15px "Montserrat", sans-serif;
+  font:
+    800 15px "Montserrat",
+    sans-serif;
   box-shadow: 0 10px 20px rgba(62, 107, 72, 0.16);
 }
 
@@ -769,7 +828,9 @@
   border-radius: 999px;
   background: rgba(245, 166, 35, 0.13);
   color: #b67200;
-  font: 800 12px "Poppins", sans-serif;
+  font:
+    800 12px "Poppins",
+    sans-serif;
 }
 
 .dp-reviewer-stars i {
@@ -784,7 +845,11 @@
   border-left: 4px solid #e06b4c;
   border-radius: 14px;
   background:
-    linear-gradient(135deg, rgba(224, 107, 76, 0.07), rgba(255, 255, 255, 0.86)),
+    linear-gradient(
+      135deg,
+      rgba(224, 107, 76, 0.07),
+      rgba(255, 255, 255, 0.86)
+    ),
     #fffaf6;
 }
 
@@ -857,7 +922,9 @@
   justify-content: center;
   gap: 8px;
   border-radius: 10px;
-  font: 700 12px "Poppins", sans-serif;
+  font:
+    700 12px "Poppins",
+    sans-serif;
   cursor: pointer;
 }
 
@@ -889,7 +956,11 @@
   color: #6b746b;
   box-shadow: 0 10px 20px rgba(31, 41, 55, 0.06);
   cursor: pointer;
-  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .review-action-toggle:hover,
@@ -926,7 +997,9 @@
   border-radius: 10px;
   background: transparent;
   color: #24442e;
-  font: 700 12px "Poppins", sans-serif;
+  font:
+    700 12px "Poppins",
+    sans-serif;
   text-align: left;
   cursor: pointer;
 }
@@ -1067,7 +1140,9 @@
   background: transparent;
   color: #d7c7bc;
   cursor: pointer;
-  transition: color 0.18s ease, transform 0.18s ease;
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
 }
 
 .reviews .star-picker__button input {
@@ -1210,7 +1285,9 @@
   border-radius: 50%;
   background: #f1e7df;
   color: #8f5f45;
-  font: 700 12px "Montserrat", sans-serif;
+  font:
+    700 12px "Montserrat",
+    sans-serif;
 }
 
 .reviews .review-content,
@@ -1245,7 +1322,9 @@
   background: transparent;
   display: block;
   color: #f0b44d;
-  font: 400 12px/1 "Poppins", sans-serif;
+  font:
+    400 12px/1 "Poppins",
+    sans-serif;
   letter-spacing: 0.7px;
   white-space: nowrap;
 }
@@ -1499,5 +1578,26 @@
   .review-action-popover {
     right: 0;
     min-width: min(220px, calc(100vw - 72px));
+  }
+}
+
+@media (max-width: 560px) {
+  .dp-store-header {
+    align-items: flex-start;
+    padding: 18px;
+  }
+
+  .dp-store-avatar {
+    width: 52px;
+    height: 52px;
+  }
+
+  .dp-store-body {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .dp-store-actions {
+    padding: 16px;
   }
 }

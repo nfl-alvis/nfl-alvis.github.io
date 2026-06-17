@@ -119,6 +119,12 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
     $canDeleteReviewReplies = user_can_delete_product_review_replies($user, $product);
     $galleryImages = array_map(static fn(string $path): string => base_path($path), $productImages);
     $galleryJson = json_encode($galleryImages, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT) ?: '[]';
+    $storeAvatarPath = trim((string) ($product['store_cover_image'] ?? ''));
+    $storeAvatarUrl = $storeAvatarPath !== '' ? base_path($storeAvatarPath) : base_path('assets/image/PusakaRasa.webp');
+    $storeRating = (float) ($product['store_rating'] ?? 0);
+    $storeReviewCount = (int) ($product['store_review_count'] ?? 0);
+    $storeProductCount = (int) ($product['store_product_count'] ?? 0);
+    $storeRegion = trim((string) ($product['store_region'] ?? '')) ?: (string) $product['region'];
     $reviewRatingCounts = array_fill(1, 5, 0);
     foreach ($reviews as $reviewCountItem) {
         $reviewStars = (int) ($reviewCountItem['stars'] ?? 0);
@@ -195,28 +201,39 @@ render_layout($product['name'], function (?array $user = null) use ($product, $r
 
         <div class="dp-store-card">
           <div class="dp-store-header">
-            <div class="dp-store-avatar"><i class="fa-solid fa-store" aria-hidden="true"></i></div>
-            <div>
+            <div class="dp-store-avatar">
+              <img src="<?= e($storeAvatarUrl) ?>" alt="<?= e($product['store_name']) ?>" />
+            </div>
+            <div class="dp-store-heading">
               <div class="dp-store-name"><?= e($product['store_name']) ?></div>
-              <div class="dp-store-region"><?= e($product['region']) ?></div>
+              <div class="dp-store-region"><?= e($storeRegion) ?></div>
+              <a href="<?= e(base_path('store.php?slug=' . $product['store_slug'])) ?>" class="dp-store-btn dp-store-visit-btn"><i class="fa-solid fa-shop" aria-hidden="true"></i>Kunjungi Toko</a>
             </div>
           </div>
           <div class="dp-store-body">
-            <div class="dp-store-row">
-              <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
-              <span><?= e($product['address']) ?></span>
+            <div class="dp-store-stat">
+              <i class="fa-solid fa-star" aria-hidden="true"></i>
+              <div>
+                <strong><?= e(number_format($storeRating, 1)) ?></strong>
+                <span>Rata-rata rating toko</span>
+              </div>
             </div>
-            <div class="dp-store-row">
-              <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-              <span><?= e($product['store_description']) ?></span>
+            <div class="dp-store-stat">
+              <i class="fa-regular fa-comments" aria-hidden="true"></i>
+              <div>
+                <strong><?= e(number_short($storeReviewCount)) ?></strong>
+                <span>Total komentar</span>
+              </div>
             </div>
-            <div class="dp-store-row">
-              <i class="fa-solid fa-receipt" aria-hidden="true"></i>
-              <span>PusakaRasa hanya menampilkan informasi katalog tanpa proses checkout.</span>
+            <div class="dp-store-stat">
+              <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+              <div>
+                <strong><?= e(number_short($storeProductCount)) ?></strong>
+                <span>Total produk</span>
+              </div>
             </div>
           </div>
           <div class="dp-store-actions">
-            <a href="<?= e(base_path('store.php?slug=' . $product['store_slug'])) ?>" class="dp-store-btn green"><i class="fa-solid fa-shop" aria-hidden="true"></i>Lihat Halaman Toko</a>
             <a href="https://wa.me/<?= e($product['whatsapp']) ?>" target="_blank" rel="noreferrer" class="dp-store-btn wa"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp Toko</a>
             <a href="https://instagram.com/<?= e(ltrim($product['instagram'], '@')) ?>" target="_blank" rel="noreferrer" class="dp-store-btn ig"><i class="fa-brands fa-instagram" aria-hidden="true"></i>Instagram Toko</a>
           </div>

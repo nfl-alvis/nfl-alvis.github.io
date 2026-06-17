@@ -689,10 +689,15 @@ function find_product_by_slug(string $slug): ?array
                 COALESCE(rv.review_count, 0) AS review_count,
                 s.name AS store_name,
                 s.slug AS store_slug,
+                s.region AS store_region,
                 s.whatsapp,
                 s.instagram,
                 s.address,
-                s.description AS store_description
+                s.description AS store_description,
+                s.cover_image AS store_cover_image,
+                COALESCE(ss.store_rating, 0) AS store_rating,
+                COALESCE(ss.store_review_count, 0) AS store_review_count,
+                COALESCE(ss.store_product_count, 0) AS store_product_count
          FROM products p
          INNER JOIN stores s ON s.id = p.store_id
          LEFT JOIN (
@@ -700,6 +705,16 @@ function find_product_by_slug(string $slug): ?array
              FROM reviews
              GROUP BY product_id
          ) rv ON rv.product_id = p.id
+         LEFT JOIN (
+             SELECT sp.store_id,
+                    ROUND(AVG(r.stars), 1) AS store_rating,
+                    COUNT(r.id) AS store_review_count,
+                    COUNT(DISTINCT sp.id) AS store_product_count
+             FROM products sp
+             LEFT JOIN reviews r ON r.product_id = sp.id
+             WHERE sp.is_active = 1
+             GROUP BY sp.store_id
+         ) ss ON ss.store_id = s.id
          WHERE p.slug = :slug AND p.is_active = 1 AND s.is_active = 1
          LIMIT 1'
     );

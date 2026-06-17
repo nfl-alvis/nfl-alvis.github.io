@@ -127,18 +127,6 @@ render_layout('Profil Toko', function (?array $currentUser = null) use ($user, $
             </div>
           </article>
 
-          <article class="info-card store-profile-tips">
-            <div class="info-card-title">
-              <span class="info-title-icon"><i class="fa-regular fa-lightbulb" aria-hidden="true"></i></span>
-              Tips Profil Toko
-            </div>
-            <ul class="checklist">
-              <li><span class="check-dot"><i class="fa-solid fa-check" aria-hidden="true"></i></span>Nama toko singkat dan mudah diingat</li>
-              <li><span class="check-dot"><i class="fa-solid fa-check" aria-hidden="true"></i></span>Nomor WA gunakan format 628xxx</li>
-              <li><span class="check-dot"><i class="fa-solid fa-check" aria-hidden="true"></i></span>Instagram gunakan awalan @</li>
-              <li><span class="check-dot"><i class="fa-solid fa-check" aria-hidden="true"></i></span>Deskripsi jelaskan keunikan toko</li>
-            </ul>
-          </article>
         </aside>
 
         <article class="form-card store-profile-form-card">

@@ -43,7 +43,7 @@ render_layout('Beranda', function (?array $user) use ($popularProducts, $availab
   <section id="katalog-popular">
     <div class="section-copy section-copy-panel">
       <h2>Terpopuler Minggu Ini</h2>
-      <p>Temukan produk yang paling banyak dikunjungi dalam 7 hari terakhir, dengan informasi singkat yang mudah dilihat langsung dari halaman utama.</p>
+      <p>Temukan produk yang paling banyak dikunjungi dalam 7 hari terakhir.</p>
     </div>
 
     <div class="cards-container">
@@ -56,7 +56,7 @@ render_layout('Beranda', function (?array $user) use ($popularProducts, $availab
   <section>
     <div class="section-copy section-copy-panel">
       <h2>Toko Pilihan</h2>
-      <p>Temukan berbagai toko makanan pilihan lengkap dengan informasi kontak, alamat, dan daftar produk yang tersedia.</p>
+      <p>Temukan berbagai toko makanan pilihan lengkap dengan informasi yang tersedia.</p>
     </div>
     <div class="store-grid">
       <?php foreach ($stores as $store): ?>
@@ -77,10 +77,6 @@ render_layout('Beranda', function (?array $user) use ($popularProducts, $availab
               <i class="fa-solid fa-box-open" aria-hidden="true"></i>
               <?= e((string) $store['product_count']) ?> produk tersedia
             </div>
-          </div>
-          <div class="public-store-actions">
-            <a href="<?= e(base_path('store.php?slug=' . $store['slug'])) ?>"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Lihat Toko</a>
-            <a class="is-whatsapp" href="https://wa.me/<?= e($store['whatsapp']) ?>" target="_blank" rel="noreferrer"><i class="fa-brands fa-whatsapp" aria-hidden="true"></i>WhatsApp</a>
           </div>
         </article>
       <?php endforeach; ?>
